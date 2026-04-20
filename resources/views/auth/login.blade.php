@@ -10,7 +10,14 @@
 <body class="bg-gray-100 h-screen flex items-center justify-center">
     <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <div class="text-center mb-8">
-            <h1 class="text-2xl font-bold text-blue-900">Portal Pegawai</h1>
+            <h1 class="text-2xl font-bold text-blue-900">
+                @if($role == 'piket') Portal Guru Piket
+                @elseif($role == 'guru') Portal Guru
+                @elseif($role == 'admin') Portal Admin
+                @elseif($role == 'bk') Portal Guru BK
+                @else Portal Pegawai
+                @endif
+            </h1>
             <p class="text-gray-500 text-sm mt-2">Sistem Presensi SMKN7</p>
         </div>
 
@@ -24,8 +31,9 @@
             </div>
         @endif
 
-        <form action="{{ route('login') }}" method="POST">
+        <form action="{{ route('login.post') }}" method="POST">
             @csrf
+            <input type="hidden" name="role" value="{{ $role }}">
             <div class="mb-4">
                 <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Username</label>
                 <div class="relative">

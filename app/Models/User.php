@@ -22,7 +22,6 @@ class User extends Authenticatable
     {
         return [
             'is_wali' => 'boolean',
-            'password' => 'hashed',
         ];
     }
 

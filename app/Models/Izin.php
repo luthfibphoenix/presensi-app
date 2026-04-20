@@ -13,6 +13,8 @@ class Izin extends Model
         'tanggal',
         'alasan',
         'status',
+        'tipe',
+        'petugas_piket',
     ];
 
     public function siswa()

@@ -169,7 +169,12 @@ class QrController extends Controller
 
     public function statusIndex(Request $request)
     {
-        $jadwals = Jadwal::where('user_id', $request->user()->id)->get();
+        $user = $request->user();
+        if (in_array($user->position, ['Administrator', 'Guru BK', 'Guru Piket'])) {
+            $jadwals = Jadwal::all();
+        } else {
+            $jadwals = Jadwal::where('user_id', $user->id)->get();
+        }
         return view('guru.qr.status_index', compact('jadwals'));
     }
 
