@@ -205,8 +205,11 @@
                                     <span class="ml-2 text-sm tracking-wide truncate">Status Kehadiran</span>
                                 </a>
                             </li>
+                            @endif
+
                             @php
                                 $isStaff = $isAdmin || $isBK || 
+                                           stripos($user->position, 'BK') !== false ||
                                            stripos($user->position, 'Kakonli') !== false || 
                                            stripos($user->position, 'Kurikulum') !== false || 
                                            stripos($user->position, 'TU') !== false ||
@@ -225,7 +228,6 @@
                                     <span class="ml-2 text-sm tracking-wide truncate">Database Siswa</span>
                                 </a>
                             </li>
-                            @endif
                             @endif
 
                             {{-- Profil (semua role) --}}

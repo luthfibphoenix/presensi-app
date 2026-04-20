@@ -41,18 +41,18 @@ Route::get('/proxy/photo/{userId}', function ($userId) {
 })->name('photo.proxy');
 
 // Auth Guru/Admin - pisah POST per role
-Route::get('/login',        [AuthController::class, 'showLoginForm'])->defaults('role', 'guru')->name('login');
-Route::get('/login/guru',   [AuthController::class, 'showLoginForm'])->defaults('role', 'guru')->name('login.guru');
-Route::get('/login/piket',  [AuthController::class, 'showLoginForm'])->defaults('role', 'piket')->name('login.piket');
-Route::get('/login/admin',  [AuthController::class, 'showLoginForm'])->defaults('role', 'admin')->name('login.admin');
-Route::get('/login/bk',     [AuthController::class, 'showLoginForm'])->defaults('role', 'bk')->name('login.bk');
+// Auth Unified Login
+Route::get('/login',        [AuthController::class, 'showLoginForm'])->name('login');
+Route::get('/login/guru',   function() { return redirect()->route('login'); });
+Route::get('/login/piket',  function() { return redirect()->route('login'); });
+Route::get('/login/admin',  function() { return redirect()->route('login'); });
+Route::get('/login/bk',     function() { return redirect()->route('login'); });
+Route::get('/siswa/login',  function() { return redirect()->route('login'); })->name('siswa.login');
 
 Route::post('/login',       [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout',      [AuthController::class, 'logout'])->name('logout');
 
-// Auth Siswa
-Route::get('/siswa/login',  [SiswaAuthController::class, 'showLoginForm'])->name('siswa.login');
-Route::post('/siswa/login', [SiswaAuthController::class, 'login']);
+// Siswa Logout (keep for consistency)
 Route::post('/siswa/logout',[SiswaAuthController::class, 'logout'])->name('siswa.logout');
 
 // Web Guard (Admin, Guru, BK, Wali Kelas)

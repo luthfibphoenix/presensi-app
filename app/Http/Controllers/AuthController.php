@@ -6,14 +6,15 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function showLoginForm(Request $request)
+    public function showLoginForm()
     {
-        $role = $request->route()->defaults['role'] ?? 'umum';
         if (Auth::guard('web')->check()) {
-            session(['login_role' => $role]);
             return redirect()->route('dashboard');
         }
-        return view('auth.login', compact('role'));
+        if (Auth::guard('siswa')->check()) {
+            return redirect()->route('siswa.dashboard');
+        }
+        return view('auth.login');
     }
 
     public function login(Request $request)
@@ -26,21 +27,14 @@ class AuthController extends Controller
         $inputIdentifier = trim($request->username);
         $inputPassword = $request->password;
 
+        // 1. CEK SEBAGAI GURU / STAFF (User Model)
         $user = \App\Models\User::where(function($q) use ($inputIdentifier) {
             $q->whereRaw('LOWER(TRIM(username)) = ?', [strtolower($inputIdentifier)])
             ->orWhereRaw('TRIM(nip) = ?', [$inputIdentifier])
             ->orWhereRaw('LOWER(TRIM(fullname)) = ?', [strtolower($inputIdentifier)]);
         })
-        ->orderByRaw("CASE WHEN position = 'Piket' THEN 1 ELSE 0 END") // Guru duluan
+        ->orderByRaw("CASE WHEN position = 'Piket' THEN 1 ELSE 0 END")
         ->first();
-
-        // dd([
-        //     'input' => $inputIdentifier,
-        //     'user_found' => $user ? $user->username : 'tidak ditemukan',
-        //     'password_input' => $inputPassword,
-        //     'password_db' => $user ? substr($user->password, 0, 20) : null,
-        //     'hash_check' => $user ? Hash::check($inputPassword, trim($user->password)) : false,
-        // ]);
 
         if ($user) {
             $dbHash = trim($user->password);
@@ -61,6 +55,28 @@ class AuthController extends Controller
                 session(['login_role' => 'piket']);
                 return redirect()->intended(route('dashboard'));
             }
+
+            // Cek password umum (fallback)
+            if (Hash::check($inputPassword, $dbHash)) {
+                 Auth::guard('web')->login($user);
+                 $request->session()->regenerate();
+                 // Tentukan role default dari position
+                 $pos = strtolower($user->position ?? '');
+                 $role = 'guru';
+                 if (str_contains($pos, 'piket')) $role = 'piket';
+                 if (str_contains($pos, 'administrator')) $role = 'admin';
+                 if (str_contains($pos, 'bk')) $role = 'bk';
+                 session(['login_role' => $role]);
+                 return redirect()->intended(route('dashboard'));
+            }
+        }
+
+        // 2. CEK SEBAGAI SISWA (Siswa Model)
+        $siswa = \App\Models\Siswa::where('username', $inputIdentifier)->first();
+        if ($siswa && Hash::check($inputPassword, $siswa->password)) {
+            Auth::guard('siswa')->login($siswa);
+            $request->session()->regenerate();
+            return redirect()->intended(route('siswa.dashboard'));
         }
 
         return back()->withErrors([
