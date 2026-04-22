@@ -22,4 +22,18 @@ class Jadwal extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public static function jamMap()
+    {
+        return [
+            1  => '07:00', 2  => '07:45', 3  => '08:30', 4  => '09:15',
+            5  => '10:00', 6  => '10:45', 7  => '11:30', 8  => '12:15',
+            9  => '13:00', 10 => '13:45', 11 => '14:30', 12 => '15:15',
+        ];
+    }
+
+    public static function getWaktu($jamKe)
+    {
+        return self::jamMap()[$jamKe] ?? sprintf('%02d:00', 6 + (int)$jamKe);
+    }
 }

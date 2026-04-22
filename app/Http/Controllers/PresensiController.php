@@ -53,10 +53,10 @@ class PresensiController extends Controller
 
         // Catat presensi
         Presensi::create([
-            'nama_siswa' => $siswa->nama,
-            'kelas' => $siswa->kelas->nama_kelas ?? 'Unknown',
-            'tanggal' => now()->toDateString(),
-            'status' => 'Hadir',
+            'siswa_id'  => $siswa->id,
+            'jadwal_id' => $qrSession->jadwal_id,
+            'tanggal'   => now()->toDateString(),
+            'status'    => 'Hadir',
         ]);
 
         return response()->json(['success' => true, 'message' => 'Berhasil absen!']);
@@ -65,7 +65,7 @@ class PresensiController extends Controller
     public function riwayatSiswa(Request $request)
     {
         $siswa = $request->user('siswa');
-        $riwayats = Presensi::where('nama_siswa', $siswa->nama)->paginate(10);
+        $riwayats = Presensi::where('siswa_id', $siswa->id)->with('jadwal')->paginate(10);
         return view('siswa.riwayat', compact('riwayats'));
     }
 }

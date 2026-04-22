@@ -12,8 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('qr_sessions', function (Blueprint $table) {
-            $table->foreignId('guru_id')->nullable()->after('jadwal_id')->constrained('users');
-            $table->timestamps();
+            if (!Schema::hasColumn('qr_sessions', 'guru_id')) {
+                $table->unsignedBigInteger('guru_id')->nullable()->after('jadwal_id');
+                $table->foreign('guru_id')->references('id')->on('users')->onDelete('cascade');
+            }
+            if (!Schema::hasColumn('qr_sessions', 'created_at')) {
+                $table->timestamps();
+            }
         });
     }
 

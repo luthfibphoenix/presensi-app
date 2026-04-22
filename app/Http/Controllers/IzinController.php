@@ -116,8 +116,8 @@ class IzinController extends Controller
             ->get();
 
         foreach ($jadwals as $jadwal) {
-            $exists = \App\Models\Presensi::where('nama_siswa', $siswa->nama)
-                ->where('kelas', $jadwal->kelas)
+            $exists = \App\Models\Presensi::where('siswa_id', $siswa->id)
+                ->where('jadwal_id', $jadwal->id)
                 ->where('tanggal', $tanggal)
                 ->first();
 
@@ -125,10 +125,10 @@ class IzinController extends Controller
                 $exists->update(['status' => $statusPresensi]);
             } else {
                 \App\Models\Presensi::create([
-                    'nama_siswa' => $siswa->nama,
-                    'kelas'      => $jadwal->kelas,
-                    'tanggal'    => $tanggal,
-                    'status'     => $statusPresensi,
+                    'siswa_id'  => $siswa->id,
+                    'jadwal_id' => $jadwal->id,
+                    'tanggal'   => $tanggal,
+                    'status'    => $statusPresensi,
                 ]);
             }
         }

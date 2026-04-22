@@ -130,6 +130,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/guru/blangko/presensi', [BlangkoController::class, 'presensi'])->name('guru.blangko.presensi');
         Route::get('/guru/blangko/nilai', [BlangkoController::class, 'nilai'])->name('guru.blangko.nilai');
         Route::get('/guru/blangko/cover', [BlangkoController::class, 'cover'])->name('guru.blangko.cover');
+
+        // Catatan Siswa
+        Route::get('/guru/catatan', [\App\Http\Controllers\CatatanSiswaController::class, 'index'])->name('guru.catatan.index');
+        Route::post('/guru/catatan', [\App\Http\Controllers\CatatanSiswaController::class, 'store'])->name('catatan.store');
+        Route::delete('/guru/catatan/{id}', [\App\Http\Controllers\CatatanSiswaController::class, 'destroy'])->name('catatan.destroy');
     });
 });
 

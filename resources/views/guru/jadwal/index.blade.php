@@ -43,8 +43,8 @@
 <div class="grid gap-4">
     @foreach($jadwals as $jadwal)
     @php
-        $jamMulaiStr  = $jamMap[$jadwal->jam_mulai]  ?? sprintf('%02d:00', 6 + $jadwal->jam_mulai);
-        $jamSelesaiStr= $jamMap[$jadwal->jam_selesai] ?? sprintf('%02d:00', 6 + $jadwal->jam_selesai);
+        $jamMulaiStr  = jamPelajaranToWaktu($jadwal->jam_mulai);
+        $jamSelesaiStr= \Carbon\Carbon::createFromFormat('H:i', jamPelajaranToWaktu($jadwal->jam_selesai), 'Asia/Jakarta')->addMinutes(45)->format('H:i');
         $isHariIni    = ($jadwal->hari === $hariIni);
         $isWaktunya   = $isHariIni && ($nowTime >= $jamMulaiStr && $nowTime <= $jamSelesaiStr);
         // Allow 15 min before
@@ -80,15 +80,58 @@
                     </p>
                 </div>
 
-                {{-- Tombol Mulai Kelas --}}
-                <div class="flex-shrink-0 flex flex-col gap-2 items-end">
+                {{-- Tombol Mulai Kelas & Akhiri Sesi --}}
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    @if($isWaktunya)
+                        @php
+                            // Gunakan timezone Jakarta secara konsisten
+                            $jakartaNow = \Carbon\Carbon::now('Asia/Jakarta');
+                            
+                             // Jam selesai adalah jam mulai jam terakhir + 45 menit (sudah dihitung di $jamSelesaiStr)
+                             $actualEndTime = \Carbon\Carbon::createFromFormat('H:i', $jamSelesaiStr, 'Asia/Jakarta');
+                            $timeToAkhiri = (clone $actualEndTime)->subMinutes(30);
+                            $bolehAkhiri = $jakartaNow->greaterThanOrEqualTo($timeToAkhiri);
+                            
+                            // Cari sesi QR hari ini untuk jadwal ini (walaupun sudah expired tokennya)
+                            $session = \App\Models\QrSession::where('jadwal_id', $jadwal->id)
+                                        ->where('tanggal', $jakartaNow->toDateString())
+                                        ->orderBy('created_at', 'desc')
+                                        ->first();
+                        @endphp
+
+                        @if($session)
+                            <div class="group relative">
+                                @if($bolehAkhiri)
+                                    <form action="{{ route('dashboard.end_session') }}" method="POST" onsubmit="return confirm('Akhiri sesi kelas sekarang? Siswa yang belum absen akan otomatis dicatat Alfa.')">
+                                        @csrf
+                                        <input type="hidden" name="session_id" value="{{ $session->id }}">
+                                        <button type="submit"
+                                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl shadow transition">
+                                            <i class="fas fa-power-off"></i> Akhiri Sesi
+                                        </button>
+                                    </form>
+                                @else
+                                    <button disabled
+                                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-400 text-sm font-semibold rounded-xl cursor-not-allowed">
+                                        <i class="fas fa-power-off"></i> Akhiri Sesi
+                                    </button>
+                                    <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-10">
+                                        <div class="bg-gray-800 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
+                                            Tombol aktif 30 menit sebelum kelas selesai (jam {{ $timeToAkhiri->format('H:i') }})
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+                    @endif
+
                     @if($bolehMulai)
                     <form action="{{ route('guru.qr.generate') }}" method="POST">
                         @csrf
                         <input type="hidden" name="jadwal_id" value="{{ $jadwal->id }}">
                         <button type="submit"
                             class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow transition">
-                            <i class="fas fa-play-circle"></i> Mulai Kelas
+                            <i class="fas fa-play-circle"></i> {{ $isWaktunya ? 'Mulai / Refresh' : 'Mulai Kelas' }}
                         </button>
                     </form>
                     @else

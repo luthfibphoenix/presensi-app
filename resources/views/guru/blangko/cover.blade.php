@@ -42,11 +42,7 @@
     </div>
 
     <div class="cover-page">
-        <div class="header">
-            <h2>PEMERINTAH PROVINSI JAWA TENGAH</h2>
-            <h2>DINAS PENDIDIKAN DAN KEBUDAYAAN</h2>
-            <h1>SMK NEGERI 7 PURWOREJO</h1>
-        </div>
+        <x-kop-surat />
 
         <div class="title">
             <h1>ADMINISTRASI GURU</h1>

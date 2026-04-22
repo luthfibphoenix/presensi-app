@@ -20,10 +20,7 @@
 <body>
     <button class="print-btn" onclick="window.print()" style="padding: 10px; margin-bottom: 20px; cursor:pointer;">Cetak PDF</button>
 
-    <div class="header">
-        <h3>DAFTAR HADIR SISWA</h3>
-        <h3>SMK NEGERI 7 PURWOREJO</h3>
-    </div>
+    <x-kop-surat />
 
     <table class="info-table">
         <tr>

@@ -118,13 +118,7 @@ class DashboardController extends Controller
             'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'
         ];
         $hariIni = $hariMap[now()->format('l')];
-        $nowTime = now()->format('H:i');
-
-        $jamMap = [
-            1 => '07:00', 2 => '07:45', 3 => '08:30', 4 => '09:15',
-            5 => '10:15', 6 => '11:00', 7 => '11:45', 8 => '12:30',
-            9 => '13:15', 10 => '14:00', 11 => '14:45', 12 => '15:30',
-        ];
+        $nowTime = \Carbon\Carbon::now('Asia/Jakarta')->format('H:i');
 
         $jadwals = \App\Models\Jadwal::where('user_id', $user->id)
             ->where('hari', $hariIni)
@@ -132,10 +126,10 @@ class DashboardController extends Controller
 
         $activeJadwals = [];
         foreach ($jadwals as $j) {
-            $start = $jamMap[$j->jam_mulai] ?? null;
-            $endStart = $jamMap[$j->jam_selesai] ?? null;
+            $start = \App\Models\Jadwal::getWaktu($j->jam_mulai);
+            $endStart = \App\Models\Jadwal::getWaktu($j->jam_selesai);
             if ($start && $endStart) {
-                $end = \Carbon\Carbon::createFromFormat('H:i', $endStart)->addMinutes(45)->format('H:i');
+                $end = \Carbon\Carbon::createFromFormat('H:i', $endStart, 'Asia/Jakarta')->addMinutes(45)->format('H:i');
                 if ($nowTime >= $start && $nowTime <= $end) {
                     $activeJadwals[] = $j;
                 }
@@ -187,7 +181,8 @@ class DashboardController extends Controller
             'token' => $token,
             'mapel' => $jadwal->mata_pelajaran,
             'kelas' => $jadwal->kelas,
-            'jam' => "Jam ke-{$jadwal->jam_mulai} sampai {$jadwal->jam_selesai}",
+            'hari'  => $jadwal->hari,
+            'jam' => jamPelajaranToWaktu($jadwal->jam_mulai) . ' - ' . \Carbon\Carbon::createFromFormat('H:i', jamPelajaranToWaktu($jadwal->jam_selesai), 'Asia/Jakarta')->addMinutes(45)->format('H:i'),
             'expired_at' => $expiredAt->toDateTimeString()
         ]);
     }

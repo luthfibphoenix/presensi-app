@@ -18,3 +18,10 @@ if (!function_exists('convertGoogleDriveUrl')) {
         return $url;
     }
 }
+
+if (!function_exists('jamPelajaranToWaktu')) {
+    function jamPelajaranToWaktu($jamKe)
+    {
+        return \App\Models\Jadwal::getWaktu($jamKe);
+    }
+}

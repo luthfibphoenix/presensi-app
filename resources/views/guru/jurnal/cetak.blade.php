@@ -22,13 +22,7 @@
 <body>
     <button class="print-btn" onclick="window.print()" style="padding: 10px 20px; font-size: 14px; margin-bottom: 20px; cursor:pointer;">Cetak PDF / Print</button>
     
-    <div class="header">
-        <h2>PEMERINTAH PROVINSI JAWA TENGAH</h2>
-        <h2>DINAS PENDIDIKAN DAN KEBUDAYAAN</h2>
-        <h1>SMK NEGERI 7 PURWOREJO</h1>
-        <p>Jalan Cangkrep - Bagelen Km 7 Desa Kemanukan, Kecamatan Bagelen, Kabupaten Purworejo Kode Pos 54174<br>
-        Telepon: (0275) 2973748</p>
-    </div>
+    <x-kop-surat />
 
     <h3 style="text-align: center; margin-bottom: 5px;">JURNAL MENGAJAR GURU</h3>
     <p style="text-align: center; margin-top: 0;">Nama Guru: <strong>{{ auth()->user()->fullname }}</strong></p>

@@ -24,61 +24,97 @@
         sidebarOpen: false
       }"
       x-init="$watch('activeRole', value => localStorage.setItem('activeRole', value))">
-    <div class="min-h-screen">
+    <div class="min-h-screen bg-gray-50 flex">
         
-        <!-- Sidebar Overlay (mobile) -->
-        <div x-show="sidebarOpen" 
-             @click="sidebarOpen = false"
-             class="fixed inset-0 bg-black/50 z-40 lg:hidden"
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0">
-        </div>
-
         <!-- Sidebar -->
         @php
             $currentRole = auth('siswa')->check() ? 'siswa' : session('login_role', 'guru');
         @endphp
         <x-sidebar :role="$currentRole" />
 
-        <!-- Main Content -->
-        <div class="lg:ml-64 flex flex-col min-w-0 bg-[#f3f4f6] min-h-screen">
-            <!-- Top Header -->
-            <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 z-40 relative flex-shrink-0">
+        <!-- Main Content Wrapper -->
+        <div class="flex-1 lg:ml-64 flex flex-col min-h-screen lg:h-screen relative overflow-y-auto lg:overflow-hidden no-scrollbar">
+            <!-- Fixed Top Navbar -->
+            <header class="h-16 bg-white shadow-sm border-b border-gray-100 flex items-center justify-between px-8 flex-shrink-0 z-40">
                 <div class="flex items-center gap-4">
-                    <button @click="sidebarOpen = true" class="lg:hidden text-gray-600">
-                        <i class="fas fa-bars"></i>
+                    <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700 transition">
+                        <i class="fas fa-bars text-xl"></i>
                     </button>
-                    <h2 class="text-lg font-bold text-gray-800">@yield('title', 'Dashboard')</h2>
+                    <h2 class="text-lg font-bold text-gray-800 tracking-tight">@yield('title', 'Dashboard')</h2>
                 </div>
 
-                <div class="flex items-center gap-4">
-                    <div class="text-right hidden md:block">
-                        <p class="text-sm font-bold text-gray-900 leading-none mb-1">{{ auth()->user()->fullname ?? auth()->user()->nama }}</p>
-                        <p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{{ auth()->user()->position ?? 'Siswa' }}</p>
+                <div class="flex items-center gap-4 relative" id="userMenuContainer">
+                    <button id="userMenuBtn" class="flex items-center gap-4 focus:outline-none group">
+                        <div class="text-right hidden md:block">
+                            <p class="text-sm font-bold text-gray-900 leading-none mb-1 group-hover:text-blue-600 transition">{{ auth()->user()->fullname ?? auth()->user()->nama }}</p>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ auth()->user()->position ?? 'Siswa' }}</p>
+                        </div>
+                        @php
+                            $userPhoto = auth()->user()->photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->fullname ?? auth()->user()->nama) . '&background=f3f4f6&color=6b7280&bold=true';
+                        @endphp
+                        <img src="{{ $userPhoto }}" 
+                             alt="User" 
+                             class="w-10 h-10 rounded-full border-2 border-gray-100 object-cover shadow-sm group-hover:border-blue-200 transition">
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div id="userDropdown" class="hidden absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden py-1 animate-fade-in-up">
+                        <div class="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
+                            <p class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Pengguna</p>
+                            <p class="text-sm font-bold text-gray-800 truncate">{{ auth()->user()->fullname ?? auth()->user()->nama }}</p>
+                        </div>
+                        <a href="{{ auth('siswa')->check() ? route('siswa.profil') : route('profil') }}" class="flex items-center gap-3 px-5 py-3.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition">
+                            <i class="fas fa-user-circle opacity-40"></i> Profil Saya
+                        </a>
+
+                        @php
+                            $user = auth()->user();
+                            $activeSess = null;
+                            if ($user && auth('web')->check()) {
+                                $activeSess = \App\Models\QrSession::where('guru_id', $user->id)
+                                    ->where('tanggal', now()->toDateString())
+                                    ->where('expired_at', '>', now())
+                                    ->first();
+                            }
+                        @endphp
+
+                        @if($activeSess)
+                        <div class="border-t border-gray-50 py-1">
+                            <form action="{{ route('dashboard.end_session') }}" method="POST" onsubmit="return confirm('Akhiri sesi kelas sekarang? Siswa yang belum absen akan otomatis dicatat Alfa.')">
+                                @csrf
+                                <input type="hidden" name="session_id" value="{{ $activeSess->id }}">
+                                <button type="submit" class="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-red-600 hover:bg-red-50 transition text-left font-bold">
+                                    <i class="fas fa-power-off"></i> Akhiri Kelas
+                                </button>
+                            </form>
+                        </div>
+                        @endif
+
+                        <div class="border-t border-gray-50 py-1">
+                            <form action="{{ auth('siswa')->check() ? route('siswa.logout') : route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-gray-400 hover:bg-gray-50 transition text-left font-semibold">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                    @php
-                        $userPhoto = auth()->user()->photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->fullname ?? auth()->user()->nama) . '&background=3B82F6&color=fff&bold=true';
-                    @endphp
-                    <img src="{{ $userPhoto }}" 
-                         alt="User" 
-                         class="w-10 h-10 rounded-full border border-gray-200 object-cover">
                 </div>
             </header>
 
             <!-- Content Body -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto p-8">
+            <main class="flex-1 overflow-hidden p-6">
                 @if (session('success'))
-                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm">
-                        {{ session('success') }}
+                    <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-3 mb-4 rounded-xl shadow-sm animate-fade-in-down">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle"></i>
+                            <span class="font-medium text-xs">{{ session('success') }}</span>
+                        </div>
                     </div>
                 @endif
                 @yield('content')
             </main>
-        </div>>
+        </div>
     </div>
     
     <!-- Mobile Bottom Navigation (Siswa Only) -->
@@ -115,6 +151,44 @@
     </style>
     @endauth
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dropdown Toggle
+            const btn = document.getElementById('userMenuBtn');
+            const dropdown = document.getElementById('userDropdown');
+
+            if (btn && dropdown) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('hidden');
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+                        dropdown.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Sidebar Scroll Persistence
+            const sidebar = document.getElementById('main-sidebar');
+            if (sidebar) {
+                const role = '{{ $currentRole }}';
+                const scrollKey = 'sidebar-scroll-' + role;
+                
+                // Restore
+                const savedScroll = localStorage.getItem(scrollKey);
+                if (savedScroll) {
+                    sidebar.scrollTop = parseInt(savedScroll);
+                }
+
+                // Save
+                window.addEventListener('beforeunload', function() {
+                    localStorage.setItem(scrollKey, sidebar.scrollTop);
+                });
+            }
+        });
+    </script>
     @stack('scripts')
 </body>
 </html>

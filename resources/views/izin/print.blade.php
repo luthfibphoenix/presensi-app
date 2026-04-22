@@ -132,28 +132,8 @@
         <button onclick="history.back()">← Kembali</button>
     </div>
 
-    {{-- HEADER --}}
-    <div class="header">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Lambang_Provinsi_Jawa_Tengah.svg/200px-Lambang_Provinsi_Jawa_Tengah.svg.png"
-             alt="Logo Jateng"
-             onerror="this.style.display='none'">
-
-        <div class="header-text">
-            <p>PEMERINTAH PROVINSI JAWA TENGAH</p>
-            <p>DINAS PENDIDIKAN DAN KEBUDAYAAN</p>
-            <p class="nama-sekolah">SEKOLAH MENENGAH KEJURUAN NEGERI 7 PURWOREJO</p>
-            <p>Jalan Cangkrep - Bagelen Km 7 Desa Kemanukan, Kecamatan Bagelen, Kabupaten Purworejo Kode Pos 54174</p>
-            <p>Telepon (0275) 2973748</p>
-            <p>Laman: www.smkn7purworejo.sch.id, Pos-el smkn7pwr@ymail.com</p>
-        </div>
-
-        <img src="{{ asset('images/logo-smkn7.png') }}"
-             alt="Logo SMKN7"
-             onerror="this.style.visibility='hidden'">
-    </div>
-
-    <hr class="garis-tebal">
-    <hr class="garis-tipis">
+    {{-- KOP SURAT --}}
+    <x-kop-surat />
 
     {{-- ISI SURAT --}}
     @php

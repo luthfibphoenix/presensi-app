@@ -4,10 +4,20 @@
     $user = auth('web')->user() ?? auth('siswa')->user();
     $name = $user->fullname ?? $user->nama ?? 'User';
     $position = ($role === 'siswa') ? 'Siswa' : ($user->position ?? 'Guru');
-    if ($role === 'piket') $position = 'Guru Piket';
-    if ($role === 'admin') $position = 'Administrator';
     
-    $fallbackUrl = 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=3B82F6&color=fff&bold=true&size=128';
+    // Theme selection by role
+    $bgSidebar = 'bg-blue-900';
+    $bgActive = 'bg-blue-700/50';
+    
+    if ($role === 'siswa') {
+        $bgSidebar = 'bg-emerald-900';
+        $bgActive = 'bg-emerald-700/50';
+    } elseif ($role === 'admin') {
+        $bgSidebar = 'bg-purple-900';
+        $bgActive = 'bg-purple-700/50';
+    }
+
+    $fallbackUrl = 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=fff&color=333&bold=true&size=128';
     $photoUrl = $user->photo_url ?? $fallbackUrl;
 
     $menus = [];
@@ -51,61 +61,53 @@
             'AKADEMIK' => [
                 ['label' => 'Jurnal Saya', 'route' => 'guru.jurnal.index', 'icon' => 'fas fa-book'],
                 ['label' => 'Penilaian', 'route' => 'guru.penilaian.index', 'icon' => 'fas fa-star'],
-                ['label' => 'Catatan Siswa', 'route' => 'dashboard', 'icon' => 'fas fa-sticky-note'],
+                ['label' => 'Catatan Siswa', 'route' => 'guru.catatan.index', 'icon' => 'fas fa-sticky-note'],
                 ['label' => 'Cetak Blangko', 'route' => 'guru.blangko.index', 'icon' => 'fas fa-print'],
             ],
         ];
 
-        // Only TU, Administrator, and Guru BK can access Database Siswa
         $pos = strtolower($user->position ?? '');
-        $isAuthorized = $role === 'admin' || $role === 'bk' || 
-                        str_contains($pos, 'tata usaha') || 
-                        str_contains($pos, 'tu') || 
-                        str_contains($pos, 'bk') || 
-                        str_contains($pos, 'administrator');
-
+        $isAuthorized = $role === 'admin' || $role === 'bk' || str_contains($pos, 'tata usaha') || str_contains($pos, 'tu') || str_contains($pos, 'bk') || str_contains($pos, 'administrator');
         if ($isAuthorized) {
-            $menus['DATABASE'] = [
-                ['label' => 'Database Siswa', 'route' => 'siswa.index', 'icon' => 'fas fa-users'],
-            ];
+            $menus['DATABASE'] = [['label' => 'Database Siswa', 'route' => 'siswa.index', 'icon' => 'fas fa-users']];
         }
     }
 @endphp
 
-<div :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-     class="fixed w-64 bg-[#1e293b] text-white flex flex-col transition-transform duration-300 z-50 h-screen overflow-y-auto">
+<aside id="main-sidebar" :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+       class="fixed top-0 left-0 w-64 {{ $bgSidebar }} text-white flex flex-col transition-transform duration-300 z-[60] h-screen overflow-hidden">
     
-    <!-- Logo Section -->
-    <div class="h-16 flex items-center px-6 flex-shrink-0">
-        <span class="text-white font-black text-xl tracking-tight">PRESENSI APP</span>
-    </div>
+    <div class="flex-shrink-0">
+        <!-- Logo Section -->
+        <div class="h-16 flex items-center px-8 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <span class="text-white font-black text-xl tracking-tight uppercase">Presensi App</span>
+            </div>
+        </div>
 
-    <!-- User Profile Section -->
-    <div class="px-6 py-8 flex flex-col items-center">
-        <img src="{{ $photoUrl }}" 
-             alt="Profile" 
-             class="w-20 h-20 rounded-full object-cover border-4 border-gray-400/30 shadow-lg mb-4">
-        <h3 class="text-white font-bold text-center text-sm leading-tight mb-2">{{ $name }}</h3>
-        <span class="px-3 py-1 bg-blue-600 text-[10px] font-bold uppercase rounded-full tracking-wider">
-            {{ strtoupper($position) }}
-        </span>
+        <!-- User Profile Section -->
+        <div class="px-8 py-10 flex flex-col items-center border-b border-white/10">
+            <img src="{{ $photoUrl }}" alt="Profile" class="w-20 h-20 rounded-full object-cover border-4 border-white/20 mb-4">
+            <h3 class="text-white font-bold text-center text-sm leading-tight mb-2">{{ $name }}</h3>
+            <span class="px-3 py-1 bg-white/20 text-white text-[10px] font-bold uppercase rounded-full tracking-widest">
+                {{ strtoupper($position) }}
+            </span>
+        </div>
     </div>
 
     <!-- Navigation Menu -->
-    <div class="flex-grow overflow-y-auto px-0 py-4 no-scrollbar">
+    <div class="flex-grow overflow-y-auto no-scrollbar py-6">
         <nav class="space-y-6">
             @foreach($menus as $section => $items)
             <div>
-                <h4 class="px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">{{ $section }}</h4>
-                <ul class="space-y-0">
+                <h4 class="px-8 text-[10px] font-bold text-white/40 uppercase tracking-widest mb-4">{{ $section }}</h4>
+                <ul class="space-y-1">
                     @foreach($items as $item)
-                    @php
-                        $isActive = request()->routeIs($item['route']);
-                    @endphp
+                    @php $isActive = request()->routeIs($item['route']); @endphp
                     <li>
                         <a href="{{ route($item['route']) }}" 
-                           class="flex items-center gap-4 px-6 py-3.5 transition-all duration-200 {{ $isActive ? 'bg-[#3b82f6] text-white' : 'text-gray-300 hover:bg-white/5 hover:text-white' }}">
-                            <i class="{{ $item['icon'] }} w-5 text-center"></i>
+                           class="flex items-center gap-4 px-8 py-3.5 transition-all duration-200 {{ $isActive ? $bgActive . ' border-l-4 border-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">
+                            <i class="{{ $item['icon'] }} w-5 text-center text-sm"></i>
                             <span class="text-sm font-medium">{{ $item['label'] }}</span>
                         </a>
                     </li>
@@ -115,4 +117,4 @@
             @endforeach
         </nav>
     </div>
-</div>
+</aside>

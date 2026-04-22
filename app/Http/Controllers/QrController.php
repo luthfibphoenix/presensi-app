@@ -13,15 +13,9 @@ use Carbon\Carbon;
 
 class QrController extends Controller
 {
-    protected static $jamMap = [
-        1  => '07:00', 2  => '07:45', 3  => '08:30', 4  => '09:15',
-        5  => '10:15', 6  => '11:00', 7  => '11:45', 8  => '12:30',
-        9  => '13:15', 10 => '14:00', 11 => '14:45', 12 => '15:30',
-    ];
-
     public static function getJamWaktu($jamKe)
     {
-        return self::$jamMap[$jamKe] ?? sprintf('%02d:00', 6 + $jamKe);
+        return Jadwal::getWaktu($jamKe);
     }
 
     public function jadwalHariIni(Request $request)
@@ -34,8 +28,8 @@ class QrController extends Controller
             ->orderBy('jam_mulai')
             ->get();
 
-        $jamMap = self::$jamMap;
-        $nowTime = Carbon::now()->format('H:i');
+        $jamMap = Jadwal::jamMap();
+        $nowTime = Carbon::now('Asia/Jakarta')->format('H:i');
 
         return view('guru.jadwal.index', compact('jadwals', 'jamMap', 'nowTime', 'hariIni'));
     }
@@ -48,8 +42,8 @@ class QrController extends Controller
             ->get();
 
         $hariIni = ucfirst(strtolower(Carbon::now()->locale('id')->isoFormat('dddd')));
-        $jamMap = self::$jamMap;
-        $nowTime = Carbon::now()->format('H:i');
+        $jamMap = Jadwal::jamMap();
+        $nowTime = Carbon::now('Asia/Jakarta')->format('H:i');
 
         return view('guru.jadwal.semua', compact('jadwals', 'jamMap', 'nowTime', 'hariIni'));
     }
@@ -144,18 +138,18 @@ class QrController extends Controller
         $jadwal    = $qrSession->jadwal;
         $qrUrl     = config('app.url') . '/siswa/scan/' . $qrSession->token;
         $expiredAt = Carbon::parse($qrSession->expired_at);
-        $jamMap    = self::$jamMap;
+        $jamMap    = Jadwal::jamMap();
 
-        $startTimeStr = $jamMap[$jadwal->jam_mulai] ?? '07:00';
-        $endTimeStartStr = $jamMap[$jadwal->jam_selesai] ?? '07:00';
+        $startTimeStr = Jadwal::getWaktu($jadwal->jam_mulai);
+        $endTimeStartStr = Jadwal::getWaktu($jadwal->jam_selesai);
         
-        $startTime = Carbon::createFromFormat('H:i', $startTimeStr);
-        $endTime = Carbon::createFromFormat('H:i', $endTimeStartStr)->addMinutes(45);
-        $now = now();
+        $startTime = Carbon::createFromFormat('H:i', $startTimeStr, 'Asia/Jakarta');
+        $endTime = Carbon::createFromFormat('H:i', $endTimeStartStr, 'Asia/Jakarta')->addMinutes(45);
+        $now = Carbon::now('Asia/Jakarta');
 
         // Status Waktu - QR tampil selama jam pelajaran berlangsung
-        $isWithinSchedule = ($now >= $startTime && $now <= $endTime);
-        $isPastSchedule   = ($now > $endTime);
+        $isWithinSchedule = ($now->greaterThanOrEqualTo($startTime) && $now->lessThanOrEqualTo($endTime));
+        $isPastSchedule   = ($now->greaterThan($endTime));
 
         $kelas      = Kelas::where('nama_kelas', $jadwal->kelas)->first();
         $totalSiswa = $kelas ? Siswa::where('kelas_id', $kelas->id)->count() : 0;
@@ -295,9 +289,9 @@ class QrController extends Controller
         }
 
         $jadwal = $qrSession->jadwal;
-        $startTimeStr = self::$jamMap[$jadwal->jam_mulai] ?? '07:00';
-        $startTime = Carbon::createFromFormat('H:i', $startTimeStr);
-        $now = now();
+        $startTimeStr = Jadwal::getWaktu($jadwal->jam_mulai);
+        $startTime = Carbon::createFromFormat('H:i', $startTimeStr, 'Asia/Jakarta');
+        $now = Carbon::now('Asia/Jakarta');
 
         $diffInMinutes = $startTime->diffInMinutes($now, false);
         $status = 'Hadir';

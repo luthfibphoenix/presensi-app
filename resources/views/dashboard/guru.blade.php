@@ -21,13 +21,15 @@
     $jadwalHariIni = \App\Models\Jadwal::where('user_id', auth()->id())->where('hari', $hariIni)->orderBy('jam_mulai', 'asc')->get();
     $kelasAktif = $jadwalHariIni->count();
 
+    $taughtJadwalIds = \App\Models\Jadwal::where('user_id', auth()->id())->pluck('id');
+
     $hadirHariIni = \App\Models\Presensi::whereDate('tanggal', today())
         ->where('status', 'Hadir')
-        ->whereIn('kelas', $taughtClasses)
+        ->whereIn('jadwal_id', $taughtJadwalIds)
         ->count();
         
     $totalPresensiHariIni = \App\Models\Presensi::whereDate('tanggal', today())
-        ->whereIn('kelas', $taughtClasses)
+        ->whereIn('jadwal_id', $taughtJadwalIds)
         ->count();
         
     $persentase = $totalPresensiHariIni > 0 ? round(($hadirHariIni / $totalPresensiHariIni) * 100) : 0;
@@ -108,27 +110,28 @@
     }
 }">
 
+<div class="h-full flex flex-col gap-4">
     @if($activeSession)
     {{-- Active Session Banner --}}
-    <div class="bg-white border-l-4 border-emerald-500 rounded-2xl shadow-sm p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-pulse-subtle">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
-                <i class="fas fa-broadcast-tower text-xl"></i>
+    <div class="bg-white border-l-4 border-emerald-500 rounded-xl shadow-sm p-3 flex flex-col md:flex-row items-center justify-between gap-3 flex-shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
+                <i class="fas fa-broadcast-tower"></i>
             </div>
             <div>
-                <h3 class="font-black text-gray-900 leading-tight">Sesi Presensi Aktif</h3>
-                <p class="text-sm text-gray-500">{{ $activeSession->jadwal->mata_pelajaran }} — <span class="font-bold text-emerald-600">Kelas {{ $activeSession->jadwal->kelas }}</span></p>
+                <h3 class="text-sm font-black text-gray-900 leading-tight">Sesi Presensi Aktif</h3>
+                <p class="text-[10px] text-gray-500">{{ $activeSession->jadwal->mata_pelajaran }} — <span class="font-bold text-emerald-600">Kelas {{ $activeSession->jadwal->kelas }}</span></p>
             </div>
         </div>
-        <div class="flex items-center gap-3">
-            <button @click="generateQR({{ $activeSession->jadwal_id }})" class="px-4 py-2 bg-emerald-50 text-emerald-700 font-bold rounded-xl hover:bg-emerald-100 transition flex items-center gap-2">
+        <div class="flex items-center gap-2">
+            <button @click="generateQR({{ $activeSession->jadwal_id }})" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-lg hover:bg-emerald-100 transition flex items-center gap-2">
                 <i class="fas fa-qrcode"></i> Tampilkan QR
             </button>
-            <form action="{{ route('dashboard.end_session') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin mengakhiri kelas? Siswa yang belum absen akan otomatis dicatat ALFA.')">
+            <form action="{{ route('dashboard.end_session') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin mengakhiri kelas?')">
                 @csrf
                 <input type="hidden" name="session_id" value="{{ $activeSession->id }}">
-                <button type="submit" class="px-4 py-2 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 shadow-lg shadow-red-200 transition flex items-center gap-2">
-                    <i class="fas fa-power-off"></i> Akhiri Kelas
+                <button type="submit" class="px-3 py-1.5 bg-red-500 text-white text-xs font-bold rounded-lg hover:bg-red-600 shadow-sm transition flex items-center gap-2">
+                    <i class="fas fa-power-off"></i> Akhiri
                 </button>
             </form>
         </div>
@@ -136,124 +139,129 @@
     @endif
     
     {{-- Welcome Banner --}}
-    <div class="bg-gradient-to-r from-[#2563eb] to-[#3b82f6] rounded-2xl shadow-lg p-10 text-white flex flex-col md:flex-row items-center justify-between relative overflow-hidden mb-8">
+    <div class="bg-gradient-to-r from-blue-900 to-blue-700 rounded-3xl shadow-lg py-8 px-10 text-white flex items-center justify-between relative overflow-hidden flex-shrink-0 my-4">
         <div class="relative z-10">
-            <h1 class="text-4xl font-bold mb-3">Selamat Datang, {{ auth()->user()->fullname }}!</h1>
-            <p class="text-blue-100 mb-8 max-w-xl text-sm leading-relaxed opacity-90">Kelola kelas, jadwal, dan presensi siswa dengan mudah. Ciptakan pengalaman belajar yang efisien dan terstruktur hari ini.</p>
+            <h1 class="text-2xl font-bold mb-1 tracking-tight">Selamat Datang, {{ auth()->user()->fullname }}!</h1>
+            <p class="text-blue-100 mb-6 max-w-xl text-sm opacity-80 leading-relaxed font-medium">Kelola kelas, jadwal, dan presensi siswa dengan mudah.</p>
             
-            <div class="flex flex-wrap gap-4">
-                <button @click="generateQR()" :disabled="loading" class="bg-white text-blue-700 hover:bg-gray-50 font-bold py-3 px-8 rounded-xl shadow-md transition-all flex items-center gap-3 disabled:opacity-70">
-                    <i class="fas fa-th-large" x-show="!loading"></i>
+            <div class="flex gap-3">
+                <button @click="generateQR()" :disabled="loading" class="bg-white text-blue-900 hover:bg-gray-50 font-bold py-3 px-8 rounded-xl shadow-sm text-sm transition-all flex items-center gap-2 disabled:opacity-70">
+                    <i class="fas fa-qrcode" x-show="!loading"></i>
                     <i class="fas fa-spinner fa-spin" x-show="loading"></i>
-                    Generate QR Code
+                    Generate QR
                 </button>
-                <a href="{{ route('jadwal.semua') }}" class="bg-transparent hover:bg-white/10 text-white border-2 border-white/50 font-bold py-3 px-8 rounded-xl transition-all flex items-center gap-3">
-                    <i class="fas fa-calendar-alt"></i> Lihat Semua Jadwal
+                <a href="{{ route('jadwal.semua') }}" class="bg-blue-600/30 hover:bg-blue-600/50 text-white border border-white/20 font-bold py-3 px-8 rounded-xl text-sm transition-all flex items-center gap-2">
+                    <i class="fas fa-calendar-alt"></i> Semua Jadwal
                 </a>
             </div>
         </div>
-        <div class="hidden lg:block relative z-10 opacity-20">
-            <i class="fas fa-chalkboard-teacher text-[180px]"></i>
+        <div class="hidden lg:block relative z-10 opacity-10">
+            <i class="fas fa-chalkboard-teacher text-8xl"></i>
         </div>
-        
-        <!-- Decorative subtle pattern -->
         <div class="absolute top-0 right-0 w-1/3 h-full bg-white/5 skew-x-12 transform origin-right"></div>
     </div>
 
     {{-- Stats Grid --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 flex-shrink-0 my-4">
         <!-- Total Siswa -->
-        <div class="bg-white rounded-2xl shadow-sm p-7 flex items-center gap-6 border border-gray-100">
-            <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                <i class="fas fa-users text-xl"></i>
+        <div class="bg-white rounded-2xl shadow-sm p-5 flex items-center gap-4 border border-gray-100">
+            <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 flex-shrink-0">
+                <i class="fas fa-users text-lg"></i>
             </div>
-            <div>
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Siswa</p>
-                <h3 class="text-3xl font-black text-gray-800">{{ $totalSiswa }}</h3>
+            <div class="min-w-0">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest truncate">Total Siswa</p>
+                <h3 class="text-3xl font-black text-gray-800 leading-none">{{ $totalSiswa }}</h3>
             </div>
         </div>
 
         <!-- Hadir Hari Ini -->
-        <div class="bg-white rounded-2xl shadow-sm p-7 flex items-center gap-6 border border-gray-100">
-            <div class="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
-                <i class="fas fa-user-check text-xl"></i>
+        <div class="bg-white rounded-2xl shadow-sm p-5 flex items-center gap-4 border border-gray-100">
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500 flex-shrink-0">
+                <i class="fas fa-user-check text-lg"></i>
             </div>
-            <div>
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Hadir Hari Ini</p>
-                <h3 class="text-3xl font-black text-gray-800">{{ $hadirHariIni }}</h3>
+            <div class="min-w-0">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest truncate">Hadir</p>
+                <h3 class="text-3xl font-black text-gray-800 leading-none">{{ $hadirHariIni }}</h3>
             </div>
         </div>
 
         <!-- Persentase -->
-        <div class="bg-white rounded-2xl shadow-sm p-7 flex items-center gap-6 border border-gray-100">
-            <div class="w-14 h-14 rounded-full bg-purple-50 flex items-center justify-center text-purple-500">
-                <i class="fas fa-chart-pie text-xl"></i>
+        <div class="bg-white rounded-2xl shadow-sm p-5 flex items-center gap-4 border border-gray-100">
+            <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-500 flex-shrink-0">
+                <i class="fas fa-chart-pie text-lg"></i>
             </div>
-            <div>
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Persentase</p>
-                <h3 class="text-3xl font-black text-gray-800">{{ $persentase }}%</h3>
+            <div class="min-w-0">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest truncate">Persentase</p>
+                <h3 class="text-3xl font-black text-gray-800 leading-none">{{ $persentase }}%</h3>
             </div>
         </div>
 
         <!-- Kelas Aktif -->
-        <div class="bg-white rounded-2xl shadow-sm p-7 flex items-center gap-6 border border-gray-100">
-            <div class="w-14 h-14 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
-                <i class="fas fa-desktop text-xl"></i>
+        <div class="bg-white rounded-2xl shadow-sm p-5 flex items-center gap-4 border border-gray-100">
+            <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 flex-shrink-0">
+                <i class="fas fa-desktop text-lg"></i>
             </div>
-            <div>
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Kelas Aktif (Hari Ini)</p>
-                <h3 class="text-3xl font-black text-gray-800">{{ $kelasAktif }}</h3>
+            <div class="min-w-0">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest truncate">Kelas Aktif</p>
+                <h3 class="text-3xl font-black text-gray-800 leading-none">{{ $kelasAktif }}</h3>
             </div>
         </div>
     </div>
 
     {{-- Today's Schedule List --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-8 py-6 flex justify-between items-center border-b border-gray-50">
-            <h2 class="text-lg font-bold text-gray-800 flex items-center gap-3">
-                <i class="fas fa-clock text-blue-600"></i> Jadwal Mengajar Hari Ini ({{ $hariIni }})
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 my-4">
+        <div class="px-8 py-4 flex justify-between items-center border-b border-gray-50 flex-shrink-0">
+            <h2 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-clock text-blue-600"></i> Jadwal Mengajar Hari Ini
             </h2>
             <span class="text-xs font-bold text-blue-600 bg-blue-50 px-4 py-1.5 rounded-full uppercase tracking-wider">
-                {{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMM YYYY') }}
+                {{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM YYYY') }}
             </span>
         </div>
         
-        <div class="p-8">
+        <div class="p-6 overflow-y-auto flex-1 no-scrollbar">
             @if($jadwalHariIni->count() > 0)
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     @foreach($jadwalHariIni as $jadwal)
-                        <div class="bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-lg transition-all group relative overflow-hidden">
+                        <div class="bg-gray-50/50 border border-gray-100 rounded-2xl p-5 hover:border-blue-200 transition-all group relative overflow-hidden">
                             <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
-                            <div class="flex justify-between items-start mb-4 pl-2">
-                                <div>
-                                    <span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest block mb-1">{{ $jadwal->mata_pelajaran }}</span>
-                                    <h3 class="text-2xl font-black text-gray-900 leading-tight">{{ $jadwal->kelas }}</h3>
+                            <div class="flex justify-between items-start mb-3 pl-2">
+                                <div class="min-w-0">
+                                    <span class="text-xs font-bold text-blue-500 uppercase tracking-widest block truncate">{{ $jadwal->mata_pelajaran }}</span>
+                                    <h3 class="text-base font-black text-gray-900 leading-tight truncate">{{ $jadwal->kelas }}</h3>
                                 </div>
-                                <div class="bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg text-[11px] font-black flex items-center gap-2">
-                                    <i class="fas fa-hourglass-half opacity-40"></i> Jam {{ $jadwal->jam_mulai }}-{{ $jadwal->jam_selesai }}
+                                <div class="bg-white border border-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-1 flex-shrink-0">
+                                    {{ jamPelajaranToWaktu($jadwal->jam_mulai) }} – {{ \Carbon\Carbon::createFromFormat('H:i', jamPelajaranToWaktu($jadwal->jam_selesai), 'Asia/Jakarta')->addMinutes(45)->format('H:i') }}
                                 </div>
                             </div>
                             <p class="text-xs text-gray-400 font-bold flex items-center gap-2 pl-2">
-                                <i class="fas fa-layer-group opacity-30 text-base"></i> Semester {{ $jadwal->semester }}
+                                <i class="fas fa-layer-group opacity-30"></i> Semester {{ $jadwal->semester }}
                             </p>
                         </div>
                     @endforeach
                 </div>
             @else
-                <div class="text-center py-20 bg-gray-50/50 rounded-3xl">
-                    <i class="fas fa-mug-hot text-5xl text-gray-200 mb-4 block"></i>
-                    <h3 class="text-xl font-bold text-gray-400">Tidak ada jadwal hari ini</h3>
+                <div class="h-full flex flex-col items-center justify-center opacity-40 py-10">
+                    <i class="fas fa-mug-hot text-4xl mb-4"></i>
+                    <p class="text-lg font-bold">Tidak ada jadwal hari ini</p>
                 </div>
             @endif
         </div>
     </div>
+</div>
 
     {{-- Modal QR Code --}}
     <div x-show="showQrModal" x-transition.opacity class="fixed inset-0 z-[60] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4" x-cloak>
         <div @click.outside="showQrModal = false" class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
             <div class="p-6 text-center border-b border-gray-50 bg-gray-50/50">
-                <h3 class="text-xl font-black text-gray-900" x-text="qrData?.mapel"></h3>
-                <p class="text-sm font-bold text-blue-600" x-text="qrData?.kelas"></p>
+                <h3 class="text-xl font-black text-gray-900 mb-1" x-text="qrData?.mapel"></h3>
+                <div class="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                    <span class="text-blue-600" x-text="qrData?.kelas"></span>
+                    <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                    <span x-text="qrData?.hari"></span>
+                    <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                    <span x-text="qrData?.jam"></span>
+                </div>
             </div>
             <div class="p-8 flex flex-col items-center">
                 <div class="bg-white p-4 rounded-3xl shadow-inner border border-gray-100 mb-6 group transition-all duration-500 hover:shadow-xl overflow-hidden" x-html="qrData?.qr_code">

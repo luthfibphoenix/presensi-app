@@ -22,8 +22,8 @@
                 @forelse($presensis as $presensi)
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ \Carbon\Carbon::parse($presensi->tanggal)->format('d M Y') }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{{ $presensi->nama_siswa }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $presensi->kelas }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{{ $presensi->siswa->nama ?? 'N/A' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $presensi->jadwal->kelas ?? 'N/A' }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         @if($presensi->status == 'Hadir')
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Hadir</span>
