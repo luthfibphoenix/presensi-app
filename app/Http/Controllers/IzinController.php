@@ -153,6 +153,7 @@ class IzinController extends Controller
     public function print($id)
     {
         $izin = Izin::with(['siswa.kelas', 'approvedBy'])->findOrFail($id);
-        return view('izin.print', compact('izin'));
+        $kepala = \App\Models\User::where('position', 'like', '%Kepala Sekolah%')->first();
+        return view('izin.print', compact('izin', 'kepala'));
     }
 }
