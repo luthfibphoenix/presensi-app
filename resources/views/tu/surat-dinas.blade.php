@@ -3,7 +3,7 @@
 @section('title', 'Surat Perjalanan Dinas')
 
 @section('content')
-<div class="h-full flex flex-col gap-6 overflow-hidden" x-data="{
+<div class="h-full flex flex-col gap-6 overflow-y-auto no-scrollbar pb-24 md:pb-10" x-data="{
     searchGuru: '',
     selectedGuruId: null,
     gurus: {{ json_encode($gurus) }},
@@ -40,7 +40,7 @@
         });
     }
 }" x-init="fetchProvinces()">
-    <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-8 flex-1 flex flex-col overflow-hidden">
+    <div class="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-sm p-5 md:p-8 flex-shrink-0 flex flex-col">
         <div class="flex items-center gap-4 mb-8 flex-shrink-0">
             <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
                 <i class="fas fa-plane-departure text-xl"></i>
@@ -147,12 +147,12 @@
                         </div>
                     </div>
 
-                    <div class="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between sticky bottom-0 bg-white">
-                        <div class="flex items-center gap-3 text-amber-500">
+                    <div class="mt-auto pt-6 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between sticky bottom-0 bg-white gap-4">
+                        <div class="flex items-center gap-3 text-amber-500 order-2 md:order-1">
                             <i class="fas fa-exclamation-circle text-sm"></i>
-                            <p class="text-[10px] font-bold uppercase tracking-tight">Pastikan data wilayah dan guru sudah benar.</p>
+                            <p class="text-[10px] font-bold uppercase tracking-tight text-center md:text-left">Pastikan data wilayah dan guru sudah benar.</p>
                         </div>
-                        <button type="submit" class="bg-blue-600 text-white font-black py-4 px-10 rounded-2xl shadow-lg hover:bg-blue-700 active:scale-95 transition-all flex items-center gap-3 text-xs uppercase tracking-widest">
+                        <button type="submit" class="w-full md:w-auto bg-blue-600 text-white font-black py-4 px-10 rounded-2xl shadow-lg hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-3 text-xs uppercase tracking-widest order-1 md:order-2">
                             <i class="fas fa-print text-sm"></i> Cetak Surat Tugas
                         </button>
                     </div>

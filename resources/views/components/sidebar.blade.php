@@ -7,20 +7,20 @@
     
     $pos = strtolower($user->position ?? '');
     if ($role === 'siswa' || str_contains($pos, 'siswa')) {
-        $bgSidebar = 'bg-emerald-900';
-        $bgActive = 'bg-emerald-700/50';
+        $bgSidebar = 'bg-emerald-900 dark:bg-emerald-950';
+        $bgActive = 'bg-white/10';
     } elseif (str_contains($pos, 'kepala sekolah')) {
-        $bgSidebar = 'bg-zinc-950';
-        $bgActive = 'bg-zinc-800/50';
+        $bgSidebar = 'bg-slate-900 dark:bg-slate-950';
+        $bgActive = 'bg-white/10';
     } elseif (str_contains($pos, 'piket')) {
-        $bgSidebar = 'bg-orange-700';
-        $bgActive = 'bg-orange-600/50';
+        $bgSidebar = 'bg-indigo-900 dark:bg-indigo-950';
+        $bgActive = 'bg-white/10';
     } elseif ($role === 'admin' || str_contains($pos, 'admin') || str_contains($pos, 'administrator')) {
-        $bgSidebar = 'bg-purple-900';
-        $bgActive = 'bg-purple-700/50';
+        $bgSidebar = 'bg-purple-900 dark:bg-purple-950';
+        $bgActive = 'bg-white/10';
     } else {
-        $bgSidebar = 'bg-blue-900';
-        $bgActive = 'bg-blue-700/50';
+        $bgSidebar = 'bg-[#1e293b] dark:bg-[#0f172a]';
+        $bgActive = 'bg-blue-500/20';
     }
 
     $fallbackUrl = 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=fff&color=333&bold=true&size=128';
@@ -121,11 +121,11 @@
                 ['label' => 'Semua Jadwal', 'route' => 'jadwal.semua', 'icon' => 'fas fa-calendar-alt'],
                 ['label' => 'Status Kehadiran', 'route' => 'guru.qr.status.index', 'icon' => 'fas fa-clipboard-check'],
             ],
-            'ADMINISTRASI GURU' => [
+            'ADMINISTRASI GURU' => array_filter([
                 ['label' => 'Cetak Cover', 'route' => 'guru.blangko.cover', 'icon' => 'fas fa-file-alt'],
                 ['label' => 'Cetak Blangko', 'route' => 'guru.blangko.index', 'icon' => 'fas fa-print'],
-                ['label' => 'Siswa Wali', 'route' => 'siswa.index', 'icon' => 'fas fa-users'],
-            ],
+                $user->is_wali ? ['label' => 'Siswa Wali', 'route' => 'siswa.index', 'icon' => 'fas fa-users'] : null,
+            ]),
         ];
     }
 @endphp
@@ -136,19 +136,28 @@
     
     <div class="flex-shrink-0">
         <!-- Logo Section -->
-        <div class="h-16 flex items-center justify-between px-8 border-b border-white/10">
-            <div class="flex items-center gap-3">
-                <span class="text-white font-black text-xl tracking-tight uppercase">Presensi App</span>
+        <div class="h-20 flex items-center justify-between px-8 border-b border-white/5">
+            <div class="flex items-center gap-4">
+                <div class="p-1.5 bg-white/10 rounded-xl backdrop-blur-md border border-white/10 shadow-inner">
+                    <img src="{{ asset('images/logo-kanan.png') }}" alt="Logo SMKN7" class="w-8 h-8 object-contain">
+                </div>
+                <div class="leading-tight">
+                    <span class="text-white font-black text-sm tracking-tight uppercase block">SMK Negeri 7</span>
+                    <span class="text-white/40 font-bold text-[9px] uppercase tracking-[0.2em] block">Purworejo</span>
+                </div>
             </div>
-            <button @click="sidebarOpen = false" class="lg:hidden text-white/50 hover:text-white transition">
+            <button @click="sidebarOpen = false" class="lg:hidden text-white/30 hover:text-white transition-colors duration-300">
                 <i class="fas fa-times text-xl"></i>
             </button>
         </div>
 
         <!-- User Profile Section -->
-        <div class="px-8 py-10 flex flex-col items-center border-b border-white/10">
-            <img src="{{ $photoUrl }}" alt="Profile" class="w-20 h-20 rounded-full object-cover border-4 border-white/20 mb-4">
-            <h3 class="text-white font-bold text-center text-sm leading-tight mb-2">{{ $name }}</h3>
+        <div class="px-8 py-12 flex flex-col items-center border-b border-white/5 bg-black/5">
+            <div class="relative mb-5">
+                <div class="absolute inset-0 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-full blur-md opacity-50 animate-pulse"></div>
+                <img src="{{ $photoUrl }}" alt="Profile" class="relative w-24 h-24 rounded-full object-cover border-4 border-white/10 shadow-2xl">
+            </div>
+            <h3 class="text-white font-black text-center text-sm leading-snug mb-3 tracking-wide">{{ $name }}</h3>
             @if($role === 'piket')
                 <div class="flex flex-col items-center gap-1.5">
                     <span class="px-3 py-1 bg-white text-orange-700 text-[10px] font-black uppercase rounded-full tracking-widest shadow-lg">

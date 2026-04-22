@@ -54,11 +54,12 @@
         this.loading = true;
         this.showChoiceModal = false;
         try {
-            const response = await fetch('{{ route('dashboard.generate_qr') }}', {
+            const response = await fetch('/dashboard/generate-qr', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']')?.content || '{{ csrf_token() }}',
+                    'ngrok-skip-browser-warning': 'true'
                 },
                 body: JSON.stringify({ jadwal_id: jadwalId })
             });
@@ -80,7 +81,7 @@
             }
         } catch (e) {
             console.error(e);
-            alert('Terjadi kesalahan sistem');
+            alert('Error: ' + e.message + '\n\nCoba refresh halaman dan ulangi.');
         } finally {
             this.loading = false;
         }

@@ -9,6 +9,7 @@
     $secontsLeft   = max(0, \Carbon\Carbon::now('Asia/Jakarta')->diffInSeconds($expiredAt, false));
 @endphp
 
+<div class="h-full overflow-y-auto no-scrollbar pb-24 md:pb-6">
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
     {{-- ── Kolom Kiri: Info Kelas & QR ── --}}
@@ -111,7 +112,7 @@
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto max-h-[calc(100vh-18rem)]">
+        <div class="flex-1 overflow-y-auto max-h-64 lg:max-h-[calc(100vh-18rem)]">
             <ul id="daftar-hadir" class="divide-y divide-gray-50">
                 @foreach($allStudents as $i => $student)
                 @php
@@ -159,8 +160,8 @@
         </div>
         <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-400 text-right">
             Terakhir refresh: <span id="last-refresh">{{ now()->format('H:i:s') }}</span>
-        </div>
     </div>
+</div>
 </div>
 
 @push('scripts')

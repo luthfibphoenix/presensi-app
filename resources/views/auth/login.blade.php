@@ -34,7 +34,7 @@
         <form action="{{ route('login.post') }}" method="POST">
             @csrf
             <div class="mb-5">
-                <label for="username" class="block text-slate-700 text-sm font-semibold mb-2">Username / NIP</label>
+                <label for="username" class="block text-slate-700 text-sm font-semibold mb-2">Username</label>
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <i class="fas fa-user text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>

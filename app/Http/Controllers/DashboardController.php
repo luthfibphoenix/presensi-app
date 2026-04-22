@@ -242,7 +242,7 @@ class DashboardController extends Controller
             'expired_at' => $expiredAt,
         ]);
 
-        $qrUrl = url('/siswa/scan/' . $token);
+        $qrUrl = config('app.url') . '/siswa/scan/' . $token . '?ngrok-skip-browser-warning=true';
         $qrCode = (string) \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(300)->margin(1)->generate($qrUrl);
 
         return response()->json([
@@ -254,7 +254,7 @@ class DashboardController extends Controller
             'hari'  => $jadwal->hari,
             'jam' => jamPelajaranToWaktu($jadwal->jam_mulai) . ' - ' . \Carbon\Carbon::createFromFormat('H:i', jamPelajaranToWaktu($jadwal->jam_selesai), 'Asia/Jakarta')->addMinutes(45)->format('H:i'),
             'expired_at' => $expiredAt->toDateTimeString(),
-            'redirect_url' => route('guru.mulai.kelas', $session->id)
+            'redirect_url' => route('guru.mulai.kelas', $session->id) . '?ngrok-skip-browser-warning=true'
         ]);
     }
 }

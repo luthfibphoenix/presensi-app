@@ -136,7 +136,7 @@ class QrController extends Controller
         }
 
         $jadwal    = $qrSession->jadwal;
-        $qrUrl     = config('app.url') . '/siswa/scan/' . $qrSession->token;
+        $qrUrl     = config('app.url') . '/siswa/scan/' . $qrSession->token . '?ngrok-skip-browser-warning=true';
         $expiredAt = Carbon::parse($qrSession->expired_at);
         $jamMap    = Jadwal::jamMap();
 

@@ -3,7 +3,7 @@
 @section('title', 'Dashboard Tata Usaha')
 
 @section('content')
-<div class="h-full flex flex-col gap-6 overflow-y-auto no-scrollbar pb-10">
+<div class="h-full flex flex-col gap-4 md:gap-6 overflow-y-auto no-scrollbar pb-24 md:pb-10">
     {{-- Welcome Banner --}}
     <div class="bg-gradient-to-br from-indigo-900 via-slate-900 to-black rounded-3xl shadow-lg p-6 md:p-8 text-white relative overflow-hidden border border-slate-700 flex-shrink-0">
         <div class="relative z-10">
