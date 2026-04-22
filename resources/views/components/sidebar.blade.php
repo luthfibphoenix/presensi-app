@@ -43,6 +43,7 @@
             'ADMINISTRASI' => [
                 ['label' => 'Rekap Jurnal', 'route' => 'admin.jurnal', 'icon' => 'fas fa-book'],
                 ['label' => 'Reset Password', 'route' => 'admin.password.index', 'icon' => 'fas fa-key'],
+                ['label' => 'Rekap Harian', 'route' => 'laporan.rekap_harian', 'icon' => 'fas fa-calendar-check'],
                 ['label' => 'Laporan Kehadiran', 'route' => 'laporan.index', 'icon' => 'fas fa-chart-line'],
             ],
         ];
@@ -54,6 +55,7 @@
             'ADMINISTRASI TU' => [
                 ['label' => 'Surat Dinas (SPPD)', 'route' => 'tu.surat_dinas', 'icon' => 'fas fa-plane-departure'],
                 ['label' => 'Database Siswa', 'route' => 'siswa.index', 'icon' => 'fas fa-users'],
+                ['label' => 'Rekap Harian', 'route' => 'laporan.rekap_harian', 'icon' => 'fas fa-calendar-check'],
             ],
         ];
     } elseif (str_contains($pos, 'bk') || str_contains($pos, 'bimbingan konseling')) {
@@ -71,7 +73,8 @@
         $menus = [
             'UTAMA' => [
                 ['label' => 'Beranda', 'route' => 'dashboard', 'icon' => 'fas fa-th-large'],
-                ['label' => 'Pengajuan Izin', 'route' => 'izin.guru', 'icon' => 'fas fa-file-signature'],
+                ['label' => 'Surat Izin Siswa', 'route' => 'izin.guru', 'icon' => 'fas fa-file-signature'],
+                ['label' => 'Rekap Harian', 'route' => 'laporan.rekap_harian', 'icon' => 'fas fa-calendar-check'],
                 ['label' => 'Laporan Kehadiran', 'route' => 'laporan.index', 'icon' => 'fas fa-chart-line'],
             ],
         ];
@@ -98,6 +101,7 @@
             ],
             'LAPORAN GLOBAL' => [
                 ['label' => 'Laporan Kehadiran', 'route' => 'laporan.index', 'icon' => 'fas fa-chart-line'],
+                ['label' => 'Rekap Harian', 'route' => 'laporan.rekap_harian', 'icon' => 'fas fa-calendar-check'],
                 ['label' => 'Rekap Jurnal', 'route' => 'admin.jurnal', 'icon' => 'fas fa-book'],
                 ['label' => 'Izin Guru/Siswa', 'route' => 'izin.guru', 'icon' => 'fas fa-file-signature'],
             ],
@@ -105,32 +109,30 @@
     } else {
         $menus = [
             'UTAMA' => [
-                ['label' => 'Beranda', 'route' => 'dashboard', 'icon' => 'fas fa-th-large'],
+                ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'fas fa-th-large'],
+            ],
+            'AKADEMIK' => [
+                ['label' => 'Jurnal Saya', 'route' => 'guru.jurnal.index', 'icon' => 'fas fa-book'],
+                ['label' => 'Penilaian', 'route' => 'guru.penilaian.index', 'icon' => 'fas fa-star'],
+                ['label' => 'Catatan Siswa', 'route' => 'guru.catatan.index', 'icon' => 'fas fa-sticky-note'],
             ],
             'LAYANAN PRESENSI' => [
                 ['label' => 'Jadwal Hari Ini', 'route' => 'jadwal.hari.ini', 'icon' => 'fas fa-calendar-day'],
                 ['label' => 'Semua Jadwal', 'route' => 'jadwal.semua', 'icon' => 'fas fa-calendar-alt'],
                 ['label' => 'Status Kehadiran', 'route' => 'guru.qr.status.index', 'icon' => 'fas fa-clipboard-check'],
             ],
-            'AKADEMIK' => [
-                ['label' => 'Jurnal Saya', 'route' => 'guru.jurnal.index', 'icon' => 'fas fa-book'],
-                ['label' => 'Penilaian', 'route' => 'guru.penilaian.index', 'icon' => 'fas fa-star'],
-                ['label' => 'Catatan Siswa', 'route' => 'guru.catatan.index', 'icon' => 'fas fa-sticky-note'],
+            'ADMINISTRASI GURU' => [
+                ['label' => 'Cetak Cover', 'route' => 'guru.blangko.cover', 'icon' => 'fas fa-file-alt'],
                 ['label' => 'Cetak Blangko', 'route' => 'guru.blangko.index', 'icon' => 'fas fa-print'],
+                ['label' => 'Siswa Wali', 'route' => 'siswa.index', 'icon' => 'fas fa-users'],
             ],
         ];
-
-        $pos = strtolower($user->position ?? '');
-        $isAuthorized = $role === 'admin' || $role === 'bk' || str_contains($pos, 'tata usaha') || str_contains($pos, 'tu') || str_contains($pos, 'bk') || str_contains($pos, 'administrator');
-        if ($isAuthorized) {
-            $menus['DATABASE'] = [['label' => 'Database Siswa', 'route' => 'siswa.index', 'icon' => 'fas fa-users']];
-        }
     }
 @endphp
 
 <aside id="main-sidebar" 
        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-       class="fixed top-0 left-0 w-64 {{ $bgSidebar }} text-white flex flex-col transition-transform duration-300 z-[60] h-screen overflow-hidden -translate-x-full lg:translate-x-0 {{ auth('siswa')->check() ? 'hidden lg:flex' : 'flex' }}">
+       class="fixed top-0 left-0 w-72 {{ $bgSidebar }} text-white flex flex-col transition-transform duration-300 z-[60] h-screen overflow-hidden -translate-x-full lg:translate-x-0 {{ auth('siswa')->check() ? 'hidden lg:flex' : 'flex' }}">
     
     <div class="flex-shrink-0">
         <!-- Logo Section -->
@@ -182,11 +184,16 @@
                 <ul class="space-y-1">
                     @foreach($items as $item)
                     @php $isActive = request()->routeIs($item['route']); @endphp
-                    <li>
+                    <li class="px-4 relative group">
+                        @if($isActive)
+                            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-white rounded-r-full shadow-[0_0_15px_rgba(255,255,255,0.5)] z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"></div>
+                        @endif
                         <a href="{{ route($item['route']) }}" 
-                           class="group flex items-center gap-4 px-8 py-3.5 transition-all duration-300 {{ $isActive ? $bgActive . ' border-l-4 border-white' : 'text-white/70 hover:bg-white/5 hover:text-white hover:pl-10' }}">
-                            <i class="{{ $item['icon'] }} w-5 text-center text-sm transition-transform group-hover:scale-110"></i>
-                            <span class="text-sm font-medium transition-all group-hover:tracking-wide">{{ $item['label'] }}</span>
+                           class="group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.95] {{ $isActive ? 'bg-white/10 ring-1 ring-white/20 shadow-xl backdrop-blur-md' : 'text-white/50 hover:bg-white/5 hover:text-white hover:translate-x-2' }}">
+                            <div class="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] {{ $isActive ? 'bg-white text-blue-900 shadow-[0_0_20px_rgba(255,255,255,0.3)]' : 'bg-white/5 text-white/40 group-hover:bg-white/20 group-hover:text-white' }}">
+                                <i class="{{ $item['icon'] }} text-sm"></i>
+                            </div>
+                            <span class="text-sm font-black tracking-tight transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] {{ $isActive ? 'text-white' : 'text-white/50 group-hover:text-white' }}">{{ $item['label'] }}</span>
                         </a>
                     </li>
                     @endforeach

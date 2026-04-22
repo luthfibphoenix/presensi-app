@@ -3,190 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surat Ijin Masuk Kelas - {{ $izin->siswa->nama }}</title>
+    <title>Cetak Surat Izin - {{ $izin->siswa->nama }}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Times New Roman', Times, serif; color: #000; background: #fff; }
+        
+        .no-print { text-align: center; padding: 15px; background: #f4f4f4; border-bottom: 1px solid #ddd; }
+        .no-print button { padding: 8px 20px; cursor: pointer; border-radius: 6px; border: 1px solid #ccc; font-weight: bold; }
 
-        body {
-            font-family: 'Times New Roman', Times, serif;
-            color: #000;
-            background: #fff;
-            padding: 20px 40px;
-        }
+        .page-wrapper { width: 210mm; margin: 0 auto; }
+        .surat-izin-copy { height: 99mm; padding: 8mm 15mm; overflow: hidden; position: relative; }
+        .divider-dashed { border: none; border-top: 1px dashed #000; width: 100%; margin: 0; }
 
-        /* Tombol aksi - hilang saat print */
-        .no-print {
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 10px;
-            background: #f4f4f4;
-            border-radius: 4px;
-        }
-        .no-print button {
-            padding: 8px 20px;
-            margin: 0 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
+        .header { display: flex; align-items: center; margin-bottom: 8px; }
+        .header img { width: 45px; height: 45px; }
+        .header-text { flex: 1; text-align: center; }
+        .header-text h2 { font-size: 11pt; text-transform: uppercase; margin: 0; font-weight: bold; }
+        .header-text p { font-size: 7pt; margin: 0; }
 
-        /* Header surat */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-bottom: 6px;
-        }
-        .header img {
-            width: 70px;
-            height: 70px;
-            object-fit: contain;
-        }
-        .header-text {
-            text-align: center;
-            flex: 1;
-            padding: 0 10px;
-        }
-        .header-text p {
-            font-size: 11px;
-            line-height: 1.4;
-        }
-        .header-text .nama-sekolah {
-            font-size: 15px;
-            font-weight: bold;
-            text-transform: uppercase;
-            line-height: 1.6;
-        }
+        .judul-surat { text-align: center; font-size: 10pt; font-weight: bold; text-decoration: underline; margin-bottom: 8px; text-transform: uppercase; }
+        .kalimat { font-size: 9pt; margin-bottom: 5px; }
+        
+        .info-table { width: 100%; font-size: 9pt; margin-bottom: 10px; }
+        .info-table td { padding: 1px 0; }
+        .info-table .label { width: 70px; }
+        
+        .footer { float: right; width: 180px; text-align: center; font-size: 9pt; }
+        .ttd-space { height: 35px; }
+        .nama-ttd { font-weight: bold; text-decoration: underline; }
 
-        /* Garis header */
-        .garis-tebal {
-            border: none;
-            border-top: 4px solid #000;
-            margin: 0;
-        }
-        .garis-tipis {
-            border: none;
-            border-top: 1.5px solid #000;
-            margin: 2px 0 0 0;
-        }
-
-        /* Isi surat */
-        .content {
-            margin-top: 25px;
-        }
-        .judul-surat {
-            text-align: center;
-            font-size: 14px;
-            font-weight: bold;
-            text-decoration: underline;
-            text-transform: uppercase;
-            margin-bottom: 16px;
-            letter-spacing: 1px;
-        }
-        .kalimat-pembuka {
-            font-size: 12px;
-            margin-bottom: 12px;
-        }
-        .info-table {
-            width: 60%;
-            margin-bottom: 30px;
-        }
-        .info-table td {
-            font-size: 12px;
-            padding: 3px 0;
-            vertical-align: top;
-        }
-        .info-table .label { width: 100px; }
-        .info-table .sep { width: 15px; }
-
-        /* Footer TTD */
-        .footer {
-            margin-top: 40px;
-            float: right;
-            width: 220px;
-            text-align: center;
-            font-size: 12px;
-        }
-        .footer .ttd-space {
-            height: 70px;
-        }
-        .footer .nama-ttd {
-            font-weight: bold;
-            text-decoration: underline;
-        }
-
-        /* Print settings */
         @media print {
             .no-print { display: none !important; }
-            body { padding: 10px 20px; }
-            @page {
-                size: A4 landscape;
-                margin: 15mm;
-            }
+            @page { size: A4 portrait; margin: 0; }
+            .page-wrapper { width: 100%; }
         }
     </style>
 </head>
 <body onload="window.print()">
 
     <div class="no-print">
-        <button onclick="window.print()">🖨️ Cetak</button>
-        <button onclick="history.back()">← Kembali</button>
+        <button onclick="window.print()">🖨️ Cetak (3 Salinan per Lembar)</button>
+        <button onclick="history.back()" style="margin-left: 10px;">← Kembali</button>
     </div>
 
-    {{-- KOP SURAT --}}
-    <x-kop-surat />
+    <div class="page-wrapper">
+        @for($i = 0; $i < 3; $i++)
+        <div class="surat-izin-copy">
+            {{-- KOP --}}
+            <div class="header">
+                <img src="https://ui-avatars.com/api/?name=SMK&size=128&background=000&color=fff" alt="Logo">
+                <div class="header-text">
+                    <h2>SMK NEGERI 7 PURWOREJO</h2>
+                    <p>Jl. Cangkrep-Bagelen Km 7 Desa Kemanukan, Purworejo</p>
+                    <p>Telp: (0275) 2973748 | Email: smkn7purworejo@gmail.com</p>
+                </div>
+            </div>
+            <div style="border-bottom: 1.5px solid #000; margin-bottom: 8px;"></div>
 
-    {{-- ISI SURAT --}}
-    @php
-        $titles = [
-            'Masuk Telat' => 'Surat Ijin Masuk Kelas',
-            'Keluar Sekolah' => 'Surat Ijin Keluar Sekolah',
-            'Sakit' => 'Surat Keterangan Sakit',
-            'Izin' => 'Surat Keterangan Izin',
-        ];
-        $title = $titles[$izin->tipe] ?? 'Surat Keterangan Izin';
+            @php
+                $titles = [
+                    'Masuk Telat' => 'Surat Ijin Masuk Kelas',
+                    'Keluar Sekolah' => 'Surat Ijin Keluar Sekolah',
+                    'Sakit' => 'Surat Keterangan Sakit',
+                    'Izin' => 'Surat Keterangan Izin',
+                ];
+                $title = $titles[$izin->tipe] ?? 'Surat Keterangan Izin';
 
-        $messages = [
-            'Masuk Telat' => 'Diberitahukan dengan hormat, bahwa siswa di bawah ini diijinkan untuk mengikuti kegiatan belajar di kelas:',
-            'Keluar Sekolah' => 'Diberitahukan dengan hormat, bahwa siswa di bawah ini diijinkan untuk meninggalkan lingkungan sekolah:',
-            'Sakit' => 'Diberitahukan dengan hormat, bahwa siswa di bawah ini berhalangan mengikuti kegiatan belajar karena sakit:',
-            'Izin' => 'Diberitahukan dengan hormat, bahwa siswa di bawah ini berhalangan mengikuti kegiatan belajar karena ada kepentingan/keperluan:',
-        ];
-        $message = $messages[$izin->tipe] ?? 'Diberitahukan dengan hormat, bahwa siswa di bawah ini:';
-    @endphp
+                $messages = [
+                    'Masuk Telat' => 'Diberikan ijin kepada siswa di bawah ini untuk mengikuti KBM karena terlambat:',
+                    'Keluar Sekolah' => 'Diberikan ijin kepada siswa di bawah ini untuk meninggalkan sekolah karena:',
+                    'Sakit' => 'Siswa di bawah ini berhalangan mengikuti KBM karena sakit:',
+                    'Izin' => 'Siswa di bawah ini berhalangan mengikuti KBM karena kepentingan keluarga:',
+                ];
+                $message = $messages[$izin->tipe] ?? 'Diberikan ijin kepada siswa:';
+            @endphp
 
-    <div class="content">
-        <div class="judul-surat">{{ $title }}</div>
+            <div class="judul-surat">{{ $title }}</div>
+            <p class="kalimat">{{ $message }}</p>
 
-        <p class="kalimat-pembuka">
-            {{ $message }}
-        </p>
+            <table class="info-table">
+                <tr>
+                    <td class="label">Nama</td>
+                    <td width="10">:</td>
+                    <td><strong>{{ $izin->siswa->nama }}</strong></td>
+                </tr>
+                <tr>
+                    <td class="label">Kelas</td>
+                    <td>:</td>
+                    <td>{{ $izin->siswa->kelas->nama_kelas ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Alasan</td>
+                    <td>:</td>
+                    <td>{{ $izin->alasan }}</td>
+                </tr>
+            </table>
 
-        <table class="info-table">
-            <tr>
-                <td class="label">Nama</td>
-                <td class="sep">:</td>
-                <td>{{ $izin->siswa->nama }}</td>
-            </tr>
-            <tr>
-                <td class="label">Kelas</td>
-                <td class="sep">:</td>
-                <td>{{ $izin->siswa->kelas->nama_kelas ?? '-' }}</td>
-            </tr>
-            <tr>
-                <td class="label">Alasan</td>
-                <td class="sep">:</td>
-                <td>{{ $izin->alasan }}</td>
-            </tr>
-        </table>
-
-        {{-- FOOTER TTD --}}
-        <div class="footer">
-            <p>Purworejo, {{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM YYYY') }}</p>
-            <p>Guru Piket,</p>
-            <div class="ttd-space"></div>
-            <p class="nama-ttd">{{ auth('web')->user()->fullname ?? '.........................' }}</p>
-            <p>NIP. {{ auth('web')->user()->nip ?? '-' }}</p>
+            <div class="footer">
+                <p>Purworejo, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
+                <p>Petugas Piket,</p>
+                <div class="ttd-space"></div>
+                <p class="nama-ttd">{{ $izin->petugas_piket ?? auth('web')->user()->fullname }}</p>
+                <p>NIP. {{ $izin->approvedBy->nip ?? auth('web')->user()->nip ?? '-' }}</p>
+            </div>
         </div>
+        @if($i < 2)
+            <div class="divider-dashed"></div>
+        @endif
+        @endfor
     </div>
 
 </body>

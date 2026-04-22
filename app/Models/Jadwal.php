@@ -32,6 +32,11 @@ class Jadwal extends Model
         ];
     }
 
+    public function qrSessions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(QrSession::class, 'jadwal_id');
+    }
+
     public static function getWaktu($jamKe)
     {
         return self::jamMap()[$jamKe] ?? sprintf('%02d:00', 6 + (int)$jamKe);

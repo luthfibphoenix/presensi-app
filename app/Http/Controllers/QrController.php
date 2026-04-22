@@ -152,6 +152,12 @@ class QrController extends Controller
         $isPastSchedule   = ($now->greaterThan($endTime));
 
         $kelas      = Kelas::where('nama_kelas', $jadwal->kelas)->first();
+        
+        // Auto-sync Izin before displaying monitoring
+        if ($kelas) {
+            \App\Http\Controllers\IzinController::syncAllForClass($jadwal->kelas, now()->toDateString());
+        }
+
         $totalSiswa = $kelas ? Siswa::where('kelas_id', $kelas->id)->count() : 0;
 
         // Fetch all students with their attendance status
@@ -207,6 +213,9 @@ class QrController extends Controller
         if (!$kelas) {
             return response()->json(['students' => [], 'hadir_count' => 0, 'total_count' => 0]);
         }
+
+        // Auto-sync Izin before returning JSON status
+        \App\Http\Controllers\IzinController::syncAllForClass($jadwal->kelas, now()->toDateString());
 
         $allStudents = Siswa::where('kelas_id', $kelas->id)->orderBy('nama')->get();
         $presensis   = Presensi::where('jadwal_id', $jadwal->id)

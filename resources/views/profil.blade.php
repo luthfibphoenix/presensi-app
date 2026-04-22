@@ -22,7 +22,7 @@
     $fallbackUrl = 'https://ui-avatars.com/api/?name=' . urlencode($user->fullname ?? 'User') . '&background=f1f5f9&color=334155&bold=true&size=200';
 @endphp
 
-<div class="max-w-4xl mx-auto space-y-6 pb-12">
+<div class="h-full overflow-y-auto no-scrollbar pb-20 max-w-4xl mx-auto space-y-6">
     {{-- Profile Header Card --}}
     <div class="bg-white rounded-3xl shadow-xl shadow-{{ $theme }}-900/5 overflow-hidden border border-gray-100">
         {{-- Elegant Gradient Banner --}}

@@ -35,7 +35,7 @@
     $persentase = $totalPresensiHariIni > 0 ? round(($hadirHariIni / $totalPresensiHariIni) * 100) : 0;
 @endphp
 
-<div class="max-w-7xl mx-auto space-y-6" x-data="{ 
+<div class="h-full flex flex-col gap-6 overflow-y-auto no-scrollbar pb-10" x-data="{ 
     showQrModal: false, 
     showChoiceModal: false,
     loading: false,
@@ -60,6 +60,10 @@
             const data = await response.json();
             
             if (data.status === 'success') {
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                    return;
+                }
                 this.qrData = data;
                 this.showQrModal = true;
                 this.startTimer(data.expired_at);
@@ -79,7 +83,6 @@
 
     startTimer(expiryStr) {
         if (this.interval) clearInterval(this.interval);
-        // Expiry string should be ISO format for reliable parsing
         const expiry = new Date(expiryStr).getTime();
         
         this.interval = setInterval(() => {
@@ -89,7 +92,6 @@
             if (diff <= 0) {
                 clearInterval(this.interval);
                 this.timer = '00:00';
-                // Auto refresh QR without reload
                 this.generateQR(this.qrData.jadwal_id);
                 return;
             }
@@ -98,7 +100,6 @@
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
             this.timer = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             
-            // Color coding
             if (minutes >= 5) {
                 this.timerColor = 'text-emerald-500';
             } else if (minutes >= 2) {
@@ -110,7 +111,7 @@
     }
 }">
 
-<div class="h-[calc(100vh-10rem)] md:h-[calc(100vh-8rem)] flex flex-col gap-6 overflow-hidden">
+<div class="flex flex-col gap-6">
     @if($activeSession)
     {{-- Active Session Banner --}}
     <div class="bg-white border-l-4 border-emerald-500 rounded-2xl shadow-sm p-4 flex flex-col md:flex-row items-center justify-between gap-4 border border-gray-100 flex-shrink-0">
@@ -206,8 +207,54 @@
         </div>
     </div>
 
+    {{-- New Sections: Kelas Belum Presensi & Rekap Absen --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-shrink-0">
+        {{-- Kelas Belum Presensi --}}
+        <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Kelas Belum Presensi</h3>
+                <span class="px-2 py-0.5 bg-red-50 text-red-600 text-[8px] font-black uppercase rounded-full border border-red-100">Status</span>
+            </div>
+            <div class="flex flex-wrap gap-2 max-h-20 overflow-y-auto custom-scrollbar pr-2">
+                @forelse($kelasBelumPresensi as $kelas)
+                    <div class="px-4 py-2 bg-gray-50 text-gray-700 text-[10px] font-black rounded-xl border border-gray-100 flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle text-amber-500"></i>
+                        Kelas {{ $kelas }}
+                    </div>
+                @empty
+                    <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wide italic">Semua kelas sudah mulai presensi ✨</p>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- Rekap Siswa Tidak Masuk --}}
+        <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Rekap Tidak Masuk Hari Ini</h3>
+                <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[8px] font-black uppercase rounded-full border border-blue-100">Info Siswa</span>
+            </div>
+            <div class="space-y-2 overflow-y-auto max-h-20 custom-scrollbar pr-2">
+                @forelse($rekapAbsen as $kelas => $presensis)
+                    <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-2xl border border-gray-100">
+                        <span class="text-[10px] font-black text-gray-700">Kelas {{ $kelas }}</span>
+                        <div class="flex gap-1.5">
+                            @php
+                                $counts = $presensis->groupBy('status')->map->count();
+                            @endphp
+                            @if($counts->has('Alfa')) <span class="px-2 py-0.5 bg-red-100 text-red-700 text-[8px] font-black rounded-lg">A: {{ $counts['Alfa'] }}</span> @endif
+                            @if($counts->has('Izin')) <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-[8px] font-black rounded-lg">I: {{ $counts['Izin'] }}</span> @endif
+                            @if($counts->has('Sakit')) <span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-[8px] font-black rounded-lg">S: {{ $counts['Sakit'] }}</span> @endif
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide italic">Belum ada data ketidakhadiran.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
     {{-- Today's Schedule List - Scrollable part --}}
-    <div class="flex flex-col flex-1 min-h-0">
+    <div class="flex flex-col">
         <div class="flex items-center justify-between mb-4 px-2 flex-shrink-0">
             <h2 class="text-xs font-black text-gray-800 uppercase tracking-wider">Jadwal Hari Ini</h2>
             <div class="flex items-center gap-2 text-[8px] font-black text-gray-400 bg-white px-3 py-1.5 rounded-xl uppercase tracking-widest border border-gray-200">
@@ -216,7 +263,7 @@
             </div>
         </div>
         
-        <div class="flex-1 overflow-y-auto no-scrollbar space-y-4 pb-4">
+        <div class="space-y-4 pb-4">
             @forelse($jadwalHariIni as $jadwal)
                 <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-blue-600"></div>

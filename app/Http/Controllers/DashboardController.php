@@ -35,15 +35,67 @@ class DashboardController extends Controller
             return view('dashboard.gurubk');
         }
 
-        if ($loginRole === 'guru') {
-            return view('dashboard.guru', compact('activeSession'));
+        // TU Check (Move Higher)
+        if (str_contains($pos, 'tata usaha') || str_contains($pos, 'tu')) {
+            $hariMap = [
+                'Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
+                'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'
+            ];
+            $hariIni = $hariMap[now()->format('l')];
+            $today = now()->toDateString();
+
+            $kelasBelumPresensi = \App\Models\Jadwal::where('hari', $hariIni)
+                ->whereDoesntHave('qrSessions', function($q) use ($today) {
+                    $q->where('tanggal', $today);
+                })
+                ->distinct()
+                ->pluck('kelas');
+
+            $rekapAbsen = \App\Models\Presensi::with(['siswa', 'jadwal'])
+                ->where('tanggal', $today)
+                ->whereIn('status', ['Alfa', 'Izin', 'Sakit'])
+                ->get()
+                ->groupBy(function($p) {
+                    return $p->jadwal->kelas ?? 'Umum';
+                });
+
+            return view('dashboard.tu', compact('kelasBelumPresensi', 'rekapAbsen'));
+        }
+
+        if ($loginRole === 'guru' || (str_contains($pos, 'guru') && $loginRole === 'umum')) {
+            $hariMap = [
+                'Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
+                'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'
+            ];
+            $hariIni = $hariMap[now()->format('l')];
+            $today = now()->toDateString();
+
+            // Kelas yang belum presensi hari ini (berdasarkan jadwal)
+            // Hanya ambil kelas yang ada di jadwal hari ini tapi belum ada QR Session
+            $kelasBelumPresensi = \App\Models\Jadwal::where('hari', $hariIni)
+                ->whereDoesntHave('qrSessions', function($q) use ($today) {
+                    $q->where('tanggal', $today);
+                })
+                ->distinct()
+                ->pluck('kelas');
+
+            // Rekap siswa tidak masuk hari ini
+            $rekapAbsen = \App\Models\Presensi::with(['siswa', 'jadwal'])
+                ->where('tanggal', $today)
+                ->whereIn('status', ['Alfa', 'Izin', 'Sakit'])
+                ->get()
+                ->groupBy(function($p) {
+                    return $p->jadwal->kelas ?? 'Umum';
+                });
+
+            return view('dashboard.guru', compact('activeSession', 'kelasBelumPresensi', 'rekapAbsen'));
         }
 
         // Fallback berdasarkan position
         if (str_contains($pos, 'administrator')) return view('dashboard.admin');
         if (str_contains($pos, 'kepala sekolah')) return view('dashboard.admin');
         if (str_contains($pos, 'bk')) return view('dashboard.gurubk');
-        if (str_contains($pos, 'guru') || str_contains($pos, 'waka') || str_contains($pos, 'kakonli') || str_contains($pos, 'tata usaha')) return view('dashboard.guru', compact('activeSession'));
+        if (str_contains($pos, 'guru') || str_contains($pos, 'waka') || str_contains($pos, 'kakonli')) return view('dashboard.guru', compact('activeSession', 'kelasBelumPresensi', 'rekapAbsen'));
         if ($user->is_wali) return view('dashboard.walikelas');
         if (str_contains($pos, 'piket')) return view('dashboard.gurupiket');
 
@@ -182,7 +234,7 @@ class DashboardController extends Controller
         $token = (string) \Illuminate\Support\Str::uuid();
         $expiredAt = now()->addMinutes(15);
 
-        \App\Models\QrSession::create([
+        $session = \App\Models\QrSession::create([
             'jadwal_id' => $jadwal->id,
             'guru_id' => $user->id,
             'tanggal' => now()->toDateString(),
@@ -201,7 +253,8 @@ class DashboardController extends Controller
             'kelas' => $jadwal->kelas,
             'hari'  => $jadwal->hari,
             'jam' => jamPelajaranToWaktu($jadwal->jam_mulai) . ' - ' . \Carbon\Carbon::createFromFormat('H:i', jamPelajaranToWaktu($jadwal->jam_selesai), 'Asia/Jakarta')->addMinutes(45)->format('H:i'),
-            'expired_at' => $expiredAt->toDateTimeString()
+            'expired_at' => $expiredAt->toDateTimeString(),
+            'redirect_url' => route('guru.mulai.kelas', $session->id)
         ]);
     }
 }

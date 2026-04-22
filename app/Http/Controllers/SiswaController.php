@@ -12,13 +12,15 @@ class SiswaController extends Controller
     {
         $query = Siswa::with('kelas');
 
-        if ($request->has('search')) {
+        if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('nama', 'like', "%{$search}%")
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('username', 'like', "%{$search}%");
+            });
         }
 
-        if ($request->has('kelas_id') && $request->kelas_id != '') {
+        if ($request->filled('kelas_id')) {
             $query->where('kelas_id', $request->kelas_id);
         }
 

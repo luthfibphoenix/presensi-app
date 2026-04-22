@@ -3,7 +3,7 @@
 @section('title', 'Surat Perjalanan Dinas')
 
 @section('content')
-<div class="h-[calc(100vh-10rem)] flex flex-col gap-6 overflow-hidden" x-data="{
+<div class="h-full flex flex-col gap-6 overflow-hidden" x-data="{
     searchGuru: '',
     selectedGuruId: null,
     gurus: {{ json_encode($gurus) }},
@@ -69,14 +69,14 @@
                             <label class="block cursor-pointer group">
                                 <input type="radio" name="guru_id" :value="guru.id" required class="hidden peer" x-model="selectedGuruId">
                                 <div class="flex items-center gap-4 p-4 rounded-2xl border border-gray-50 bg-gray-50/30 peer-checked:bg-blue-600 peer-checked:border-blue-700 peer-checked:shadow-lg peer-checked:scale-[1.02] transition-all group-hover:bg-gray-50">
-                                    <div class="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 peer-checked:text-blue-600 transition-colors">
+                                    <div class="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-gray-400" :class="selectedGuruId == guru.id ? 'text-blue-600' : 'text-gray-400'">
                                         <i class="fas fa-user"></i>
                                     </div>
                                     <div class="flex-1">
-                                        <p class="text-sm font-black text-gray-700 peer-checked:text-white" x-text="guru.fullname"></p>
-                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter peer-checked:text-blue-200" x-text="guru.position || '-'"></p>
+                                        <p class="text-sm font-black transition-colors" :class="selectedGuruId == guru.id ? 'text-white' : 'text-gray-700'" x-text="guru.fullname"></p>
+                                        <p class="text-[10px] font-bold uppercase tracking-tighter transition-colors" :class="selectedGuruId == guru.id ? 'text-blue-100' : 'text-gray-400'" x-text="guru.position || '-'"></p>
                                     </div>
-                                    <div x-show="selectedGuruId == guru.id" class="px-3 py-1 bg-white/20 rounded-lg">
+                                    <div x-show="selectedGuruId == guru.id" class="px-3 py-1 bg-white/20 rounded-lg border border-white/20">
                                         <span class="text-[9px] font-black text-white uppercase tracking-widest">Terpilih</span>
                                     </div>
                                 </div>
@@ -93,6 +93,7 @@
                             <label class="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Informasi Lokasi Tujuan</label>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
+                                    <input type="hidden" name="provinsi_name" :value="provinces.find(p => p.id === selectedProvince)?.name">
                                     <select x-model="selectedProvince" @change="fetchRegencies()" name="provinsi" required class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none">
                                         <option value="">Pilih Provinsi</option>
                                         <template x-for="p in provinces" :key="p.id">
@@ -101,6 +102,7 @@
                                     </select>
                                 </div>
                                 <div>
+                                    <input type="hidden" name="kabupaten_name" :value="regencies.find(r => r.id === selectedRegency)?.name">
                                     <select x-model="selectedRegency" @change="fetchDistricts()" name="kabupaten" required :disabled="!selectedProvince" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none disabled:opacity-50">
                                         <option value="">Pilih Kab/Kota</option>
                                         <template x-for="r in regencies" :key="r.id">
@@ -109,6 +111,7 @@
                                     </select>
                                 </div>
                                 <div>
+                                    <input type="hidden" name="kecamatan_name" :value="districts.find(d => d.id === selectedDistrict)?.name">
                                     <select x-model="selectedDistrict" name="kecamatan" required :disabled="!selectedRegency" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none disabled:opacity-50">
                                         <option value="">Pilih Kecamatan</option>
                                         <template x-for="d in districts" :key="d.id">

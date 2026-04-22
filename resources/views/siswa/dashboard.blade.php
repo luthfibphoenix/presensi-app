@@ -3,7 +3,7 @@
 @section('title', 'Dashboard Siswa')
 
 @section('content')
-<div class="space-y-8">
+<div class="h-full overflow-y-auto no-scrollbar pb-10 space-y-8">
     {{-- Welcome Banner --}}
     <div class="bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-500 rounded-[2rem] shadow-xl p-6 md:p-10 text-white relative overflow-hidden">
         <div class="relative z-10">

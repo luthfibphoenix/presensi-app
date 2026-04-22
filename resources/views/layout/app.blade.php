@@ -17,13 +17,34 @@
             scrollbar-width: none;
         }
         
-        /* Ultra Smooth Page Transitions */
-        @keyframes fadeInScale {
-            0% { opacity: 0; transform: scale(0.99) translateY(15px); filter: blur(5px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        /* Ultra Smooth Liquid Page Transitions */
+        @keyframes liquidFadeIn {
+            0% { opacity: 0; transform: translateY(20px) scale(0.98); filter: blur(10px); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
         .animate-page-content {
-            animation: fadeInScale 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: liquidFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Top Progress Bar Animation */
+        #page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, #3b82f6, #06b6d4);
+            z-index: 9999;
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+        }
+        .loading #page-loader {
+            transform: translateX(-20%);
+            transition: transform 10s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .loaded #page-loader {
+            transform: translateX(0);
+            transition: transform 0.3s ease;
         }
 
         [x-cloak] { display: none !important; }
@@ -34,12 +55,16 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 font-sans leading-normal tracking-normal" 
+<body class="bg-gray-100 font-sans leading-normal tracking-normal loaded" 
       x-data="{ 
         activeRole: localStorage.getItem('activeRole') || '{{ auth('web')->check() ? 'guru' : (auth('siswa')->check() ? 'siswa' : 'none') }}',
         sidebarOpen: false
       }"
       x-init="$watch('activeRole', value => localStorage.setItem('activeRole', value))">
+    
+    <!-- Top Progress Bar -->
+    <div id="page-loader"></div>
+
     <div class="h-screen bg-gray-50 flex overflow-hidden">
         
         <!-- Sidebar -->
@@ -61,7 +86,7 @@
              x-cloak></div>
 
         <!-- Main Content Wrapper -->
-        <div class="flex-1 lg:ml-64 flex flex-col h-screen relative overflow-hidden">
+        <div class="flex-1 lg:ml-72 flex flex-col h-screen relative overflow-hidden">
             <!-- Fixed Top Navbar -->
             <header class="h-16 bg-white shadow-sm border-b border-gray-100 flex items-center justify-between px-8 flex-shrink-0 z-10">
                 <div class="flex items-center gap-4">
@@ -133,17 +158,19 @@
             </header>
 
             <!-- Content Body -->
-            <main class="flex-1 overflow-y-auto p-4 md:p-6">
-                @if (session('success'))
-                    <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-3 mb-4 rounded-xl shadow-sm animate-page-content">
-                        <div class="flex items-center gap-3">
-                            <i class="fas fa-check-circle"></i>
-                            <span class="font-medium text-xs">{{ session('success') }}</span>
+            <main class="flex-1 overflow-hidden p-4 md:p-6 bg-gray-50/50">
+                <div class="max-w-7xl mx-auto h-full flex flex-col">
+                    @if (session('success'))
+                        <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-3 mb-4 rounded-xl shadow-sm animate-page-content flex-shrink-0">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="font-medium text-xs">{{ session('success') }}</span>
+                            </div>
                         </div>
+                    @endif
+                    <div class="animate-page-content flex-1 min-h-0">
+                        @yield('content')
                     </div>
-                @endif
-                <div class="animate-page-content">
-                    @yield('content')
                 </div>
             </main>
         </div>
@@ -247,6 +274,21 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Page Loader Management
+            const body = document.body;
+            body.classList.add('loaded');
+
+            // Intercept all links for smooth exit
+            document.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#' && !href.startsWith('javascript:') && !this.hasAttribute('target')) {
+                        body.classList.remove('loaded');
+                        body.classList.add('loading');
+                    }
+                });
+            });
+
             // Dropdown Toggle
             const btn = document.getElementById('userMenuBtn');
             const dropdown = document.getElementById('userDropdown');

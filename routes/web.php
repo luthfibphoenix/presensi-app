@@ -77,6 +77,7 @@ Route::middleware('auth')->group(function () {
     // Admin, BK, Piket, Kakonli, Kurikulum, & TU
     Route::middleware('role:Administrator,Guru BK,Guru Piket,Kakonli,Kurikulum,TU')->group(function () {
         Route::get('/laporan',              [LaporanController::class, 'index'])->name('laporan.index');
+        Route::get('/laporan/rekap-harian', [LaporanController::class, 'rekapHarian'])->name('laporan.rekap_harian');
         Route::get('/izin-guru',            [IzinController::class, 'indexGuru'])->name('izin.guru');
         Route::post('/izin-guru',           [IzinController::class, 'storeGuru'])->name('izin.store.guru');
         Route::get('/izin/print/{id}',      [IzinController::class, 'print'])->name('izin.print');

@@ -93,21 +93,24 @@ class IzinController extends Controller
         return redirect()->back()->with('success', 'Izin berhasil disetujui dan data presensi telah diperbarui.');
     }
 
-    private function syncPresensi(Izin $izin)
+    public static function syncPresensi(Izin $izin)
     {
         $siswa = $izin->siswa;
         $tanggal = $izin->tanggal;
         $dayName = \Carbon\Carbon::parse($tanggal)->locale('id')->isoFormat('dddd');
         $dayName = ucfirst(strtolower($dayName));
 
-        // Tentukan status presensi
-        $statusPresensi = 'Izin';
-        if (str_contains(strtolower($izin->alasan), 'sakit') || $izin->tipe === 'Sakit') {
+        // Tentukan status presensi berdasarkan tipe izin
+        $statusPresensi = match($izin->tipe) {
+            'Sakit' => 'Sakit',
+            'Masuk Telat' => 'Terlambat',
+            'Keluar Sekolah' => 'Izin',
+            default => 'Izin'
+        };
+
+        // Jika alasan mengandung kata sakit, paksa jadi Sakit
+        if (str_contains(strtolower($izin->alasan), 'sakit')) {
             $statusPresensi = 'Sakit';
-        } elseif ($izin->tipe === 'Masuk Telat') {
-            $statusPresensi = 'Terlambat';
-        } elseif ($izin->tipe === 'Keluar Sekolah') {
-            $statusPresensi = 'Keluar';
         }
 
         // Ambil semua jadwal untuk kelas siswa di hari tersebut
@@ -116,20 +119,26 @@ class IzinController extends Controller
             ->get();
 
         foreach ($jadwals as $jadwal) {
-            $exists = \App\Models\Presensi::where('siswa_id', $siswa->id)
-                ->where('jadwal_id', $jadwal->id)
-                ->where('tanggal', $tanggal)
-                ->first();
-
-            if ($exists) {
-                $exists->update(['status' => $statusPresensi]);
-            } else {
-                \App\Models\Presensi::create([
+            \App\Models\Presensi::updateOrCreate(
+                [
                     'siswa_id'  => $siswa->id,
                     'jadwal_id' => $jadwal->id,
                     'tanggal'   => $tanggal,
+                ],
+                [
                     'status'    => $statusPresensi,
-                ]);
+                    'keterangan' => 'Auto-sync: ' . $izin->alasan
+                ]
+            );
+        }
+    }
+
+    public static function syncAllForClass($kelasNama, $tanggal)
+    {
+        $izins = Izin::where('tanggal', $tanggal)->where('status', 'approve')->get();
+        foreach ($izins as $izin) {
+            if ($izin->siswa && $izin->siswa->kelas && $izin->siswa->kelas->nama_kelas === $kelasNama) {
+                self::syncPresensi($izin);
             }
         }
     }

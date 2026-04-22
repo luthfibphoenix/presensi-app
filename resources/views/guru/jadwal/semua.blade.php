@@ -2,6 +2,7 @@
 @section('title', 'Semua Jadwal')
 
 @section('content')
+<div class="h-full overflow-y-auto no-scrollbar pb-20">
 {{-- Tab navigasi --}}
 <div class="flex gap-2 mb-6">
     <a href="{{ route('jadwal.hari.ini') }}"
@@ -77,4 +78,5 @@
     @endforeach
 </div>
 @endif
+</div>
 @endsection

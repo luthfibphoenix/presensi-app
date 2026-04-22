@@ -3,7 +3,7 @@
 @section('title', 'Catatan Siswa')
 
 @section('content')
-<div class="max-w-7xl mx-auto space-y-6" x-data="{ 
+<div class="h-full overflow-y-auto no-scrollbar pb-20 max-w-7xl mx-auto space-y-6" x-data="{ 
     showModal: false, 
     selectedSiswa: {id: '', nama: ''},
     openModal(id, nama) {
