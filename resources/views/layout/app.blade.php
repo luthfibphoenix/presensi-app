@@ -106,27 +106,25 @@
                 <div class="flex items-center gap-4 relative" id="userMenuContainer">
                     <button id="userMenuBtn" class="flex items-center gap-4 focus:outline-none group">
                         <div class="text-right hidden md:block">
-                            <p class="text-sm font-bold text-slate-900 dark:text-white leading-none mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">{{ auth()->user()->fullname ?? auth()->user()->nama }}</p>
-                            <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">{{ auth()->user()->position ?? 'Siswa' }}</p>
+                            <p class="text-sm font-bold text-gray-900 leading-none mb-1 group-hover:text-blue-600 transition">{{ auth()->user()->fullname ?? auth()->user()->nama }}</p>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ auth()->user()->position ?? 'Siswa' }}</p>
                         </div>
                         @php
                             $userPhoto = auth()->user()->photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->fullname ?? auth()->user()->nama) . '&background=f3f4f6&color=6b7280&bold=true';
                         @endphp
                         <img src="{{ $userPhoto }}" 
                              alt="User" 
-                             class="w-10 h-10 rounded-full border-2 border-white dark:border-slate-800 object-cover shadow-sm group-hover:border-blue-400 dark:group-hover:border-blue-500 transition-all duration-300">
+                             class="w-10 h-10 rounded-full border-2 border-gray-100 object-cover shadow-sm group-hover:border-blue-200 transition">
                     </button>
 
                     <!-- Dropdown Menu -->
-                    <div id="userDropdown" class="hidden absolute right-0 top-full mt-3 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 z-50 overflow-hidden py-1 animate-fade-in-up">
-                        <div class="px-6 py-5 border-b border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                            <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-2">Pengguna</p>
-                            <p class="text-sm font-black text-slate-800 dark:text-white truncate">{{ auth()->user()->fullname ?? auth()->user()->nama }}</p>
+                    <div id="userDropdown" class="hidden absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden py-1 animate-fade-in-up">
+                        <div class="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
+                            <p class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Pengguna</p>
+                            <p class="text-sm font-bold text-gray-800 truncate">{{ auth()->user()->fullname ?? auth()->user()->nama }}</p>
                         </div>
-                        <a href="{{ auth('siswa')->check() ? route('siswa.profil') : route('profil') }}" 
-                           class="flex items-center gap-3 px-6 py-4 text-sm text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-400 transition-all">
-                            <i class="fas fa-user-circle text-lg opacity-40"></i> 
-                            <span class="font-bold">Profil Saya</span>
+                        <a href="{{ auth('siswa')->check() ? route('siswa.profil') : route('profil') }}" class="flex items-center gap-3 px-5 py-3.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition">
+                            <i class="fas fa-user-circle opacity-40"></i> Profil Saya
                         </a>
 
                         @php
@@ -141,21 +139,21 @@
                         @endphp
 
                         @if($activeSess)
-                        <div class="border-t border-slate-50 dark:border-slate-800 py-1">
+                        <div class="border-t border-gray-50 py-1">
                             <form action="{{ route('dashboard.end_session') }}" method="POST" onsubmit="return confirm('Akhiri sesi kelas sekarang? Siswa yang belum absen akan otomatis dicatat Alfa.')">
                                 @csrf
                                 <input type="hidden" name="session_id" value="{{ $activeSess->id }}">
-                                <button type="submit" class="w-full flex items-center gap-3 px-6 py-4 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition text-left font-black">
+                                <button type="submit" class="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-red-600 hover:bg-red-50 transition text-left font-bold">
                                     <i class="fas fa-power-off"></i> Akhiri Kelas
                                 </button>
                             </form>
                         </div>
                         @endif
 
-                        <div class="border-t border-slate-50 dark:border-slate-800 py-1">
+                        <div class="border-t border-gray-50 py-1">
                             <form action="{{ auth('siswa')->check() ? route('siswa.logout') : route('logout') }}" method="POST">
                                 @csrf
-                                <button type="submit" class="w-full flex items-center gap-3 px-6 py-4 text-sm text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition text-left font-bold">
+                                <button type="submit" class="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-gray-400 hover:bg-gray-50 transition text-left font-semibold">
                                     <i class="fas fa-sign-out-alt"></i> Logout
                                 </button>
                             </form>
@@ -165,7 +163,7 @@
             </header>
 
             <!-- Content Body -->
-            <main class="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50 dark:bg-slate-950 no-scrollbar relative">
+            <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-100 no-scrollbar">
                 <div class="max-w-7xl mx-auto h-full flex flex-col">
                     @if (session('success'))
                         <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-3 mb-4 rounded-xl shadow-sm animate-page-content flex-shrink-0">
@@ -343,20 +341,22 @@
             }
 
             // Sidebar Scroll Persistence
-            const sidebar = document.getElementById('main-sidebar-scroll');
-            if (sidebar) {
+            const sidebarScroll = document.getElementById('main-sidebar-scroll');
+            if (sidebarScroll) {
                 const role = '{{ $currentRole }}';
                 const scrollKey = 'sidebar-scroll-' + role;
                 
                 // Restore
                 const savedScroll = localStorage.getItem(scrollKey);
                 if (savedScroll) {
-                    sidebar.scrollTop = parseInt(savedScroll);
+                    sidebarScroll.scrollTop = parseInt(savedScroll);
                 }
 
-                // Save
-                window.addEventListener('beforeunload', function() {
-                    localStorage.setItem(scrollKey, sidebar.scrollTop);
+                // Save on click (more reliable than beforeunload)
+                sidebarScroll.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        localStorage.setItem(scrollKey, sidebarScroll.scrollTop);
+                    });
                 });
             }
         });

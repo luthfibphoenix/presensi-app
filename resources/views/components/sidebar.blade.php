@@ -5,30 +5,65 @@
     $name = $user->fullname ?? $user->nama ?? 'User';
     $position = ($role === 'siswa') ? 'Siswa' : ($user->position ?? 'Guru');
     
-    $pos = strtolower($user->position ?? '');
+     $pos = strtolower($user->position ?? '');
     if ($role === 'siswa' || str_contains($pos, 'siswa')) {
-        $bgSidebar = 'bg-emerald-900 dark:bg-emerald-950';
-        $bgActive = 'bg-white/10';
+        $bgSidebar = 'bg-emerald-900';
+        $bgActive = 'bg-emerald-700/50';
     } elseif (str_contains($pos, 'kepala sekolah')) {
-        $bgSidebar = 'bg-slate-900 dark:bg-slate-950';
-        $bgActive = 'bg-white/10';
+        $bgSidebar = 'bg-zinc-950';
+        $bgActive = 'bg-zinc-800/50';
     } elseif (str_contains($pos, 'piket')) {
-        $bgSidebar = 'bg-indigo-900 dark:bg-indigo-950';
-        $bgActive = 'bg-white/10';
+        $bgSidebar = 'bg-orange-700';
+        $bgActive = 'bg-orange-600/50';
     } elseif ($role === 'admin' || str_contains($pos, 'admin') || str_contains($pos, 'administrator')) {
-        $bgSidebar = 'bg-purple-900 dark:bg-purple-950';
-        $bgActive = 'bg-white/10';
+        $bgSidebar = 'bg-purple-900';
+        $bgActive = 'bg-purple-700/50';
     } else {
-        $bgSidebar = 'bg-[#1e293b] dark:bg-[#0f172a]';
-        $bgActive = 'bg-blue-500/20';
+        $bgSidebar = 'bg-blue-900';
+        $bgActive = 'bg-blue-700/50';
     }
 
     $fallbackUrl = 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=fff&color=333&bold=true&size=128';
     $photoUrl = $user->photo_url ?? $fallbackUrl;
 
     $menus = [];
-    
-    if ($role === 'admin' || str_contains($pos, 'administrator')) {
+    $isSuperAdmin = str_contains($pos, 'super administrator');
+
+    if ($isSuperAdmin) {
+        $bgSidebar = 'bg-slate-900';
+        $bgActive = 'bg-blue-600/50';
+        $menus = [
+            'DASHBOARD' => [
+                ['label' => 'Admin Panel', 'route' => 'dashboard', 'icon' => 'fas fa-shield-alt'],
+                ['label' => 'Dashboard Siswa', 'route' => 'siswa.dashboard', 'icon' => 'fas fa-user-graduate'],
+            ],
+            'MANAJEMEN DATA' => [
+                ['label' => 'Data Guru', 'route' => 'guru.index', 'icon' => 'fas fa-chalkboard-teacher'],
+                ['label' => 'Data Siswa', 'route' => 'siswa.index', 'icon' => 'fas fa-users'],
+                ['label' => 'Data Kelas', 'route' => 'kelas.index', 'icon' => 'fas fa-school'],
+                ['label' => 'Data Mapel', 'route' => 'admin.mapel.index', 'icon' => 'fas fa-book-open'],
+                ['label' => 'Jadwal Induk', 'route' => 'jadwal.index', 'icon' => 'fas fa-calendar-alt'],
+            ],
+            'LAYANAN AKADEMIK' => [
+                ['label' => 'Jurnal Mengajar', 'route' => 'guru.jurnal.index', 'icon' => 'fas fa-book'],
+                ['label' => 'Penilaian Guru', 'route' => 'guru.penilaian.index', 'icon' => 'fas fa-star'],
+                ['label' => 'Catatan Siswa', 'route' => 'guru.catatan.index', 'icon' => 'fas fa-sticky-note'],
+                ['label' => 'Cetak Blangko', 'route' => 'guru.blangko.index', 'icon' => 'fas fa-print'],
+            ],
+            'PRESENSI & LAPORAN' => [
+                ['label' => 'Scan QR', 'route' => 'presensi.scan', 'icon' => 'fas fa-qrcode'],
+                ['label' => 'Status Kehadiran', 'route' => 'guru.qr.status.index', 'icon' => 'fas fa-clipboard-check'],
+                ['label' => 'Izin Guru/Siswa', 'route' => 'izin.guru', 'icon' => 'fas fa-file-signature'],
+                ['label' => 'Rekap Harian', 'route' => 'laporan.rekap_harian', 'icon' => 'fas fa-calendar-check'],
+                ['label' => 'Laporan Global', 'route' => 'laporan.index', 'icon' => 'fas fa-chart-line'],
+            ],
+            'SISTEM' => [
+                ['label' => 'Reset Password', 'route' => 'admin.password.index', 'icon' => 'fas fa-key'],
+                ['label' => 'Surat Dinas (SPD)', 'route' => 'tu.surat_dinas', 'icon' => 'fas fa-plane-departure'],
+                ['label' => 'Surat Panggilan BK', 'route' => 'bk.surat_panggil', 'icon' => 'fas fa-envelope-open-text'],
+            ],
+        ];
+    } elseif ($role === 'admin' || str_contains($pos, 'administrator')) {
         $menus = [
             'UTAMA' => [
                 ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'fas fa-th-large'],
@@ -62,6 +97,11 @@
         $menus = [
             'UTAMA' => [
                 ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'fas fa-th-large'],
+            ],
+            'LAYANAN PRESENSI' => [
+                ['label' => 'Jadwal Hari Ini', 'route' => 'jadwal.hari.ini', 'icon' => 'fas fa-calendar-day'],
+                ['label' => 'Semua Jadwal', 'route' => 'jadwal.semua', 'icon' => 'fas fa-calendar-alt'],
+                ['label' => 'Status Kehadiran', 'route' => 'guru.qr.status.index', 'icon' => 'fas fa-clipboard-check'],
             ],
             'LAYANAN BK' => [
                 ['label' => 'Surat Pemanggilan', 'route' => 'bk.surat_panggil', 'icon' => 'fas fa-envelope-open-text'],
@@ -127,6 +167,14 @@
                 $user->is_wali ? ['label' => 'Siswa Wali', 'route' => 'siswa.index', 'icon' => 'fas fa-users'] : null,
             ]),
         ];
+
+        if ($user->is_wali === true) {
+            // Keep Siswa Wali
+        } else {
+            $menus['ADMINISTRASI'] = array_filter($menus['ADMINISTRASI'], function($item) {
+                return $item['label'] !== 'Siswa Wali';
+            });
+        }
     }
 @endphp
 
@@ -136,28 +184,23 @@
     
     <div class="flex-shrink-0">
         <!-- Logo Section -->
-        <div class="h-20 flex items-center justify-between px-8 border-b border-white/5">
-            <div class="flex items-center gap-4">
-                <div class="p-1.5 bg-white/10 rounded-xl backdrop-blur-md border border-white/10 shadow-inner">
-                    <img src="{{ asset('images/logo-kanan.png') }}" alt="Logo SMKN7" class="w-8 h-8 object-contain">
-                </div>
+        <div class="h-16 flex items-center justify-between px-8 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <img src="{{ asset('images/logo-kanan.png') }}" alt="Logo SMKN7" class="w-9 h-9 rounded-full object-contain bg-white p-0.5 flex-shrink-0">
                 <div class="leading-tight">
                     <span class="text-white font-black text-sm tracking-tight uppercase block">SMK Negeri 7</span>
-                    <span class="text-white/40 font-bold text-[9px] uppercase tracking-[0.2em] block">Purworejo</span>
+                    <span class="text-white/60 font-bold text-[10px] uppercase tracking-widest block">Purworejo</span>
                 </div>
             </div>
-            <button @click="sidebarOpen = false" class="lg:hidden text-white/30 hover:text-white transition-colors duration-300">
+            <button @click="sidebarOpen = false" class="lg:hidden text-white/50 hover:text-white transition">
                 <i class="fas fa-times text-xl"></i>
             </button>
         </div>
 
         <!-- User Profile Section -->
-        <div class="px-8 py-12 flex flex-col items-center border-b border-white/5 bg-black/5">
-            <div class="relative mb-5">
-                <div class="absolute inset-0 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-full blur-md opacity-50 animate-pulse"></div>
-                <img src="{{ $photoUrl }}" alt="Profile" class="relative w-24 h-24 rounded-full object-cover border-4 border-white/10 shadow-2xl">
-            </div>
-            <h3 class="text-white font-black text-center text-sm leading-snug mb-3 tracking-wide">{{ $name }}</h3>
+        <div class="px-8 py-10 flex flex-col items-center border-b border-white/10">
+            <img src="{{ $photoUrl }}" alt="Profile" class="w-20 h-20 rounded-full object-cover border-4 border-white/20 mb-4">
+            <h3 class="text-white font-bold text-center text-sm leading-tight mb-2">{{ $name }}</h3>
             @if($role === 'piket')
                 <div class="flex flex-col items-center gap-1.5">
                     <span class="px-3 py-1 bg-white text-orange-700 text-[10px] font-black uppercase rounded-full tracking-widest shadow-lg">
@@ -167,48 +210,45 @@
                         {{ $position }}
                     </span>
                 </div>
+            @elseif(str_contains(strtolower($user->position ?? ''), 'super administrator'))
+                <div class="flex flex-col items-center gap-1.5">
+                    <span class="px-3 py-1 bg-red-600 text-white text-[10px] font-black uppercase rounded-full tracking-widest shadow-lg">
+                        Super Administrator
+                    </span>
+                </div>
             @elseif(str_contains(strtolower($user->position ?? ''), 'kepala sekolah'))
                 <div class="flex flex-col items-center gap-1.5">
                     <span class="px-3 py-1 bg-amber-500 text-white text-[10px] font-black uppercase rounded-full tracking-widest shadow-lg">
                         Kepala Sekolah
                     </span>
-                    <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">
-                        SMKN 7 Pontianak
-                    </span>
                 </div>
             @else
-                <span class="px-3 py-1 bg-white/20 text-white text-[10px] font-bold uppercase rounded-full tracking-widest">
-                    {{ strtoupper($position) }}
-                </span>
+                <span class="text-[10px] font-bold text-white/50 uppercase tracking-widest">{{ $position }}</span>
             @endif
         </div>
     </div>
 
     <!-- Navigation Menu -->
-    <div id="main-sidebar-scroll" class="flex-grow overflow-y-auto no-scrollbar py-6">
-        <nav class="space-y-6">
-            @foreach($menus as $section => $items)
-            <div>
-                <h4 class="px-8 text-[10px] font-bold text-white/40 uppercase tracking-widest mb-4">{{ $section }}</h4>
-                <ul class="space-y-1">
+    <div id="main-sidebar-scroll" class="flex-1 overflow-y-auto no-scrollbar py-6">
+        @foreach($menus as $section => $items)
+            <div class="mb-8 px-8">
+                <p class="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-4">{{ $section }}</p>
+                <div class="space-y-1">
                     @foreach($items as $item)
-                    @php $isActive = request()->routeIs($item['route']); @endphp
-                    <li class="px-4 relative group">
-                        @if($isActive)
-                            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-white rounded-r-full shadow-[0_0_15px_rgba(255,255,255,0.5)] z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"></div>
-                        @endif
+                        @php
+                            $isActive = request()->routeIs($item['route']);
+                        @endphp
                         <a href="{{ route($item['route']) }}" 
-                           class="group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.95] {{ $isActive ? 'bg-white/10 ring-1 ring-white/20 shadow-xl backdrop-blur-md' : 'text-white/50 hover:bg-white/5 hover:text-white hover:translate-x-2' }}">
-                            <div class="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] {{ $isActive ? 'bg-white text-blue-900 shadow-[0_0_20px_rgba(255,255,255,0.3)]' : 'bg-white/5 text-white/40 group-hover:bg-white/20 group-hover:text-white' }}">
-                                <i class="{{ $item['icon'] }} text-sm"></i>
-                            </div>
-                            <span class="text-sm font-black tracking-tight transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] {{ $isActive ? 'text-white' : 'text-white/50 group-hover:text-white' }}">{{ $item['label'] }}</span>
+                           class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group {{ $isActive ? $bgActive . ' text-white shadow-lg' : 'text-white/60 hover:text-white hover:bg-white/5' }}">
+                            <i class="{{ $item['icon'] }} text-lg transition-transform duration-300 group-hover:scale-110 {{ $isActive ? 'text-white' : 'text-white/40' }}"></i>
+                            <span class="text-sm font-bold tracking-wide">{{ $item['label'] }}</span>
+                            @if($isActive)
+                                <div class="ml-auto w-1.5 h-1.5 bg-white rounded-full"></div>
+                            @endif
                         </a>
-                    </li>
                     @endforeach
-                </ul>
+                </div>
             </div>
-            @endforeach
-        </nav>
+        @endforeach
     </div>
 </aside>

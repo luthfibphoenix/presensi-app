@@ -22,6 +22,11 @@ class RoleMiddleware
             return redirect('/');
         }
 
+        // Always allow Super Administrator
+        if (str_contains(strtolower($user->position ?? ''), 'super administrator')) {
+            return $next($request);
+        }
+
         // 1. Cek berdasarkan session login_role (Prioritas Utama)
         if ($loginRole === 'piket' && in_array('Guru Piket', $roles)) return $next($request);
         if ($loginRole === 'admin' && in_array('Administrator', $roles)) return $next($request);
