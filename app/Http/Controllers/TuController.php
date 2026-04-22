@@ -8,7 +8,7 @@ class TuController extends Controller
 {
     public function suratDinas(Request $request)
     {
-        $gurus = \App\Models\User::all();
+        $gurus = \App\Models\User::orderBy('fullname', 'asc')->get();
         
         if ($request->has('print')) {
             $guru = \App\Models\User::find($request->guru_id);

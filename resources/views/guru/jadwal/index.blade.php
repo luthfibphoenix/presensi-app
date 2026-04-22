@@ -54,101 +54,84 @@
     <div class="bg-white rounded-2xl shadow-sm border {{ $isWaktunya ? 'border-blue-300 ring-1 ring-blue-200' : 'border-gray-100' }} overflow-hidden">
         <div class="flex items-stretch">
             {{-- Color bar --}}
-            <div class="w-1.5 {{ $isWaktunya ? 'bg-green-400' : ($isAkanMulai ? 'bg-yellow-400' : 'bg-gray-200') }} flex-shrink-0"></div>
-
-            <div class="flex-1 p-5 flex items-center justify-between gap-4">
-                <div class="flex-1">
-                    {{-- Jam badge --}}
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium
-                            {{ $isWaktunya ? 'bg-green-100 text-green-700' : ($isAkanMulai ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500') }}">
-                            <i class="fas fa-clock text-[10px]"></i>
-                            {{ $jamMulaiStr }} – {{ $jamSelesaiStr }}
-                            (Jam {{ $jadwal->jam_mulai }}–{{ $jadwal->jam_selesai }})
+            <div class="w-1.5 {{ $isWaktunya ? 'bg-green-400' : ($isAkanMulai ? 'bg-yellow-400' : 'bg-gray-200') }} flex-shrink-0"></div>            <div class="flex-1 p-4 md:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2 mb-2">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[10px] font-bold">
+                            <i class="far fa-clock"></i> {{ $jamMulaiStr }} – {{ $jamSelesaiStr }} (Jam {{ $jadwal->jam_mulai }}-{{ $jadwal->jam_selesai }})
                         </span>
                         @if($isWaktunya)
-                        <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500 text-white animate-pulse">BERLANGSUNG</span>
-                        @elseif($isAkanMulai)
-                        <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-400 text-yellow-900">SEGERA MULAI</span>
+                        <span class="px-2.5 py-1 rounded-lg bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider animate-pulse">
+                            Berlangsung
+                        </span>
                         @endif
                     </div>
-                    <h3 class="text-lg font-bold text-gray-800">{{ $jadwal->mata_pelajaran }}</h3>
-                    <p class="text-gray-500 text-sm mt-0.5">
-                        <i class="fas fa-users text-xs mr-1"></i> Kelas {{ $jadwal->kelas }}
-                        &nbsp;·&nbsp;
-                        <i class="fas fa-book text-xs mr-1"></i> Semester {{ $jadwal->semester }}
-                    </p>
+                    <h3 class="text-base md:text-lg font-black text-gray-800 leading-tight mb-1 truncate">{{ $jadwal->mata_pelajaran }}</h3>
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400 font-medium">
+                        <span class="flex items-center gap-1.5"><i class="fas fa-users text-[10px]"></i> Kelas {{ $jadwal->kelas }}</span>
+                        <span class="flex items-center gap-1.5"><i class="fas fa-bookmark text-[10px]"></i> Semester {{ $jadwal->semester }}</span>
+                    </div>
                 </div>
 
-                {{-- Tombol Mulai Kelas & Akhiri Sesi --}}
-                <div class="flex-shrink-0 flex items-center gap-2">
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
                     @if($isWaktunya)
                         @php
-                            // Gunakan timezone Jakarta secara konsisten
                             $jakartaNow = \Carbon\Carbon::now('Asia/Jakarta');
-                            
-                             // Jam selesai adalah jam mulai jam terakhir + 45 menit (sudah dihitung di $jamSelesaiStr)
-                             $actualEndTime = \Carbon\Carbon::createFromFormat('H:i', $jamSelesaiStr, 'Asia/Jakarta');
+                            $actualEndTime = \Carbon\Carbon::createFromFormat('H:i', $jamSelesaiStr, 'Asia/Jakarta');
                             $timeToAkhiri = (clone $actualEndTime)->subMinutes(30);
                             $bolehAkhiri = $jakartaNow->greaterThanOrEqualTo($timeToAkhiri);
-                            
-                            // Cari sesi QR hari ini untuk jadwal ini (walaupun sudah expired tokennya)
                             $session = \App\Models\QrSession::where('jadwal_id', $jadwal->id)
                                         ->where('tanggal', $jakartaNow->toDateString())
                                         ->orderBy('created_at', 'desc')
                                         ->first();
                         @endphp
-
+                        
                         @if($session)
-                            <div class="group relative">
-                                @if($bolehAkhiri)
-                                    <form action="{{ route('dashboard.end_session') }}" method="POST" onsubmit="return confirm('Akhiri sesi kelas sekarang? Siswa yang belum absen akan otomatis dicatat Alfa.')">
-                                        @csrf
-                                        <input type="hidden" name="session_id" value="{{ $session->id }}">
-                                        <button type="submit"
-                                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl shadow transition">
-                                            <i class="fas fa-power-off"></i> Akhiri Sesi
-                                        </button>
-                                    </form>
-                                @else
-                                    <button disabled
-                                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-400 text-sm font-semibold rounded-xl cursor-not-allowed">
-                                        <i class="fas fa-power-off"></i> Akhiri Sesi
-                                    </button>
-                                    <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-10">
-                                        <div class="bg-gray-800 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
-                                            Tombol aktif 30 menit sebelum kelas selesai (jam {{ $timeToAkhiri->format('H:i') }})
-                                        </div>
-                                    </div>
-                                @endif
+                        <div class="group relative">
+                            <button disabled="{{ !$bolehAkhiri }}" 
+                                    onclick="{{ $bolehAkhiri ? 'document.getElementById(\'end-form-'.$jadwal->id.'\').submit()' : '' }}"
+                                    class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-400 text-xs font-bold rounded-xl {{ $bolehAkhiri ? 'hover:bg-red-50 hover:text-red-500 cursor-pointer' : 'cursor-not-allowed' }} transition">
+                                <i class="fas fa-power-off"></i> Akhiri Sesi
+                            </button>
+                            @if(!$bolehAkhiri)
+                            <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-10">
+                                <div class="bg-gray-800 text-white text-[10px] rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
+                                    Tombol aktif 30 menit sebelum kelas selesai (jam {{ $timeToAkhiri->format('H:i') }})
+                                </div>
                             </div>
+                            @endif
+                            <form id="end-form-{{ $jadwal->id }}" action="{{ route('dashboard.end_session') }}" method="POST" class="hidden">
+                                @csrf
+                                <input type="hidden" name="session_id" value="{{ $session->id }}">
+                            </form>
+                        </div>
                         @endif
                     @endif
 
                     @if($bolehMulai)
-                    <form action="{{ route('guru.qr.generate') }}" method="POST">
+                    <form action="{{ route('dashboard.generate_qr') }}" method="POST">
                         @csrf
                         <input type="hidden" name="jadwal_id" value="{{ $jadwal->id }}">
                         <button type="submit"
-                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow transition">
+                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md transition whitespace-nowrap">
                             <i class="fas fa-play-circle"></i> {{ $isWaktunya ? 'Mulai / Refresh' : 'Mulai Kelas' }}
                         </button>
                     </form>
                     @else
                     <div class="group relative">
                         <button disabled
-                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-400 text-sm font-semibold rounded-xl cursor-not-allowed">
+                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-300 text-xs font-bold rounded-xl cursor-not-allowed whitespace-nowrap">
                             <i class="fas fa-clock"></i> Mulai Kelas
                         </button>
                         <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-10">
-                            <div class="bg-gray-800 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
+                            <div class="bg-gray-800 text-white text-[10px] rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
                                 Belum waktunya — Mulai jam {{ $jamMulaiStr }}
                             </div>
                         </div>
                     </div>
                     @endif
                 </div>
-            </div>
+            </div>   </div>
         </div>
     </div>
     @endforeach

@@ -3,10 +3,10 @@
 
 @section('content')
 @php
-    $jamMulaiStr   = $jamMap[$jadwal->jam_mulai]  ?? sprintf('%02d:00', 6 + $jadwal->jam_mulai);
-    $jamSelesaiStr = $jamMap[$jadwal->jam_selesai] ?? sprintf('%02d:00', 6 + $jadwal->jam_selesai);
-    $isExpired     = \Carbon\Carbon::now()->greaterThan($expiredAt);
-    $secontsLeft   = max(0, \Carbon\Carbon::now()->diffInSeconds($expiredAt, false));
+    $jamMulaiStr   = jamPelajaranToWaktu($jadwal->jam_mulai);
+    $jamSelesaiStr = \Carbon\Carbon::createFromFormat('H:i', jamPelajaranToWaktu($jadwal->jam_selesai), 'Asia/Jakarta')->addMinutes(45)->format('H:i');
+    $isExpired     = \Carbon\Carbon::now('Asia/Jakarta')->greaterThan($expiredAt);
+    $secontsLeft   = max(0, \Carbon\Carbon::now('Asia/Jakarta')->diffInSeconds($expiredAt, false));
 @endphp
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">

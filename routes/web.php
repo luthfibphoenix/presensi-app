@@ -69,6 +69,11 @@ Route::middleware('auth')->group(function () {
     })->name('profil');
     Route::post('/profil/password', [AuthController::class, 'updatePassword'])->name('profil.password');
 
+    // Kelas (Pindahkan ke luar group role agar terdefinisi global di auth)
+    Route::get('/kelas', [\App\Http\Controllers\KelasController::class, 'index'])->name('kelas.index');
+    Route::post('/kelas', [\App\Http\Controllers\KelasController::class, 'store'])->name('kelas.store');
+    Route::delete('/kelas/{id}', [\App\Http\Controllers\KelasController::class, 'destroy'])->name('kelas.destroy');
+
     // Admin, BK, Piket, Kakonli, Kurikulum, & TU
     Route::middleware('role:Administrator,Guru BK,Guru Piket,Kakonli,Kurikulum,TU')->group(function () {
         Route::get('/laporan',              [LaporanController::class, 'index'])->name('laporan.index');
@@ -82,8 +87,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/data-siswa',           [\App\Http\Controllers\SiswaController::class, 'index'])->name('siswa.index');
 
         // Admin
-        Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+        Route::get('/admin', [AdminController::class, 'index'])->name('guru.index');
+        Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.index');
         Route::get('/admin/jurnal', [AdminController::class, 'jurnal'])->name('admin.jurnal');
+        Route::get('/admin/mapel', [AdminController::class, 'mapelIndex'])->name('admin.mapel.index');
+        Route::post('/admin/mapel', [AdminController::class, 'mapelStore'])->name('admin.mapel.store');
+        Route::delete('/admin/mapel/{id}', [AdminController::class, 'mapelDestroy'])->name('admin.mapel.destroy');
+        Route::get('/admin/password', [AdminController::class, 'passwordIndex'])->name('admin.password.index');
+        Route::post('/admin/password/reset', [AdminController::class, 'passwordReset'])->name('admin.password.reset');
         
         // BK
         Route::get('/bk/surat-panggil', [BkController::class, 'suratPanggil'])->name('bk.surat_panggil');

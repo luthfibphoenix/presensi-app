@@ -18,51 +18,44 @@
     <form action="{{ route('guru.jurnal.store') }}" method="POST">
         @csrf
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
-                <input type="date" name="tanggal" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value="{{ date('Y-m-d') }}">
+            @php
+                $mapelOptions = $mapels->pluck('nama_mapel', 'nama_mapel')->toArray();
+                $kelasOptions = $kelas->pluck('nama_kelas', 'nama_kelas')->toArray();
+                $semesterOptions = [
+                    '20241' => 'Ganjil 2024/2025',
+                    '20242' => 'Genap 2024/2025',
+                    '20251' => 'Ganjil 2025/2026',
+                    '20252' => 'Genap 2025/2026'
+                ];
+            @endphp
+            <div class="space-y-4">
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Tanggal</label>
+                <input type="date" name="tanggal" required class="w-full px-5 py-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-sm text-gray-700" value="{{ date('Y-m-d') }}">
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Mata Pelajaran</label>
-                <select name="mata_pelajaran" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="">Pilih Mata Pelajaran</option>
-                    @foreach($mapels as $mapel)
-                        <option value="{{ $mapel->nama_mapel }}">{{ $mapel->nama_mapel }}</option>
-                    @endforeach
-                </select>
+            
+            <x-select-modern name="mata_pelajaran" label="Mata Pelajaran" :options="$mapelOptions" required placeholder="Pilih Mata Pelajaran" />
+            
+            <div @change="selectedKelas = $event.target.value">
+                <x-select-modern name="kelas" label="Kelas" :options="$kelasOptions" required placeholder="Pilih Kelas" />
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
-                <select name="kelas" x-model="selectedKelas" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="">Pilih Kelas</option>
-                    @foreach($kelas as $k)
-                        <option value="{{ $k->nama_kelas }}">{{ $k->nama_kelas }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Semester</label>
-                <select name="semester" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="20241">Ganjil 2024/2025</option>
-                    <option value="20242">Genap 2024/2025</option>
-                    <option value="20251" selected>Ganjil 2025/2026</option>
-                    <option value="20252">Genap 2025/2026</option>
-                </select>
-            </div>
+            
+            <x-select-modern name="semester" label="Semester" :options="$semesterOptions" required selected="20251" />
+
             <div class="flex gap-4">
-                <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Jam Mulai (Ke-)</label>
-                    <input type="number" name="jam_mulai" min="1" max="12" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <div class="flex-1 space-y-2">
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Jam Mulai (Ke-)</label>
+                    <input type="number" name="jam_mulai" min="1" max="12" required class="w-full px-5 py-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-sm text-gray-700" placeholder="1">
                 </div>
-                <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Jam Selesai (Ke-)</label>
-                    <input type="number" name="jam_selesai" min="1" max="12" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <div class="flex-1 space-y-2">
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Jam Selesai (Ke-)</label>
+                    <input type="number" name="jam_selesai" min="1" max="12" required class="w-full px-5 py-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-sm text-gray-700" placeholder="2">
                 </div>
             </div>
-            <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Ringkasan Materi</label>
-                <textarea name="ringkasan_materi" rows="3" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+            <div class="md:col-span-2 space-y-2">
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Ringkasan Materi</label>
+                <textarea name="ringkasan_materi" rows="3" required class="w-full px-5 py-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-sm text-gray-700" placeholder="Tuliskan ringkasan materi pembelajaran hari ini..."></textarea>
             </div>
+
         </div>
 
         <div x-show="selectedKelas !== ''" class="mb-6">

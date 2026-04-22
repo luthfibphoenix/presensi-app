@@ -16,6 +16,22 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        
+        /* Ultra Smooth Page Transitions */
+        @keyframes fadeInScale {
+            0% { opacity: 0; transform: scale(0.99) translateY(15px); filter: blur(5px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+        .animate-page-content {
+            animation: fadeInScale 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        [x-cloak] { display: none !important; }
+        
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
     </style>
 </head>
 <body class="bg-gray-100 font-sans leading-normal tracking-normal" 
@@ -24,7 +40,7 @@
         sidebarOpen: false
       }"
       x-init="$watch('activeRole', value => localStorage.setItem('activeRole', value))">
-    <div class="min-h-screen bg-gray-50 flex">
+    <div class="h-screen bg-gray-50 flex overflow-hidden">
         
         <!-- Sidebar -->
         @php
@@ -32,14 +48,28 @@
         @endphp
         <x-sidebar :role="$currentRole" />
 
+        <!-- Sidebar Overlay (Mobile) -->
+        <div x-show="sidebarOpen" 
+             @click="sidebarOpen = false" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-black/50 z-[55] lg:hidden" 
+             x-cloak></div>
+
         <!-- Main Content Wrapper -->
-        <div class="flex-1 lg:ml-64 flex flex-col min-h-screen lg:h-screen relative overflow-y-auto lg:overflow-hidden no-scrollbar">
+        <div class="flex-1 lg:ml-64 flex flex-col h-screen relative overflow-hidden">
             <!-- Fixed Top Navbar -->
-            <header class="h-16 bg-white shadow-sm border-b border-gray-100 flex items-center justify-between px-8 flex-shrink-0 z-40">
+            <header class="h-16 bg-white shadow-sm border-b border-gray-100 flex items-center justify-between px-8 flex-shrink-0 z-10">
                 <div class="flex items-center gap-4">
+                    @if(!auth('siswa')->check())
                     <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700 transition">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
+                    @endif
                     <h2 class="text-lg font-bold text-gray-800 tracking-tight">@yield('title', 'Dashboard')</h2>
                 </div>
 
@@ -103,45 +133,109 @@
             </header>
 
             <!-- Content Body -->
-            <main class="flex-1 overflow-hidden p-6">
+            <main class="flex-1 overflow-y-auto p-4 md:p-6">
                 @if (session('success'))
-                    <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-3 mb-4 rounded-xl shadow-sm animate-fade-in-down">
+                    <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-3 mb-4 rounded-xl shadow-sm animate-page-content">
                         <div class="flex items-center gap-3">
                             <i class="fas fa-check-circle"></i>
                             <span class="font-medium text-xs">{{ session('success') }}</span>
                         </div>
                     </div>
                 @endif
-                @yield('content')
+                <div class="animate-page-content">
+                    @yield('content')
+                </div>
             </main>
         </div>
     </div>
     
-    <!-- Mobile Bottom Navigation (Siswa Only) -->
-    @auth('siswa')
-    <div x-show="activeRole === 'siswa'" class="lg:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-50">
-        <a href="{{ route('siswa.dashboard') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('siswa.dashboard') ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500' }}">
-            <i class="fas fa-home text-lg mb-1"></i>
-            <span class="text-[10px] font-medium">Home</span>
-        </a>
-        <a href="{{ route('siswa.riwayat') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('siswa.riwayat') ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500' }}">
-            <i class="fas fa-history text-lg mb-1"></i>
-            <span class="text-[10px] font-medium">Riwayat</span>
-        </a>
-        <a href="{{ route('presensi.scan') }}" class="flex flex-col items-center justify-center w-full py-3 relative {{ request()->routeIs('presensi.scan') ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500' }}">
-            <div class="absolute -top-4 bg-blue-600 text-white rounded-full p-3 shadow-lg border-4 border-gray-100">
-                <i class="fas fa-camera text-xl"></i>
-            </div>
-            <span class="text-[10px] font-medium mt-6">Scan</span>
-        </a>
-        <a href="{{ route('izin.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('izin.index') ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500' }}">
-            <i class="fas fa-envelope text-lg mb-1"></i>
-            <span class="text-[10px] font-medium">Izin</span>
-        </a>
-        <a href="{{ route('siswa.profil') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('siswa.profil') ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500' }}">
-            <i class="fas fa-user-circle text-lg mb-1"></i>
-            <span class="text-[10px] font-medium">Profil</span>
-        </a>
+    <!-- Mobile Bottom Navigation -->
+    @auth
+    <div class="lg:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-50">
+        @if(auth('siswa')->check())
+            {{-- Siswa Menu --}}
+            <a href="{{ route('siswa.dashboard') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('siswa.dashboard') ? 'text-emerald-600' : 'text-gray-500' }}">
+                <i class="fas fa-home text-lg mb-1"></i>
+                <span class="text-[10px] font-medium">Home</span>
+            </a>
+            <a href="{{ route('siswa.riwayat') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('siswa.riwayat') ? 'text-emerald-600' : 'text-gray-500' }}">
+                <i class="fas fa-history text-lg mb-1"></i>
+                <span class="text-[10px] font-medium">Riwayat</span>
+            </a>
+            <a href="{{ route('presensi.scan') }}" class="flex flex-col items-center justify-center w-full py-3 relative {{ request()->routeIs('presensi.scan') ? 'text-emerald-600' : 'text-gray-500' }}">
+                <div class="absolute -top-4 bg-emerald-600 text-white rounded-full p-3 shadow-lg border-4 border-gray-100">
+                    <i class="fas fa-qrcode text-xl"></i>
+                </div>
+                <span class="text-[10px] font-medium mt-6">Scan</span>
+            </a>
+            <a href="{{ route('izin.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('izin.index') ? 'text-emerald-600' : 'text-gray-500' }}">
+                <i class="fas fa-envelope text-lg mb-1"></i>
+                <span class="text-[10px] font-medium">Izin</span>
+            </a>
+            <a href="{{ route('siswa.profil') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('siswa.profil') ? 'text-emerald-600' : 'text-gray-500' }}">
+                <i class="fas fa-user-circle text-lg mb-1"></i>
+                <span class="text-[10px] font-medium">Profil</span>
+            </a>
+        @else
+            {{-- Guru / Admin Menu --}}
+            @php
+                $loginRole = session('login_role', 'guru');
+                $btnColor = 'blue';
+                if ($loginRole === 'piket') $btnColor = 'orange';
+                elseif ($loginRole === 'admin') $btnColor = 'purple';
+                elseif (str_contains(strtolower(auth()->user()->position ?? ''), 'kepala sekolah')) $btnColor = 'zinc';
+            @endphp
+            <a href="{{ route('dashboard') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('dashboard') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
+                <i class="fas fa-th-large text-lg mb-1"></i>
+                <span class="text-[10px] font-medium">Beranda</span>
+            </a>
+
+            @if($loginRole === 'piket')
+                <a href="{{ route('izin.guru') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('izin.guru') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
+                    <i class="fas fa-file-signature text-lg mb-1"></i>
+                    <span class="text-[10px] font-medium">Izin</span>
+                </a>
+            @elseif($loginRole === 'admin' || $btnColor === 'zinc')
+                <a href="{{ route('laporan.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('laporan.index') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
+                    <i class="fas fa-chart-line text-lg mb-1"></i>
+                    <span class="text-[10px] font-medium">Laporan</span>
+                </a>
+            @else
+                <a href="{{ route('guru.jurnal.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('guru.jurnal.index') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
+                    <i class="fas fa-book text-lg mb-1"></i>
+                    <span class="text-[10px] font-medium">Jurnal</span>
+                </a>
+            @endif
+
+            <a href="{{ route('guru.qr.status.index') }}" class="flex flex-col items-center justify-center w-full py-3 relative {{ request()->routeIs('guru.qr.status.index') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
+                <div class="absolute -top-4 bg-{{ $btnColor }}-600 text-white rounded-full p-3 shadow-lg border-4 border-gray-100">
+                    <i class="fas fa-clipboard-check text-xl"></i>
+                </div>
+                <span class="text-[10px] font-medium mt-6">Status</span>
+            </a>
+
+            @if($loginRole === 'piket')
+                <a href="{{ route('laporan.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('laporan.index') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
+                    <i class="fas fa-chart-pie text-lg mb-1"></i>
+                    <span class="text-[10px] font-medium">Laporan</span>
+                </a>
+            @elseif($loginRole === 'admin' || $btnColor === 'zinc')
+                <a href="{{ route('siswa.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('siswa.index') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
+                    <i class="fas fa-users text-lg mb-1"></i>
+                    <span class="text-[10px] font-medium">Siswa</span>
+                </a>
+            @else
+                <a href="{{ route('guru.catatan.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('guru.catatan.index') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
+                    <i class="fas fa-sticky-note text-lg mb-1"></i>
+                    <span class="text-[10px] font-medium">Catatan</span>
+                </a>
+            @endif
+
+            <a href="{{ route('profil') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('profil') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
+                <i class="fas fa-user-circle text-lg mb-1"></i>
+                <span class="text-[10px] font-medium">Profil</span>
+            </a>
+        @endif
     </div>
 
     <style>
@@ -171,7 +265,7 @@
             }
 
             // Sidebar Scroll Persistence
-            const sidebar = document.getElementById('main-sidebar');
+            const sidebar = document.getElementById('main-sidebar-scroll');
             if (sidebar) {
                 const role = '{{ $currentRole }}';
                 const scrollKey = 'sidebar-scroll-' + role;
@@ -189,6 +283,7 @@
             }
         });
     </script>
+    @stack('modals')
     @stack('scripts')
 </body>
 </html>

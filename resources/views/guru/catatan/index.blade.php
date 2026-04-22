@@ -19,17 +19,55 @@
         </div>
         
         @if($availableKelas->count() > 0)
-        <form action="{{ route('guru.catatan.index') }}" method="GET" class="flex items-center gap-3 bg-white p-2 rounded-2xl border border-gray-100 shadow-sm">
-            <select name="kelas_id" onchange="this.form.submit()" class="bg-gray-50 border-none rounded-xl px-4 py-2 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer">
-                <option value="">Semua Kelas</option>
-                @foreach($availableKelas as $k)
-                <option value="{{ $k->id }}" {{ $selectedKelasId == $k->id ? 'selected' : '' }}>{{ $k->nama_kelas }}</option>
-                @endforeach
-            </select>
-            <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 mr-1">
-                <i class="fas fa-filter text-xs"></i>
+        <div x-data="{ 
+            open: false, 
+            selected: '{{ $selectedKelasId ? $availableKelas->firstWhere('id', $selectedKelasId)->nama_kelas : 'Semua Kelas' }}',
+            select(id, name) {
+                this.selected = name;
+                this.open = false;
+                document.getElementById('kelas_filter_input').value = id;
+                document.getElementById('kelas_filter_form').submit();
+            }
+        }" class="relative">
+            <form id="kelas_filter_form" action="{{ route('guru.catatan.index') }}" method="GET">
+                <input type="hidden" name="kelas_id" id="kelas_filter_input" value="{{ $selectedKelasId }}">
+                <button type="button" @click="open = !open" 
+                        class="flex items-center gap-3 bg-white px-5 py-2.5 rounded-2xl border border-gray-100 shadow-sm hover:border-blue-300 transition-all min-w-[180px]">
+                    <div class="flex-1 text-left">
+                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Pilih Kelas</p>
+                        <p class="text-sm font-black text-gray-700 leading-none" x-text="selected"></p>
+                    </div>
+                    <i class="fas fa-chevron-down text-xs text-gray-300 transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                </button>
+            </form>
+
+            <div x-show="open" 
+                 @click.outside="open = false"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave="transition ease-in duration-100"
+                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                 class="absolute right-0 mt-3 w-64 bg-white rounded-3xl shadow-2xl border border-gray-100 z-50 overflow-hidden py-2"
+                 x-cloak>
+                <div class="max-h-64 overflow-y-auto no-scrollbar">
+                    <button @click="select('', 'Semua Kelas')" 
+                            class="w-full px-5 py-3 text-left text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition">
+                        Semua Kelas
+                    </button>
+                    @foreach($availableKelas as $k)
+                    <button @click="select('{{ $k->id }}', '{{ $k->nama_kelas }}')" 
+                            class="w-full px-5 py-3 text-left text-sm font-bold {{ $selectedKelasId == $k->id ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700' }} transition flex items-center justify-between">
+                        <span>{{ $k->nama_kelas }}</span>
+                        @if($selectedKelasId == $k->id)
+                        <i class="fas fa-check text-[10px]"></i>
+                        @endif
+                    </button>
+                    @endforeach
+                </div>
             </div>
-        </form>
+        </div>
         @endif
     </div>
 
@@ -47,7 +85,7 @@
                         <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ $siswa->kelas->nama_kelas }}</p>
                     </div>
                 </div>
-                <button @click="openModal('{{ $siswa->id }}', '{{ $siswa->nama }}')" class="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm">
+                <button @click="$dispatch('open-note-modal', {id: '{{ $siswa->id }}', nama: '{{ $siswa->nama }}'})" class="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
@@ -86,8 +124,17 @@
         @endforeach
     </div>
 
+    @push('modals')
     <!-- Modal Add Note -->
-    <div x-show="showModal" x-transition.opacity class="fixed inset-0 z-[70] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4" x-cloak>
+    <div x-data="{ 
+            showModal: false, 
+            selectedSiswa: {id: '', nama: ''} 
+         }" 
+         x-show="showModal" 
+         x-on:open-note-modal.window="selectedSiswa = $event.detail; showModal = true"
+         x-transition.opacity 
+         class="fixed inset-0 z-[100] bg-gray-900/60 backdrop-blur-md flex items-center justify-center p-4" 
+         x-cloak>
         <div @click.outside="showModal = false" class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up">
             <div class="p-6 bg-blue-600 text-white flex items-center justify-between">
                 <div>
@@ -102,24 +149,27 @@
                 @csrf
                 <input type="hidden" name="siswa_id" :value="selectedSiswa.id">
                 
-                <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Kategori</label>
-                    <select name="kategori" required class="w-full px-4 py-3 rounded-2xl bg-gray-50 border-2 border-gray-50 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-sm">
-                        <option value="Perilaku">Perilaku</option>
-                        <option value="Akademik">Akademik</option>
-                        <option value="Prestasi">Prestasi</option>
-                        <option value="Lainnya">Lainnya</option>
-                    </select>
+                <x-select-modern 
+                    name="kategori" 
+                    label="Kategori" 
+                    :options="[
+                        'Perilaku' => 'Perilaku',
+                        'Akademik' => 'Akademik',
+                        'Prestasi' => 'Prestasi',
+                        'Lainnya' => 'Lainnya'
+                    ]" 
+                    selected="Perilaku"
+                    required
+                />
+
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Judul Catatan</label>
+                    <input type="text" name="judul" required placeholder="Contoh: Terlambat Mengumpulkan Tugas" class="w-full px-5 py-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-sm text-gray-700">
                 </div>
 
-                <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Judul Catatan</label>
-                    <input type="text" name="judul" required placeholder="Contoh: Terlambat Mengumpulkan Tugas" class="w-full px-4 py-3 rounded-2xl bg-gray-50 border-2 border-gray-50 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-sm">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Isi Catatan</label>
-                    <textarea name="isi" required rows="4" placeholder="Tuliskan detail catatan di sini..." class="w-full px-4 py-3 rounded-2xl bg-gray-50 border-2 border-gray-50 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-sm"></textarea>
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Isi Catatan</label>
+                    <textarea name="isi" required rows="4" placeholder="Tuliskan detail catatan di sini..." class="w-full px-5 py-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-sm text-gray-700"></textarea>
                 </div>
 
                 <div class="pt-4 flex gap-3">
@@ -129,5 +179,6 @@
             </form>
         </div>
     </div>
+    @endpush
 </div>
 @endsection

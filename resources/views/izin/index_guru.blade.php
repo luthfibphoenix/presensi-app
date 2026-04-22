@@ -25,30 +25,101 @@
     <div x-show="showForm" x-collapse x-cloak class="mt-6 pt-6 border-t border-gray-100">
         <form action="{{ route('izin.store.guru') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @csrf
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
-                <select x-model="selectedKelas" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
-                    <option value="">Pilih Kelas</option>
-                    @foreach($kelases as $kelas)
-                        <option value="{{ $kelas->id }}">{{ $kelas->nama_kelas }}</option>
-                    @endforeach
-                </select>
+            <div class="space-y-4">
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Kelas</label>
+                <div x-data="{ 
+                    open: false, 
+                    selected: '',
+                    selectedName: 'Pilih Kelas',
+                    select(id, name) {
+                        this.selected = id;
+                        this.selectedName = name;
+                        this.open = false;
+                        $dispatch('input', id);
+                        selectedKelas = id;
+                    }
+                }" class="relative">
+                    <button type="button" @click="open = !open" 
+                            class="w-full flex items-center justify-between bg-gray-50 px-5 py-3.5 rounded-2xl border-2 border-gray-50 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-sm">
+                        <span x-text="selectedName"></span>
+                        <i class="fas fa-chevron-down text-xs text-gray-300 transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="open" @click.outside="open = false" x-cloak
+                         class="absolute left-0 mt-2 w-full bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden py-2 max-h-60 overflow-y-auto no-scrollbar animate-fade-in-up">
+                        <template x-for="kelas in {{ $kelases->map(fn($k) => ['id' => $k->id, 'nama' => $k->nama_kelas])->toJson() }}" :key="kelas.id">
+                            <button type="button" @click="select(kelas.id, kelas.nama)" 
+                                    class="w-full px-5 py-3 text-left text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition"
+                                    x-text="kelas.nama"></button>
+                        </template>
+                    </div>
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Siswa</label>
-                <select name="siswa_id" :disabled="!selectedKelas" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-50 disabled:text-gray-400" required>
-                    <option value="">Pilih Siswa</option>
-                    <template x-for="siswa in allSiswas.filter(s => s.kelas_id == selectedKelas)" :key="siswa.id">
-                        <option :value="siswa.id" x-text="siswa.nama"></option>
-                    </template>
-                </select>
+
+            <div class="space-y-4">
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Siswa</label>
+                <div x-data="{ 
+                    open: false, 
+                    selected: '',
+                    selectedName: 'Pilih Siswa',
+                    select(id, name) {
+                        this.selected = id;
+                        this.selectedName = name;
+                        this.open = false;
+                        document.getElementById('siswa_id_input').value = id;
+                    },
+                    init() {
+                        $watch('selectedKelas', value => {
+                            this.selected = '';
+                            this.selectedName = 'Pilih Siswa';
+                            document.getElementById('siswa_id_input').value = '';
+                        });
+                    }
+                }" class="relative">
+                    <input type="hidden" name="siswa_id" id="siswa_id_input" required>
+                    <button type="button" @click="if(selectedKelas) open = !open" 
+                            :class="!selectedKelas ? 'opacity-50 cursor-not-allowed' : ''"
+                            class="w-full flex items-center justify-between bg-gray-50 px-5 py-3.5 rounded-2xl border-2 border-gray-50 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-sm">
+                        <span x-text="selectedName"></span>
+                        <i class="fas fa-chevron-down text-xs text-gray-300 transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="open" @click.outside="open = false" x-cloak
+                         class="absolute left-0 mt-2 w-full bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden py-2 max-h-60 overflow-y-auto no-scrollbar animate-fade-in-up">
+                        <template x-for="siswa in allSiswas.filter(s => s.kelas_id == selectedKelas)" :key="siswa.id">
+                            <button type="button" @click="select(siswa.id, siswa.nama)" 
+                                    class="w-full px-5 py-3 text-left text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition"
+                                    x-text="siswa.nama"></button>
+                        </template>
+                    </div>
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Keterangan</label>
-                <select name="tipe" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
-                    <option value="Masuk Telat">Masuk Telat (Terlambat)</option>
-                    <option value="Keluar Sekolah">Izin Keluar Sekolah</option>
-                </select>
+
+            <div class="space-y-4">
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Tipe Keterangan</label>
+                <div x-data="{ 
+                    open: false, 
+                    selected: 'Masuk Telat',
+                    selectedName: 'Masuk Telat (Terlambat)',
+                    select(val, name) {
+                        this.selected = val;
+                        this.selectedName = name;
+                        this.open = false;
+                        document.getElementById('tipe_input').value = val;
+                    }
+                }" class="relative">
+                    <input type="hidden" name="tipe" id="tipe_input" value="Masuk Telat">
+                    <button type="button" @click="open = !open" 
+                            class="w-full flex items-center justify-between bg-gray-50 px-5 py-3.5 rounded-2xl border-2 border-gray-50 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-sm">
+                        <span x-text="selectedName"></span>
+                        <i class="fas fa-chevron-down text-xs text-gray-300 transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="open" @click.outside="open = false" x-cloak
+                         class="absolute left-0 mt-2 w-full bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden py-2 animate-fade-in-up">
+                        <button type="button" @click="select('Masuk Telat', 'Masuk Telat (Terlambat)')" 
+                                class="w-full px-5 py-3 text-left text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition">Masuk Telat (Terlambat)</button>
+                        <button type="button" @click="select('Keluar Sekolah', 'Izin Keluar Sekolah')" 
+                                class="w-full px-5 py-3 text-left text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition">Izin Keluar Sekolah</button>
+                    </div>
+                </div>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>

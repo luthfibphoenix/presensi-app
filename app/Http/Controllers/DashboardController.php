@@ -107,7 +107,25 @@ class DashboardController extends Controller
 
     public function siswaDashboard(Request $request)
     {
-        return view('siswa.dashboard');
+        $siswa = auth('siswa')->user();
+        $hariMap = [
+            'Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
+            'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'
+        ];
+        $hariIni = $hariMap[now()->format('l')];
+        
+        $jadwals = \App\Models\Jadwal::where('kelas', $siswa->kelas->nama_kelas)
+            ->where('hari', $hariIni)
+            ->orderBy('jam_mulai')
+            ->get();
+            
+        // Ambil status presensi hari ini
+        $presensis = \App\Models\Presensi::where('siswa_id', $siswa->id)
+            ->whereDate('tanggal', now())
+            ->get()
+            ->keyBy('jadwal_id');
+
+        return view('siswa.dashboard', compact('jadwals', 'presensis'));
     }
 
     public function generateQR(Request $request)

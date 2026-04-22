@@ -63,12 +63,12 @@ class QrController extends Controller
         $activeJadwal = null;
 
         foreach ($jadwals as $j) {
-            $startTime = self::$jamMap[$j->jam_mulai] ?? null;
-            $endTimeStart = self::$jamMap[$j->jam_selesai] ?? null;
+            $startTime = Jadwal::getWaktu($j->jam_mulai);
+            $endTimeStart = Jadwal::getWaktu($j->jam_selesai);
             
             if ($startTime && $endTimeStart) {
                 // Akhir jam pelajaran adalah waktu mulai jam terakhir + 45 menit
-                $endDateTime = Carbon::createFromFormat('H:i', $endTimeStart)->addMinutes(45)->format('H:i');
+                $endDateTime = Carbon::createFromFormat('H:i', $endTimeStart, 'Asia/Jakarta')->addMinutes(45)->format('H:i');
                 
                 if ($nowTime >= $startTime && $nowTime <= $endDateTime) {
                     $activeJadwal = $j;

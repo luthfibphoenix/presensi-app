@@ -5,14 +5,38 @@
 @section('content')
 @php
     $user = Auth::user();
-    $fallbackUrl = 'https://ui-avatars.com/api/?name=' . urlencode($user->fullname ?? 'User') . '&background=3B82F6&color=fff&bold=true&size=200';
+    $loginRole = session('login_role', 'guru');
+    $pos = strtolower($user->position ?? '');
+    
+    $theme = 'blue';
+    if (auth('siswa')->check() || str_contains($pos, 'siswa')) {
+        $theme = 'emerald';
+    } elseif (str_contains($pos, 'kepala sekolah')) {
+        $theme = 'zinc';
+    } elseif (str_contains($pos, 'piket')) {
+        $theme = 'orange';
+    } elseif (str_contains($pos, 'admin') || str_contains($pos, 'administrator')) {
+        $theme = 'purple';
+    }
+
+    $fallbackUrl = 'https://ui-avatars.com/api/?name=' . urlencode($user->fullname ?? 'User') . '&background=f1f5f9&color=334155&bold=true&size=200';
 @endphp
 
 <div class="max-w-4xl mx-auto space-y-6 pb-12">
     {{-- Profile Header Card --}}
-    <div class="bg-white rounded-3xl shadow-xl shadow-blue-900/5 overflow-hidden border border-gray-100">
+    <div class="bg-white rounded-3xl shadow-xl shadow-{{ $theme }}-900/5 overflow-hidden border border-gray-100">
         {{-- Elegant Gradient Banner --}}
-        <div class="h-40 bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-600 relative">
+        @php
+            $gradients = [
+                'blue' => 'from-blue-700 via-blue-600 to-indigo-600',
+                'orange' => 'from-orange-600 via-orange-500 to-amber-600',
+                'zinc' => 'from-zinc-800 via-zinc-700 to-slate-800',
+                'emerald' => 'from-emerald-700 via-emerald-600 to-teal-600',
+                'purple' => 'from-purple-700 via-purple-600 to-fuchsia-600',
+            ];
+            $currentGradient = $gradients[$theme] ?? $gradients['blue'];
+        @endphp
+        <div class="h-40 bg-gradient-to-br {{ $currentGradient }} relative">
             <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.5),transparent)]"></div>
         </div>
 
@@ -29,7 +53,7 @@
                 <div class="text-center md:text-left pb-2 flex-grow">
                     <h1 class="text-3xl font-black text-gray-900 tracking-tight">{{ $user->fullname }}</h1>
                     <div class="flex flex-wrap justify-center md:justify-start gap-2 mt-2">
-                        <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold uppercase rounded-full border border-blue-100">
+                        <span class="px-3 py-1 bg-{{ $theme }}-50 text-{{ $theme }}-700 text-xs font-bold uppercase rounded-full border border-{{ $theme }}-100">
                             {{ $user->position }}
                         </span>
                         @if($user->is_wali)
@@ -45,17 +69,17 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 @php
                     $fields = [
-                        ['label' => 'Username',    'icon' => 'fa-user',           'value' => $user->username, 'color' => 'blue'],
-                        ['label' => 'NIP / ID',    'icon' => 'fa-id-badge',       'value' => $user->nip ?? '-', 'color' => 'indigo'],
-                        ['label' => 'Pangkat',     'icon' => 'fa-layer-group',    'value' => $user->pangkat ?? '-', 'color' => 'blue'],
-                        ['label' => 'Jabatan',     'icon' => 'fa-briefcase',      'value' => $user->jabatan ?? '-', 'color' => 'blue'],
-                        ['label' => 'Fungsional',  'icon' => 'fa-sitemap',        'value' => $user->position, 'color' => 'blue'],
+                        ['label' => 'Username',    'icon' => 'fa-user',           'value' => $user->username, 'color' => $theme],
+                        ['label' => 'NIP / ID',    'icon' => 'fa-id-badge',       'value' => $user->nip ?? '-', 'color' => $theme],
+                        ['label' => 'Pangkat',     'icon' => 'fa-layer-group',    'value' => $user->pangkat ?? '-', 'color' => $theme],
+                        ['label' => 'Jabatan',     'icon' => 'fa-briefcase',      'value' => $user->jabatan ?? '-', 'color' => $theme],
+                        ['label' => 'Fungsional',  'icon' => 'fa-sitemap',        'value' => $user->position, 'color' => $theme],
                         ['label' => 'Status Wali', 'icon' => 'fa-chalkboard-teacher', 'value' => $user->is_wali ? 'Aktif' : 'Tidak', 'color' => $user->is_wali ? 'purple' : 'gray'],
                     ];
                 @endphp
 
                 @foreach($fields as $field)
-                <div class="group p-4 bg-gray-50/50 rounded-2xl border border-gray-100 hover:border-blue-200 hover:bg-white hover:shadow-md transition-all duration-300">
+                <div class="group p-4 bg-gray-50/50 rounded-2xl border border-gray-100 hover:border-{{ $theme }}-200 hover:bg-white hover:shadow-md transition-all duration-300">
                     <div class="flex items-center gap-3 mb-1">
                         <div class="w-8 h-8 rounded-lg bg-{{ $field['color'] }}-100 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                             <i class="fas {{ $field['icon'] }} text-{{ $field['color'] }}-600 text-xs"></i>
@@ -74,7 +98,7 @@
         <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
             <div>
                 <h2 class="text-xl font-black text-gray-900 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                    <div class="w-10 h-10 rounded-xl bg-{{ $theme }}-600 flex items-center justify-center text-white shadow-lg shadow-{{ $theme }}-200">
                         <i class="fas fa-shield-alt"></i>
                     </div>
                     Keamanan Akun
@@ -98,10 +122,10 @@
                                name="current_password" 
                                placeholder="Masukkan password lama..."
                                required 
-                               class="w-full pl-11 pr-12 py-3.5 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-gray-800 font-medium placeholder:text-gray-400 placeholder:font-normal">
+                               class="w-full pl-11 pr-12 py-3.5 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:bg-white focus:border-{{ $theme }}-500 focus:ring-4 focus:ring-{{ $theme }}-500/10 transition-all outline-none text-gray-800 font-medium placeholder:text-gray-400 placeholder:font-normal">
                         <button type="button" 
                                 @click="showCurrent = !showCurrent"
-                                class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-blue-600 transition-colors">
+                                class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-{{ $theme }}-600 transition-colors">
                             <i class="fas" :class="showCurrent ? 'fa-eye-slash' : 'fa-eye'"></i>
                         </button>
                     </div>
@@ -152,8 +176,8 @@
                 </div>
 
                 <div class="flex justify-center md:justify-end pt-4">
-                    <button type="submit" class="group relative w-full md:w-auto bg-blue-700 text-white px-10 py-4 rounded-2xl font-black text-lg shadow-xl shadow-blue-200 hover:bg-blue-800 hover:shadow-blue-300 hover:-translate-y-1 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3">
-                        <i class="fas fa-save text-blue-200 group-hover:rotate-12 transition-transform"></i>
+                    <button type="submit" class="group relative w-full md:w-auto bg-{{ $theme }}-700 text-white px-10 py-4 rounded-2xl font-black text-lg shadow-xl shadow-{{ $theme }}-200 hover:bg-{{ $theme }}-800 hover:shadow-{{ $theme }}-300 hover:-translate-y-1 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3">
+                        <i class="fas fa-save text-{{ $theme }}-200 group-hover:rotate-12 transition-transform"></i>
                         Simpan Perubahan
                     </button>
                 </div>

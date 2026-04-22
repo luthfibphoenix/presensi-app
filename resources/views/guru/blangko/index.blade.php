@@ -6,98 +6,91 @@
 <div class="bg-white p-6 rounded-lg shadow-sm">
     <h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-2">Cetak Blangko Administrasi Guru</h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    @php
+        $mapelOptions = $mapels->pluck('nama_mapel', 'nama_mapel')->toArray();
+        $kelasOptions = $kelas->pluck('nama_kelas', 'nama_kelas')->toArray();
+        $semesterOptions = [
+            'Ganjil 2025/2026' => 'Ganjil 2025/2026',
+            'Genap 2025/2026' => 'Genap 2025/2026'
+        ];
+        $semesterCoverOptions = [
+            'Ganjil' => 'Ganjil',
+            'Genap' => 'Genap'
+        ];
+    @endphp
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         
         <!-- Blangko Presensi -->
-        <div class="border rounded-xl p-5 shadow-sm hover:shadow-md transition">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="bg-blue-100 text-blue-600 p-3 rounded-full">
+        <div class="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm hover:shadow-xl transition-all duration-300 group">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-blue-50 text-blue-600 p-4 rounded-2xl group-hover:scale-110 transition-transform duration-300">
                     <i class="fas fa-clipboard-list text-xl"></i>
                 </div>
-                <h3 class="font-bold text-lg text-gray-800">Blangko Presensi</h3>
-            </div>
-            <p class="text-sm text-gray-600 mb-4 h-10">Cetak daftar hadir manual untuk diisi di kelas saat pembelajaran.</p>
-            
-            <form action="{{ route('guru.blangko.presensi') }}" target="_blank" method="GET">
-                <div class="space-y-3 mb-4">
-                    <select name="mata_pelajaran" required class="w-full border-gray-300 rounded-md text-sm">
-                        <option value="">Pilih Mapel</option>
-                        @foreach($mapels as $mapel) <option value="{{ $mapel->nama_mapel }}">{{ $mapel->nama_mapel }}</option> @endforeach
-                    </select>
-                    <select name="kelas" required class="w-full border-gray-300 rounded-md text-sm">
-                        <option value="">Pilih Kelas</option>
-                        @foreach($kelas as $k) <option value="{{ $k->nama_kelas }}">{{ $k->nama_kelas }}</option> @endforeach
-                    </select>
-                    <select name="semester" required class="w-full border-gray-300 rounded-md text-sm">
-                        <option value="Ganjil 2025/2026">Ganjil 2025/2026</option>
-                        <option value="Genap 2025/2026">Genap 2025/2026</option>
-                    </select>
+                <div>
+                    <h3 class="font-black text-gray-900 tracking-tight text-lg">Blangko Presensi</h3>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Kehadiran Harian</p>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-bold hover:bg-blue-700">
-                    <i class="fas fa-print mr-1"></i> Cetak PDF
+            </div>
+            
+            <form action="{{ route('guru.blangko.presensi') }}" target="_blank" method="GET" class="space-y-6">
+                <x-select-modern name="mata_pelajaran" label="Mata Pelajaran" :options="$mapelOptions" required />
+                <x-select-modern name="kelas" label="Kelas" :options="$kelasOptions" required />
+                <x-select-modern name="semester" label="Semester" :options="$semesterOptions" required selected="Ganjil 2025/2026" />
+                
+                <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-print"></i> Cetak PDF
                 </button>
             </form>
         </div>
 
         <!-- Blangko Nilai -->
-        <div class="border rounded-xl p-5 shadow-sm hover:shadow-md transition">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="bg-emerald-100 text-emerald-600 p-3 rounded-full">
+        <div class="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm hover:shadow-xl transition-all duration-300 group">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-emerald-50 text-emerald-600 p-4 rounded-2xl group-hover:scale-110 transition-transform duration-300">
                     <i class="fas fa-star text-xl"></i>
                 </div>
-                <h3 class="font-bold text-lg text-gray-800">Blangko Nilai</h3>
-            </div>
-            <p class="text-sm text-gray-600 mb-4 h-10">Cetak daftar nilai kosong untuk merekap nilai harian, tugas, atau ujian.</p>
-            
-            <form action="{{ route('guru.blangko.nilai') }}" target="_blank" method="GET">
-                <div class="space-y-3 mb-4">
-                    <select name="mata_pelajaran" required class="w-full border-gray-300 rounded-md text-sm">
-                        <option value="">Pilih Mapel</option>
-                        @foreach($mapels as $mapel) <option value="{{ $mapel->nama_mapel }}">{{ $mapel->nama_mapel }}</option> @endforeach
-                    </select>
-                    <select name="kelas" required class="w-full border-gray-300 rounded-md text-sm">
-                        <option value="">Pilih Kelas</option>
-                        @foreach($kelas as $k) <option value="{{ $k->nama_kelas }}">{{ $k->nama_kelas }}</option> @endforeach
-                    </select>
-                    <select name="semester" required class="w-full border-gray-300 rounded-md text-sm">
-                        <option value="Ganjil 2025/2026">Ganjil 2025/2026</option>
-                        <option value="Genap 2025/2026">Genap 2025/2026</option>
-                    </select>
+                <div>
+                    <h3 class="font-black text-gray-900 tracking-tight text-lg">Blangko Nilai</h3>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Rekapitulasi Nilai</p>
                 </div>
-                <button type="submit" class="w-full bg-emerald-600 text-white py-2 rounded-lg text-sm font-bold hover:bg-emerald-700">
-                    <i class="fas fa-print mr-1"></i> Cetak PDF
+            </div>
+            
+            <form action="{{ route('guru.blangko.nilai') }}" target="_blank" method="GET" class="space-y-6">
+                <x-select-modern name="mata_pelajaran" label="Mata Pelajaran" :options="$mapelOptions" required />
+                <x-select-modern name="kelas" label="Kelas" :options="$kelasOptions" required />
+                <x-select-modern name="semester" label="Semester" :options="$semesterOptions" required selected="Ganjil 2025/2026" />
+                
+                <button type="submit" class="w-full bg-emerald-600 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-print"></i> Cetak PDF
                 </button>
             </form>
         </div>
 
         <!-- Cover Administrasi -->
-        <div class="border rounded-xl p-5 shadow-sm hover:shadow-md transition">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="bg-purple-100 text-purple-600 p-3 rounded-full">
+        <div class="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm hover:shadow-xl transition-all duration-300 group">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-purple-50 text-purple-600 p-4 rounded-2xl group-hover:scale-110 transition-transform duration-300">
                     <i class="fas fa-book-open text-xl"></i>
                 </div>
-                <h3 class="font-bold text-lg text-gray-800">Cover Administrasi</h3>
-            </div>
-            <p class="text-sm text-gray-600 mb-4 h-10">Cetak halaman depan (cover) untuk berkas administrasi guru.</p>
-            
-            <form action="{{ route('guru.blangko.cover') }}" target="_blank" method="GET">
-                <div class="space-y-3 mb-4">
-                    <select name="mata_pelajaran" required class="w-full border-gray-300 rounded-md text-sm">
-                        <option value="">Pilih Mapel</option>
-                        @foreach($mapels as $mapel) <option value="{{ $mapel->nama_mapel }}">{{ $mapel->nama_mapel }}</option> @endforeach
-                    </select>
-                    <select name="kelas" required class="w-full border-gray-300 rounded-md text-sm">
-                        <option value="">Pilih Kelas</option>
-                        @foreach($kelas as $k) <option value="{{ $k->nama_kelas }}">{{ $k->nama_kelas }}</option> @endforeach
-                    </select>
-                    <select name="semester" required class="w-full border-gray-300 rounded-md text-sm">
-                        <option value="Ganjil">Ganjil</option>
-                        <option value="Genap">Genap</option>
-                    </select>
-                    <input type="text" name="tahun_ajaran" value="2025/2026" required class="w-full border-gray-300 rounded-md text-sm" placeholder="Tahun Ajaran (e.g., 2025/2026)">
+                <div>
+                    <h3 class="font-black text-gray-900 tracking-tight text-lg">Cover Admin</h3>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Halaman Depan</p>
                 </div>
-                <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded-lg text-sm font-bold hover:bg-purple-700">
-                    <i class="fas fa-print mr-1"></i> Cetak PDF
+            </div>
+            
+            <form action="{{ route('guru.blangko.cover') }}" target="_blank" method="GET" class="space-y-6">
+                <x-select-modern name="mata_pelajaran" label="Mata Pelajaran" :options="$mapelOptions" required />
+                <x-select-modern name="kelas" label="Kelas" :options="$kelasOptions" required />
+                <x-select-modern name="semester" label="Semester" :options="$semesterCoverOptions" required selected="Ganjil" />
+                
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Tahun Ajaran</label>
+                    <input type="text" name="tahun_ajaran" value="2025/2026" required class="w-full px-5 py-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:bg-white focus:border-purple-500 transition-all outline-none font-bold text-sm text-gray-700" placeholder="2025/2026">
+                </div>
+
+                <button type="submit" class="w-full bg-purple-600 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-purple-700 shadow-lg shadow-purple-200 transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-print"></i> Cetak PDF
                 </button>
             </form>
         </div>
