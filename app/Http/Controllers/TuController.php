@@ -8,15 +8,20 @@ class TuController extends Controller
 {
     public function suratDinas(Request $request)
     {
-        $gurus = \App\Models\User::orderBy('fullname', 'asc')->get();
+        $gurus = \App\Models\User::where('position', 'not like', '%Piket%')
+            ->orderBy('fullname', 'asc')
+            ->get();
         
         if ($request->has('print')) {
             $guru = \App\Models\User::find($request->guru_id);
             $tujuan = $request->tujuan;
+            $provinsi = $request->provinsi;
+            $kabupaten = $request->kabupaten;
+            $kecamatan = $request->kecamatan;
             $tanggal_mulai = $request->tanggal_mulai;
             $tanggal_selesai = $request->tanggal_selesai;
             $keperluan = $request->keperluan;
-            return view('tu.cetak-surat-dinas', compact('guru', 'tujuan', 'tanggal_mulai', 'tanggal_selesai', 'keperluan'));
+            return view('tu.cetak-surat-dinas', compact('guru', 'tujuan', 'provinsi', 'kabupaten', 'kecamatan', 'tanggal_mulai', 'tanggal_selesai', 'keperluan'));
         }
         
         return view('tu.surat-dinas', compact('gurus'));
