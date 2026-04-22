@@ -7,51 +7,157 @@
     $user = Auth::user();
     $fallbackUrl = 'https://ui-avatars.com/api/?name=' . urlencode($user->fullname ?? 'User') . '&background=3B82F6&color=fff&bold=true&size=200';
 @endphp
-<div class="max-w-3xl mx-auto">
 
-    {{-- Profile Card --}}
-    <div class="bg-white rounded-2xl shadow overflow-hidden">
-        
-        {{-- Header Banner --}}
-        <div class="h-32 bg-gradient-to-r from-blue-700 to-blue-500"></div>
+<div class="max-w-4xl mx-auto space-y-6 pb-12">
+    {{-- Profile Header Card --}}
+    <div class="bg-white rounded-3xl shadow-xl shadow-blue-900/5 overflow-hidden border border-gray-100">
+        {{-- Elegant Gradient Banner --}}
+        <div class="h-40 bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-600 relative">
+            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.5),transparent)]"></div>
+        </div>
 
-        {{-- Avatar + Info --}}
-        <div class="px-8 pb-8">
-            <div class="flex items-end gap-5 -mt-14 mb-5">
-                <img src="{{ $user->photo_url }}"
-                     alt="Foto Profil"
-                     onerror="this.onerror=null; this.src='{{ $fallbackUrl }}';"
-                     class="w-28 h-28 rounded-full object-cover border-4 border-white shadow-md">
-                <div class="pb-2">
-                    <h1 class="text-2xl font-bold text-gray-900">{{ $user->fullname }}</h1>
-                    <p class="text-blue-600 font-medium">{{ $user->position }}</p>
+        {{-- Profile Info Section --}}
+        <div class="px-6 md:px-10 pb-10">
+            <div class="flex flex-col md:flex-row items-center md:items-end gap-6 -mt-16 mb-8">
+                <div class="relative">
+                    <img src="{{ $user->photo_url }}"
+                         alt="Foto Profil"
+                         onerror="this.onerror=null; this.src='{{ $fallbackUrl }}';"
+                         class="w-36 h-36 rounded-3xl object-cover border-4 border-white shadow-2xl bg-white">
+                    <div class="absolute -bottom-2 -right-2 bg-green-500 w-6 h-6 rounded-full border-4 border-white shadow-sm"></div>
+                </div>
+                <div class="text-center md:text-left pb-2 flex-grow">
+                    <h1 class="text-3xl font-black text-gray-900 tracking-tight">{{ $user->fullname }}</h1>
+                    <div class="flex flex-wrap justify-center md:justify-start gap-2 mt-2">
+                        <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold uppercase rounded-full border border-blue-100">
+                            {{ $user->position }}
+                        </span>
+                        @if($user->is_wali)
+                        <span class="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-bold uppercase rounded-full border border-purple-100">
+                            Wali Kelas
+                        </span>
+                        @endif
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {{-- Info Details Grid --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 @php
                     $fields = [
-                        ['label' => 'Username',    'icon' => 'fa-user',           'value' => $user->username],
-                        ['label' => 'NIP',         'icon' => 'fa-id-badge',       'value' => $user->nip       ?? '-'],
-                        ['label' => 'Pangkat',     'icon' => 'fa-layer-group',    'value' => $user->pangkat   ?? '-'],
-                        ['label' => 'Jabatan',     'icon' => 'fa-briefcase',      'value' => $user->jabatan   ?? '-'],
-                        ['label' => 'Jabatan Fungsional', 'icon' => 'fa-sitemap', 'value' => $user->position],
-                        ['label' => 'Wali Kelas',  'icon' => 'fa-chalkboard-teacher', 'value' => $user->is_wali ? 'Ya' : 'Tidak'],
+                        ['label' => 'Username',    'icon' => 'fa-user',           'value' => $user->username, 'color' => 'blue'],
+                        ['label' => 'NIP / ID',    'icon' => 'fa-id-badge',       'value' => $user->nip ?? '-', 'color' => 'indigo'],
+                        ['label' => 'Pangkat',     'icon' => 'fa-layer-group',    'value' => $user->pangkat ?? '-', 'color' => 'blue'],
+                        ['label' => 'Jabatan',     'icon' => 'fa-briefcase',      'value' => $user->jabatan ?? '-', 'color' => 'blue'],
+                        ['label' => 'Fungsional',  'icon' => 'fa-sitemap',        'value' => $user->position, 'color' => 'blue'],
+                        ['label' => 'Status Wali', 'icon' => 'fa-chalkboard-teacher', 'value' => $user->is_wali ? 'Aktif' : 'Tidak', 'color' => $user->is_wali ? 'purple' : 'gray'],
                     ];
                 @endphp
 
                 @foreach($fields as $field)
-                <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
-                    <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <i class="fas {{ $field['icon'] }} text-blue-600 text-sm"></i>
+                <div class="group p-4 bg-gray-50/50 rounded-2xl border border-gray-100 hover:border-blue-200 hover:bg-white hover:shadow-md transition-all duration-300">
+                    <div class="flex items-center gap-3 mb-1">
+                        <div class="w-8 h-8 rounded-lg bg-{{ $field['color'] }}-100 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                            <i class="fas {{ $field['icon'] }} text-{{ $field['color'] }}-600 text-xs"></i>
+                        </div>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{{ $field['label'] }}</p>
                     </div>
-                    <div>
-                        <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">{{ $field['label'] }}</p>
-                        <p class="text-gray-800 font-semibold mt-0.5">{{ $field['value'] }}</p>
-                    </div>
+                    <p class="text-gray-800 font-bold ml-11">{{ $field['value'] }}</p>
                 </div>
                 @endforeach
             </div>
+        </div>
+    </div>
+
+    {{-- Security / Password Section --}}
+    <div class="bg-white rounded-3xl shadow-xl shadow-blue-900/5 overflow-hidden border border-gray-100">
+        <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+            <div>
+                <h2 class="text-xl font-black text-gray-900 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    Keamanan Akun
+                </h2>
+                <p class="text-sm text-gray-500 mt-1 ml-13">Perbarui password Anda secara berkala untuk menjaga keamanan.</p>
+            </div>
+        </div>
+        
+        <div class="p-8 md:px-12">
+            <form action="{{ route('profil.password') }}" method="POST" class="max-w-2xl mx-auto space-y-6" x-data="{ showCurrent: false, showNew: false, showConf: false }">
+                @csrf
+                
+                {{-- Current Password --}}
+                <div class="space-y-1.5">
+                    <label class="text-sm font-bold text-gray-700 ml-1">Password Saat Ini</label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-blue-600 text-gray-400">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <input :type="showCurrent ? 'text' : 'password'" 
+                               name="current_password" 
+                               placeholder="Masukkan password lama..."
+                               required 
+                               class="w-full pl-11 pr-12 py-3.5 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-gray-800 font-medium placeholder:text-gray-400 placeholder:font-normal">
+                        <button type="button" 
+                                @click="showCurrent = !showCurrent"
+                                class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-blue-600 transition-colors">
+                            <i class="fas" :class="showCurrent ? 'fa-eye-slash' : 'fa-eye'"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {{-- New Password --}}
+                    <div class="space-y-1.5">
+                        <label class="text-sm font-bold text-gray-700 ml-1">Password Baru</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <input :type="showNew ? 'text' : 'password'" 
+                                   name="new_password" 
+                                   placeholder="Min. 3 karakter"
+                                   required 
+                                   minlength="3" 
+                                   class="w-full pl-11 pr-12 py-3.5 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-gray-800 font-medium placeholder:text-gray-400">
+                            <button type="button" 
+                                    @click="showNew = !showNew"
+                                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-blue-600">
+                                <i class="fas" :class="showNew ? 'fa-eye-slash' : 'fa-eye'"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Confirm New Password --}}
+                    <div class="space-y-1.5">
+                        <label class="text-sm font-bold text-gray-700 ml-1">Konfirmasi Password</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
+                                <i class="fas fa-check-double"></i>
+                            </div>
+                            <input :type="showConf ? 'text' : 'password'" 
+                                   name="new_password_confirmation" 
+                                   placeholder="Ulangi password..."
+                                   required 
+                                   minlength="3" 
+                                   class="w-full pl-11 pr-12 py-3.5 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-gray-800 font-medium placeholder:text-gray-400">
+                            <button type="button" 
+                                    @click="showConf = !showConf"
+                                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-blue-600">
+                                <i class="fas" :class="showConf ? 'fa-eye-slash' : 'fa-eye'"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-center md:justify-end pt-4">
+                    <button type="submit" class="group relative w-full md:w-auto bg-blue-700 text-white px-10 py-4 rounded-2xl font-black text-lg shadow-xl shadow-blue-200 hover:bg-blue-800 hover:shadow-blue-300 hover:-translate-y-1 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3">
+                        <i class="fas fa-save text-blue-200 group-hover:rotate-12 transition-transform"></i>
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

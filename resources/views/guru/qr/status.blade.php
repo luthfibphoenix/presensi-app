@@ -32,18 +32,26 @@
                 @forelse($presensis as $index => $presensi)
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $index + 1 }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $presensi->nama_siswa }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ optional($presensi->siswa)->nama }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ \Carbon\Carbon::parse($presensi->created_at)->format('H:i:s') }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         @php
-                            $colorClass = 'bg-green-100 text-green-800';
-                            if($presensi->status == 'Izin') $colorClass = 'bg-blue-100 text-blue-800';
-                            elseif($presensi->status == 'Sakit') $colorClass = 'bg-red-100 text-red-800';
+                            $colorClass = 'bg-emerald-100 text-emerald-800';
+                            $statusText = $presensi->status;
+                            
+                            if($presensi->status == 'Terlambat') {
+                                $colorClass = 'bg-amber-100 text-amber-800';
+                                $statusText .= " (" . ($presensi->terlambat_menit ?? 0) . " menit)";
+                            } elseif($presensi->status == 'Alfa') {
+                                $colorClass = 'bg-red-100 text-red-800';
+                            } elseif(in_array($presensi->status, ['Izin', 'Sakit'])) {
+                                $colorClass = 'bg-blue-100 text-blue-800';
+                            }
                         @endphp
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $colorClass }}">
-                            {{ $presensi->status }}
+                        <span class="px-3 py-1 inline-flex text-[10px] uppercase tracking-wider font-black rounded-lg {{ $colorClass }}">
+                            {{ $statusText }}
                         </span>
                     </td>
                 </tr>

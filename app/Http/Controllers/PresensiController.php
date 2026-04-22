@@ -24,7 +24,7 @@ class PresensiController extends Controller
         
         $qrSession = QrSession::create([
             'jadwal_id' => $jadwal_id,
-            'tanggal' => date('Y-m-d'),
+            'tanggal' => now()->toDateString(),
             'token' => $token,
             'expired_at' => now()->addHours(2), // 2 hours validity
         ]);
@@ -43,7 +43,7 @@ class PresensiController extends Controller
         $siswa = $request->user('siswa');
         
         $qrSession = QrSession::where('token', $token)
-            ->where('tanggal', date('Y-m-d'))
+            ->where('tanggal', now()->toDateString())
             ->where('expired_at', '>=', now())
             ->first();
 
@@ -55,7 +55,7 @@ class PresensiController extends Controller
         Presensi::create([
             'nama_siswa' => $siswa->nama,
             'kelas' => $siswa->kelas->nama_kelas ?? 'Unknown',
-            'tanggal' => date('Y-m-d'),
+            'tanggal' => now()->toDateString(),
             'status' => 'Hadir',
         ]);
 

@@ -30,6 +30,16 @@ class User extends Authenticatable
         return $this->hasMany(Jadwal::class, 'user_id');
     }
 
+    public function jurnalMengajars(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(JurnalMengajar::class, 'user_id');
+    }
+
+    public function penilaians(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Penilaian::class, 'user_id');
+    }
+
     /**
      * Get the user's photo url, properly formatted for Google Drive direct display.
      * Fallback to default avatar or UI Avatars API.

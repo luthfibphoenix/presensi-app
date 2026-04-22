@@ -54,6 +54,58 @@ class QrController extends Controller
         return view('guru.jadwal.semua', compact('jadwals', 'jamMap', 'nowTime', 'hariIni'));
     }
 
+    public function autoGenerate(Request $request)
+    {
+        $user = $request->user();
+        $hariIni = Carbon::now()->locale('id')->isoFormat('dddd');
+        $hariIni = ucfirst(strtolower($hariIni));
+        $nowTime = Carbon::now()->format('H:i');
+
+        // Cari jadwal yang sedang berlangsung saat ini
+        $jadwals = Jadwal::where('user_id', $user->id)
+            ->where('hari', $hariIni)
+            ->get();
+
+        $activeJadwal = null;
+
+        foreach ($jadwals as $j) {
+            $startTime = self::$jamMap[$j->jam_mulai] ?? null;
+            $endTimeStart = self::$jamMap[$j->jam_selesai] ?? null;
+            
+            if ($startTime && $endTimeStart) {
+                // Akhir jam pelajaran adalah waktu mulai jam terakhir + 45 menit
+                $endDateTime = Carbon::createFromFormat('H:i', $endTimeStart)->addMinutes(45)->format('H:i');
+                
+                if ($nowTime >= $startTime && $nowTime <= $endDateTime) {
+                    $activeJadwal = $j;
+                    break;
+                }
+            }
+        }
+
+        if ($activeJadwal) {
+            // Matikan sesi aktif sebelumnya untuk jadwal ini di hari yang sama jika ada
+            QrSession::where('jadwal_id', $activeJadwal->id)
+                ->where('tanggal', now()->toDateString())
+                ->update(['expired_at' => Carbon::now()->subSecond()]);
+
+            $token = Str::uuid()->toString();
+            $qrSession = QrSession::create([
+                'jadwal_id'  => $activeJadwal->id,
+                'tanggal'    => now()->toDateString(),
+                'token'      => $token,
+                'expired_at' => Carbon::now()->addMinutes(15),
+            ]);
+
+            return redirect()->route('guru.mulai.kelas', $qrSession->id)
+                ->with('success', 'Sesi presensi otomatis dimulai untuk: ' . $activeJadwal->mata_pelajaran . ' - ' . $activeJadwal->kelas);
+        }
+
+        // Jika tidak ada jadwal yang aktif saat ini, arahkan ke halaman pilih manual
+        return redirect()->route('presensi.generate.view')
+            ->with('warning', 'Tidak ditemukan jadwal aktif untuk jam sekarang (' . $nowTime . '). Silakan pilih jadwal secara manual.');
+    }
+
     public function generateView(Request $request)
     {
         $jadwals = Jadwal::where('user_id', $request->user()->id)->get();
@@ -67,13 +119,13 @@ class QrController extends Controller
         $jadwal = Jadwal::findOrFail($request->jadwal_id);
 
         QrSession::where('jadwal_id', $jadwal->id)
-            ->where('tanggal', date('Y-m-d'))
+            ->where('tanggal', now()->toDateString())
             ->update(['expired_at' => Carbon::now()->subSecond()]);
 
         $token = Str::uuid()->toString();
         $qrSession = QrSession::create([
             'jadwal_id'  => $jadwal->id,
-            'tanggal'    => date('Y-m-d'),
+            'tanggal'    => now()->toDateString(),
             'token'      => $token,
             'expired_at' => Carbon::now()->addMinutes(15),
         ]);
@@ -90,20 +142,34 @@ class QrController extends Controller
         }
 
         $jadwal    = $qrSession->jadwal;
-        $qrUrl     = $request->getSchemeAndHttpHost() . '/siswa/scan/' . $qrSession->token;
+        $qrUrl     = config('app.url') . '/siswa/scan/' . $qrSession->token;
         $expiredAt = Carbon::parse($qrSession->expired_at);
         $jamMap    = self::$jamMap;
+
+        $startTimeStr = $jamMap[$jadwal->jam_mulai] ?? '07:00';
+        $endTimeStartStr = $jamMap[$jadwal->jam_selesai] ?? '07:00';
+        
+        $startTime = Carbon::createFromFormat('H:i', $startTimeStr);
+        $endTime = Carbon::createFromFormat('H:i', $endTimeStartStr)->addMinutes(45);
+        $now = now();
+
+        // Status Waktu - QR tampil selama jam pelajaran berlangsung
+        $isWithinSchedule = ($now >= $startTime && $now <= $endTime);
+        $isPastSchedule   = ($now > $endTime);
 
         $kelas      = Kelas::where('nama_kelas', $jadwal->kelas)->first();
         $totalSiswa = $kelas ? Siswa::where('kelas_id', $kelas->id)->count() : 0;
 
-        $presensis = Presensi::where('kelas', $jadwal->kelas)
-            ->where('tanggal', date('Y-m-d'))
-            ->orderByDesc('id')
-            ->get();
+        // Fetch all students with their attendance status
+        $allStudents = Siswa::where('kelas_id', $kelas->id)->orderBy('nama')->get();
+        $presensis   = Presensi::where('jadwal_id', $jadwal->id)
+            ->where('tanggal', now()->toDateString())
+            ->get()
+            ->keyBy('siswa_id');
 
         return view('guru.qr.mulai', compact(
-            'qrSession', 'jadwal', 'qrUrl', 'expiredAt', 'jamMap', 'totalSiswa', 'presensis'
+            'qrSession', 'jadwal', 'qrUrl', 'expiredAt', 'jamMap', 'totalSiswa', 'allStudents', 'presensis',
+            'isWithinSchedule', 'isPastSchedule'
         ));
     }
 
@@ -142,27 +208,40 @@ class QrController extends Controller
     public function statusJson(Request $request, $jadwalId)
     {
         $jadwal = Jadwal::findOrFail($jadwalId);
+        $kelas  = Kelas::where('nama_kelas', $jadwal->kelas)->first();
+        
+        if (!$kelas) {
+            return response()->json(['students' => [], 'hadir_count' => 0, 'total_count' => 0]);
+        }
 
-        $presensis = Presensi::where('kelas', $jadwal->kelas)
-            ->where('tanggal', date('Y-m-d'))
-            ->orderByDesc('id')
-            ->get(['nama_siswa', 'status', 'tanggal']);
+        $allStudents = Siswa::where('kelas_id', $kelas->id)->orderBy('nama')->get();
+        $presensis   = Presensi::where('jadwal_id', $jadwal->id)
+            ->where('tanggal', now()->toDateString())
+            ->get()
+            ->keyBy('siswa_id');
 
-        $kelas      = Kelas::where('nama_kelas', $jadwal->kelas)->first();
-        $totalSiswa = $kelas ? Siswa::where('kelas_id', $kelas->id)->count() : 0;
+        $students = $allStudents->map(function($student) use ($presensis) {
+            $p = $presensis->get($student->id);
+            return [
+                'nama' => $student->nama,
+                'status' => $p ? $p->status : 'Belum Absen',
+                'terlambat_menit' => $p ? $p->terlambat_menit : 0,
+            ];
+        });
 
         return response()->json([
-            'presensis'   => $presensis,
-            'hadir'       => $presensis->count(),
-            'total_siswa' => $totalSiswa,
+            'students' => $students,
+            'hadir_count' => $presensis->whereIn('status', ['Hadir', 'Terlambat'])->count(),
+            'total_count' => $allStudents->count(),
         ]);
     }
 
     public function status(Request $request, $jadwalId)
     {
         $jadwal = Jadwal::findOrFail($jadwalId);
-        $presensis = Presensi::where('kelas', $jadwal->kelas)
-            ->where('tanggal', date('Y-m-d'))
+        $presensis = Presensi::with('siswa')
+            ->where('jadwal_id', $jadwal->id)
+            ->where('tanggal', now()->toDateString())
             ->get();
         return view('guru.qr.status', compact('jadwal', 'presensis'));
     }
@@ -188,7 +267,7 @@ class QrController extends Controller
         $siswa = $request->user('siswa');
 
         $qrSession = QrSession::where('token', $token)
-            ->where('tanggal', date('Y-m-d'))
+            ->where('tanggal', now()->toDateString())
             ->first();
 
         if (!$qrSession) {
@@ -207,9 +286,31 @@ class QrController extends Controller
 
         $kelasNama = optional($siswa->kelas)->nama_kelas ?? $siswa->nama_kelas ?? 'Unknown';
 
-        $sudahAbsen = Presensi::where('nama_siswa', $siswa->nama)
-            ->where('tanggal', date('Y-m-d'))
-            ->where('kelas', $kelasNama)
+        // Validasi apakah siswa berada di kelas yang benar sesuai jadwal QR
+        if ($qrSession->jadwal->kelas !== $kelasNama) {
+            return view('siswa.scan_result', [
+                'status'  => 'error',
+                'message' => 'Maaf, QR Code ini ditujukan untuk kelas ' . $qrSession->jadwal->kelas . '. Anda berada di kelas ' . $kelasNama . '.',
+            ]);
+        }
+
+        $jadwal = $qrSession->jadwal;
+        $startTimeStr = self::$jamMap[$jadwal->jam_mulai] ?? '07:00';
+        $startTime = Carbon::createFromFormat('H:i', $startTimeStr);
+        $now = now();
+
+        $diffInMinutes = $startTime->diffInMinutes($now, false);
+        $status = 'Hadir';
+        $terlambatMenit = 0;
+
+        if ($diffInMinutes > 15) {
+            $status = 'Terlambat';
+            $terlambatMenit = floor($diffInMinutes);
+        }
+
+        $sudahAbsen = Presensi::where('siswa_id', $siswa->id)
+            ->where('tanggal', now()->toDateString())
+            ->where('jadwal_id', $jadwal->id)
             ->exists();
 
         if ($sudahAbsen) {
@@ -220,15 +321,18 @@ class QrController extends Controller
         }
 
         Presensi::create([
-            'nama_siswa' => $siswa->nama,
-            'kelas'      => $kelasNama,
-            'tanggal'    => date('Y-m-d'),
-            'status'     => 'Hadir',
+            'jadwal_id' => $jadwal->id,
+            'siswa_id'  => $siswa->id,
+            'tanggal'    => now()->toDateString(),
+            'status'     => $status,
+            'terlambat_menit' => $terlambatMenit,
         ]);
 
         return view('siswa.scan_result', [
             'status'  => 'success',
-            'message' => 'Absen berhasil! Kehadiran kamu telah dicatat. ✅',
+            'message' => $status === 'Terlambat' 
+                ? "Absen berhasil! Kamu terlambat {$terlambatMenit} menit. ⚠️" 
+                : 'Absen berhasil! Kehadiran kamu telah dicatat. ✅',
             'nama'    => $siswa->nama,
             'kelas'   => $kelasNama,
         ]);

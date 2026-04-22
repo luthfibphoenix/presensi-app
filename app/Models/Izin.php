@@ -15,10 +15,16 @@ class Izin extends Model
         'status',
         'tipe',
         'petugas_piket',
+        'approved_by',
     ];
 
     public function siswa()
     {
         return $this->belongsTo(Siswa::class);
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }

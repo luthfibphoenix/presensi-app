@@ -8,6 +8,12 @@ use App\Http\Controllers\JadwalController;
 use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\IzinController;
+use App\Http\Controllers\JurnalController;
+use App\Http\Controllers\PenilaianController;
+use App\Http\Controllers\BlangkoController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\BkController;
+use App\Http\Controllers\TuController;
 
 // Public routes
 Route::get('/', function () {
@@ -61,6 +67,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profil', function () {
         return view('profil');
     })->name('profil');
+    Route::post('/profil/password', [AuthController::class, 'updatePassword'])->name('profil.password');
 
     // Admin, BK, Piket, Kakonli, Kurikulum, & TU
     Route::middleware('role:Administrator,Guru BK,Guru Piket,Kakonli,Kurikulum,TU')->group(function () {
@@ -73,6 +80,16 @@ Route::middleware('auth')->group(function () {
         
         // Database Siswa
         Route::get('/data-siswa',           [\App\Http\Controllers\SiswaController::class, 'index'])->name('siswa.index');
+
+        // Admin
+        Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+        Route::get('/admin/jurnal', [AdminController::class, 'jurnal'])->name('admin.jurnal');
+        
+        // BK
+        Route::get('/bk/surat-panggil', [BkController::class, 'suratPanggil'])->name('bk.surat_panggil');
+        
+        // TU
+        Route::get('/tu/surat-dinas', [TuController::class, 'suratDinas'])->name('tu.surat_dinas');
     });
 
     // Guru, Wali Kelas, Admin, & Piket — Jadwal & QR
@@ -81,7 +98,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/guru/jadwal/semua',        [\App\Http\Controllers\QrController::class, 'jadwalSemua'])->name('jadwal.semua');
         Route::get('/jadwal',                   [JadwalController::class, 'index'])->name('jadwal.index');
 
-        Route::get('/guru/qr/generate',         [\App\Http\Controllers\QrController::class, 'generateView'])->name('presensi.generate');
+        Route::get('/guru/qr/auto-generate',    [\App\Http\Controllers\QrController::class, 'autoGenerate'])->name('presensi.auto_generate');
+        Route::get('/guru/qr/generate',         [\App\Http\Controllers\QrController::class, 'generateView'])->name('presensi.generate.view');
+        Route::post('/dashboard/generate-qr',   [DashboardController::class, 'generateQR'])->name('dashboard.generate_qr');
+        Route::post('/dashboard/end-session',    [DashboardController::class, 'endSession'])->name('dashboard.end_session');
         Route::post('/guru/qr/generate',        [\App\Http\Controllers\QrController::class, 'generate'])->name('guru.qr.generate');
         Route::get('/guru/mulai-kelas/{sessionId}',  [\App\Http\Controllers\QrController::class, 'mulaiKelas'])->name('guru.mulai.kelas');
         Route::post('/guru/qr/refresh/{sessionId}',  [\App\Http\Controllers\QrController::class, 'refresh'])->name('guru.qr.refresh');
@@ -90,6 +110,26 @@ Route::middleware('auth')->group(function () {
         Route::get('/guru/qr/status',                [\App\Http\Controllers\QrController::class, 'statusIndex'])->name('guru.qr.status.index');
         Route::get('/guru/qr/status/{jadwalId}',     [\App\Http\Controllers\QrController::class, 'status'])->name('guru.qr.status');
         Route::get('/guru/qr/status-json/{jadwalId}',[\App\Http\Controllers\QrController::class, 'statusJson'])->name('guru.qr.status.json');
+
+        // Jurnal Mengajar
+        Route::get('/guru/jurnal', [JurnalController::class, 'index'])->name('guru.jurnal.index');
+        Route::get('/guru/jurnal/create', [JurnalController::class, 'create'])->name('guru.jurnal.create');
+        Route::post('/guru/jurnal', [JurnalController::class, 'store'])->name('guru.jurnal.store');
+        Route::get('/guru/jurnal/cetak', [JurnalController::class, 'cetak'])->name('guru.jurnal.cetak');
+        Route::get('/guru/jurnal/{jurnal}/edit', [JurnalController::class, 'edit'])->name('guru.jurnal.edit');
+        Route::put('/guru/jurnal/{jurnal}', [JurnalController::class, 'update'])->name('guru.jurnal.update');
+        Route::delete('/guru/jurnal/{jurnal}', [JurnalController::class, 'destroy'])->name('guru.jurnal.destroy');
+        
+        // Penilaian
+        Route::get('/guru/penilaian', [PenilaianController::class, 'index'])->name('guru.penilaian.index');
+        Route::get('/guru/penilaian/create', [PenilaianController::class, 'create'])->name('guru.penilaian.create');
+        Route::post('/guru/penilaian', [PenilaianController::class, 'store'])->name('guru.penilaian.store');
+        
+        // Cetak Blangko
+        Route::get('/guru/blangko', [BlangkoController::class, 'index'])->name('guru.blangko.index');
+        Route::get('/guru/blangko/presensi', [BlangkoController::class, 'presensi'])->name('guru.blangko.presensi');
+        Route::get('/guru/blangko/nilai', [BlangkoController::class, 'nilai'])->name('guru.blangko.nilai');
+        Route::get('/guru/blangko/cover', [BlangkoController::class, 'cover'])->name('guru.blangko.cover');
     });
 });
 
@@ -104,4 +144,5 @@ Route::middleware('auth:siswa')->group(function () {
     Route::get('/siswa/profil', function () {
         return view('siswa.profil');
     })->name('siswa.profil');
+    Route::post('/siswa/profil/password', [SiswaAuthController::class, 'updatePassword'])->name('siswa.profil.password');
 });

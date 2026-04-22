@@ -41,4 +41,21 @@ class SiswaAuthController extends Controller
 
         return redirect()->route('siswa.login');
     }
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:3|confirmed',
+        ]);
+
+        $user = Auth::guard('siswa')->user();
+        if (!\Illuminate\Support\Facades\Hash::check($request->current_password, $user->password)) {
+            return back()->with('error', 'Password lama tidak sesuai!');
+        }
+
+        $user->password = \Illuminate\Support\Facades\Hash::make($request->new_password);
+        $user->save();
+
+        return back()->with('success', 'Password berhasil diubah!');
+    }
 }

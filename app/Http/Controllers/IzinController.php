@@ -55,6 +55,7 @@ class IzinController extends Controller
             'status'   => 'approve',
             'tipe'     => $request->tipe,
             'petugas_piket' => auth('web')->user()->fullname ?? 'Petugas Piket',
+            'approved_by' => auth('web')->id(),
         ]);
 
         $this->syncPresensi($izin);
@@ -84,6 +85,7 @@ class IzinController extends Controller
         $izin->update([
             'status' => 'approve',
             'petugas_piket' => auth('web')->user()->fullname ?? 'Petugas Piket',
+            'approved_by' => auth('web')->id(),
         ]);
         
         $this->syncPresensi($izin);
@@ -141,7 +143,7 @@ class IzinController extends Controller
     }
     public function print($id)
     {
-        $izin = Izin::with('siswa.kelas')->findOrFail($id);
+        $izin = Izin::with(['siswa.kelas', 'approvedBy'])->findOrFail($id);
         return view('izin.print', compact('izin'));
     }
 }
