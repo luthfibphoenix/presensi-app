@@ -14,6 +14,7 @@ use App\Http\Controllers\BlangkoController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BkController;
 use App\Http\Controllers\TuController;
+use App\Http\Controllers\OrangtuaAuthController;
 
 // Public routes
 Route::get('/', function () {
@@ -49,17 +50,19 @@ Route::get('/proxy/photo/{userId}', function ($userId) {
 // Auth Guru/Admin - pisah POST per role
 // Auth Unified Login
 Route::get('/login',        [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login',       [AuthController::class, 'login'])->name('login.post');
+Route::post('/logout',      [AuthController::class, 'logout'])->name('logout');
+Route::get('/logout',       [AuthController::class, 'logout']);
+
+// Redirect old login routes
 Route::get('/login/guru',   function() { return redirect()->route('login'); });
 Route::get('/login/piket',  function() { return redirect()->route('login'); });
 Route::get('/login/admin',  function() { return redirect()->route('login'); });
 Route::get('/login/bk',     function() { return redirect()->route('login'); });
 Route::get('/siswa/login',  function() { return redirect()->route('login'); })->name('siswa.login');
-
-Route::post('/login',       [AuthController::class, 'login'])->name('login.post');
-Route::post('/logout',      [AuthController::class, 'logout'])->name('logout');
-
-// Siswa Logout (keep for consistency)
-Route::post('/siswa/logout',[SiswaAuthController::class, 'logout'])->name('siswa.logout');
+Route::get('/ortu/login',   function() { return redirect()->route('login'); })->name('ortu.login');
+Route::post('/siswa/logout', function() { return redirect()->route('logout'); })->name('siswa.logout');
+Route::post('/ortu/logout',  function() { return redirect()->route('logout'); })->name('ortu.logout');
 
 // Web Guard (Admin, Guru, BK, Wali Kelas)
 Route::middleware('auth')->group(function () {
@@ -162,4 +165,15 @@ Route::middleware('auth:siswa')->group(function () {
         return view('siswa.profil');
     })->name('siswa.profil');
     Route::post('/siswa/profil/password', [SiswaAuthController::class, 'updatePassword'])->name('siswa.profil.password');
+});
+
+// Orang Tua Routes
+Route::prefix('ortu')->group(function () {
+    Route::middleware('orangtua')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\OrtuDashboardController::class, 'index'])->name('ortu.dashboard');
+        Route::get('/kehadiran', [\App\Http\Controllers\OrtuDashboardController::class, 'kehadiran'])->name('ortu.kehadiran');
+        Route::get('/izin',      [\App\Http\Controllers\OrtuDashboardController::class, 'izin'])->name('ortu.izin');
+        Route::get('/profil',    [\App\Http\Controllers\OrtuDashboardController::class, 'profil'])->name('ortu.profil');
+        Route::post('/profil/password', [\App\Http\Controllers\OrtuDashboardController::class, 'updatePassword'])->name('ortu.password.update');
+    });
 });

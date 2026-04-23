@@ -160,7 +160,7 @@
 
     {{-- Logout Button for Mobile --}}
     <div class="mt-6 md:hidden px-4">
-        <form action="{{ route('siswa.logout') }}" method="POST">
+        <form action="{{ route('logout') }}" method="POST">
             @csrf
             <button type="submit" class="w-full py-4 bg-white text-red-600 font-bold rounded-2xl shadow-sm border border-red-50 flex items-center justify-center gap-2 hover:bg-red-50 transition-colors">
                 <i class="fas fa-sign-out-alt"></i> Keluar dari Akun

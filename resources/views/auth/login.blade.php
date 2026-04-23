@@ -5,66 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sistem Presensi SMKN7</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .input-focus:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-100">
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4 shadow-lg shadow-blue-200">
-                <i class="fas fa-fingerprint text-white text-3xl"></i>
+<body class="min-h-screen flex items-center justify-center p-6 bg-slate-100 md:overflow-hidden">
+    <div class="max-w-md w-full bg-white p-10 rounded-[3rem] shadow-2xl shadow-slate-200 border border-white">
+        <!-- Fingerprint Icon -->
+        <div class="mb-6 flex justify-center">
+            <div class="w-20 h-20 bg-indigo-500 rounded-3xl flex items-center justify-center text-white text-4xl shadow-lg shadow-indigo-100">
+                <i class="fas fa-fingerprint"></i>
             </div>
-            <h1 class="text-2xl font-bold text-slate-900">Selamat Datang</h1>
-            <p class="text-slate-500 text-sm mt-2">Silakan login untuk mengakses Sistem Presensi SMKN7</p>
         </div>
 
-        @if ($errors->any())
-            <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6">
-                <ul class="list-disc pl-5 text-xs font-medium">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+        <!-- Titles -->
+        <div class="text-center">
+            <h1 class="text-3xl font-extrabold text-slate-800 mb-2">Selamat Datang</h1>
+            <p class="text-slate-400 text-sm font-medium mb-10 leading-relaxed px-4">Silakan login untuk mengakses Sistem Presensi SMKN7</p>
+        </div>
 
-        <form action="{{ route('login.post') }}" method="POST">
+        <!-- Form -->
+        <form action="{{ route('login.post') }}" method="POST" class="text-left space-y-6">
             @csrf
-            <div class="mb-5">
-                <label for="username" class="block text-slate-700 text-sm font-semibold mb-2">Username</label>
-                <div class="relative group">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <i class="fas fa-user text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
-                    </div>
-                    <input type="text" id="username" name="username" value="{{ old('username') }}" 
-                           class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" 
-                           placeholder="Masukkan identitas Anda" required autofocus>
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2 ml-1">Username / NIP</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-5 flex items-center text-blue-500">
+                        <i class="fas fa-user text-sm"></i>
+                    </span>
+                    <input type="text" name="username" value="{{ old('username') }}" placeholder="Masukkan identitas Anda" class="w-full pl-12 pr-6 py-4 rounded-full border border-slate-200 bg-slate-50/50 input-focus transition-all text-sm font-medium text-slate-700" required>
+                </div>
+                @error('username')
+                    <p class="text-red-500 text-[10px] mt-2 ml-4 font-bold">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2 ml-1">Password</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-5 flex items-center text-blue-500">
+                        <i class="fas fa-lock text-sm"></i>
+                    </span>
+                    <input type="password" name="password" placeholder="Masukkan password" class="w-full pl-12 pr-6 py-4 rounded-full border border-slate-200 bg-slate-50/50 input-focus transition-all text-sm font-medium text-slate-700" required>
                 </div>
             </div>
 
-            <div class="mb-8">
-                <label for="password" class="block text-slate-700 text-sm font-semibold mb-2">Password</label>
-                <div class="relative group">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <i class="fas fa-lock text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
-                    </div>
-                    <input type="password" id="password" name="password" 
-                           class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" 
-                           placeholder="Masukkan password" required>
-                </div>
-            </div>
-
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-200 hover:shadow-blue-300 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
-                Masuk ke Sistem
-            </button>
-            
-            <div class="mt-8 pt-6 border-t border-slate-100 text-center">
-                <p class="text-xs text-slate-400">© 2026 SMK Negeri 7. All rights reserved.</p>
+            <div class="pt-4">
+                <button type="submit" class="w-full py-4 bg-blue-500 text-white font-bold rounded-full shadow-xl shadow-blue-100 hover:bg-blue-600 transition-all active:scale-[0.98]">
+                    Masuk ke Sistem
+                </button>
             </div>
         </form>
+
+        <!-- Footer -->
+        <p class="mt-12 text-center text-slate-300 text-[10px] font-bold uppercase tracking-widest">
+            SMK Negeri 7 Purworejo &copy; 2026
+        </p>
     </div>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Sistem Presensi SMKN7</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -10,6 +10,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -53,10 +58,21 @@
         /* Smooth Scrolling */
         html {
             scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
         }
         
         @media (max-width: 768px) {
-            main { -webkit-overflow-scrolling: touch; }
+            main { 
+                -webkit-overflow-scrolling: touch; 
+                padding-bottom: calc(5rem + var(--safe-area-inset-bottom)) !important;
+            }
+            header {
+                padding-top: var(--safe-area-inset-top) !important;
+                height: calc(4rem + var(--safe-area-inset-top)) !important;
+            }
+            .mobile-nav {
+                padding-bottom: var(--safe-area-inset-bottom) !important;
+            }
         }
     </style>
 </head>
@@ -151,7 +167,7 @@
                         @endif
 
                         <div class="border-t border-gray-50 py-1">
-                            <form action="{{ auth('siswa')->check() ? route('siswa.logout') : route('logout') }}" method="POST">
+                            <form action="{{ route('logout') }}" method="POST">
                                 @csrf
                                 <button type="submit" class="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-gray-400 hover:bg-gray-50 transition text-left font-semibold">
                                     <i class="fas fa-sign-out-alt"></i> Logout
@@ -165,7 +181,7 @@
             <!-- Content Body -->
             <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-100 no-scrollbar">
                 <div class="max-w-7xl mx-auto h-full flex flex-col">
-                    @if (session('success'))
+                    @if (session('success') && !request()->routeIs('siswa.dashboard'))
                         <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-3 mb-4 rounded-xl shadow-sm animate-page-content flex-shrink-0">
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-check-circle"></i>
@@ -188,7 +204,7 @@
         $isTU = str_contains($userPos, 'tata usaha') || str_contains($userPos, 'tu');
     @endphp
 
-    <div class="lg:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-50">
+    <div class="lg:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-xl border-t border-gray-100 flex justify-around shadow-[0_-8px_30px_rgb(0,0,0,0.04)] z-50 mobile-nav">
         @if(auth('siswa')->check())
             {{-- Siswa Menu --}}
             <a href="{{ route('siswa.dashboard') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('siswa.dashboard') ? 'text-emerald-600' : 'text-gray-500' }}">
@@ -199,11 +215,11 @@
                 <i class="fas fa-history text-lg mb-1"></i>
                 <span class="text-[10px] font-medium">Riwayat</span>
             </a>
-            <a href="{{ route('presensi.scan') }}" class="flex flex-col items-center justify-center w-full py-3 relative {{ request()->routeIs('presensi.scan') ? 'text-emerald-600' : 'text-gray-500' }}">
-                <div class="absolute -top-4 bg-emerald-600 text-white rounded-full p-3 shadow-lg border-4 border-gray-100">
-                    <i class="fas fa-qrcode text-xl"></i>
+            <a href="{{ route('presensi.scan') }}" class="flex flex-col items-center justify-center w-full py-3 relative group {{ request()->routeIs('presensi.scan') ? 'text-emerald-600' : 'text-gray-400' }}">
+                <div class="absolute -top-7 bg-emerald-500 text-white rounded-full w-16 h-16 shadow-[0_10px_25px_rgba(16,185,129,0.4)] border-4 border-white flex items-center justify-center transition-all group-active:scale-90 z-20">
+                    <i class="fas fa-qrcode text-2xl"></i>
                 </div>
-                <span class="text-[10px] font-medium mt-6">Scan</span>
+                <span class="text-[9px] font-black uppercase tracking-[0.1em] mt-7">Scan</span>
             </a>
             <a href="{{ route('izin.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('izin.index') ? 'text-emerald-600' : 'text-gray-500' }}">
                 <i class="fas fa-envelope text-lg mb-1"></i>
@@ -223,11 +239,11 @@
                 <i class="fas fa-plane-departure text-lg mb-1"></i>
                 <span class="text-[10px] font-medium">SPD</span>
             </a>
-            <a href="{{ route('laporan.rekap_harian') }}" class="flex flex-col items-center justify-center w-full py-3 relative {{ request()->routeIs('laporan.rekap_harian') ? 'text-indigo-600' : 'text-gray-500' }}">
-                <div class="absolute -top-4 bg-indigo-600 text-white rounded-full p-3 shadow-lg border-4 border-gray-100">
-                    <i class="fas fa-calendar-check text-xl"></i>
+            <a href="{{ route('laporan.rekap_harian') }}" class="flex flex-col items-center justify-center w-full py-3 relative group {{ request()->routeIs('laporan.rekap_harian') ? 'text-indigo-600' : 'text-gray-400' }}">
+                <div class="absolute -top-7 bg-indigo-600 text-white rounded-full w-16 h-16 shadow-[0_10px_25px_rgba(79,70,229,0.4)] border-4 border-white flex items-center justify-center transition-all group-active:scale-90 z-20">
+                    <i class="fas fa-calendar-check text-2xl"></i>
                 </div>
-                <span class="text-[10px] font-medium mt-6">Rekap</span>
+                <span class="text-[9px] font-black uppercase tracking-[0.1em] mt-7">Rekap</span>
             </a>
             <a href="{{ route('siswa.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('siswa.index') ? 'text-indigo-600' : 'text-gray-500' }}">
                 <i class="fas fa-users text-lg mb-1"></i>
@@ -268,11 +284,11 @@
                 </a>
             @endif
 
-            <a href="{{ route('guru.qr.status.index') }}" class="flex flex-col items-center justify-center w-full py-3 relative {{ request()->routeIs('guru.qr.status.index') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
-                <div class="absolute -top-4 bg-{{ $btnColor }}-600 text-white rounded-full p-3 shadow-lg border-4 border-gray-100">
-                    <i class="fas fa-clipboard-check text-xl"></i>
+            <a href="{{ route('guru.qr.status.index') }}" class="flex flex-col items-center justify-center w-full py-3 relative group {{ request()->routeIs('guru.qr.status.index') ? 'text-'.$btnColor.'-600' : 'text-gray-400' }}">
+                <div class="absolute -top-7 bg-{{ $btnColor }}-600 text-white rounded-full w-16 h-16 shadow-[0_10px_25px_rgba(0,0,0,0.1)] border-4 border-white flex items-center justify-center transition-all group-active:scale-90 z-20">
+                    <i class="fas fa-clipboard-check text-2xl"></i>
                 </div>
-                <span class="text-[10px] font-medium mt-6">Status</span>
+                <span class="text-[9px] font-black uppercase tracking-[0.1em] mt-7">Status</span>
             </a>
 
             @if($loginRole === 'piket')
@@ -299,11 +315,7 @@
         @endif
     </div>
 
-    <style>
-        @media (max-width: 1024px) {
-            main.flex-1 { padding-bottom: 5rem !important; }
-        }
-    </style>
+
     @endauth
 
     <script>

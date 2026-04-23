@@ -274,27 +274,18 @@ class QrController extends Controller
             ->first();
 
         if (!$qrSession) {
-            return view('siswa.scan_result', [
-                'status'  => 'error',
-                'message' => 'QR Code tidak valid atau sudah tidak berlaku.',
-            ]);
+            return redirect()->route('siswa.dashboard')->with('error', 'QR Code tidak valid atau sudah tidak berlaku.');
         }
 
         if (Carbon::now()->greaterThan($qrSession->expired_at)) {
-            return view('siswa.scan_result', [
-                'status'  => 'expired',
-                'message' => 'QR Code sudah kadaluarsa. Minta guru untuk melakukan Refresh QR.',
-            ]);
+            return redirect()->route('siswa.dashboard')->with('error', 'QR Code sudah kadaluarsa. Minta guru untuk melakukan Refresh QR.');
         }
 
         $kelasNama = optional($siswa->kelas)->nama_kelas ?? $siswa->nama_kelas ?? 'Unknown';
 
         // Validasi apakah siswa berada di kelas yang benar sesuai jadwal QR
         if ($qrSession->jadwal->kelas !== $kelasNama) {
-            return view('siswa.scan_result', [
-                'status'  => 'error',
-                'message' => 'Maaf, QR Code ini ditujukan untuk kelas ' . $qrSession->jadwal->kelas . '. Anda berada di kelas ' . $kelasNama . '.',
-            ]);
+            return redirect()->route('siswa.dashboard')->with('error', 'Maaf, QR Code ini ditujukan untuk kelas ' . $qrSession->jadwal->kelas . '. Anda berada di kelas ' . $kelasNama . '.');
         }
 
         $jadwal = $qrSession->jadwal;
@@ -317,10 +308,7 @@ class QrController extends Controller
             ->exists();
 
         if ($sudahAbsen) {
-            return view('siswa.scan_result', [
-                'status'  => 'info',
-                'message' => 'Kamu sudah melakukan absen hari ini! ✅',
-            ]);
+            return redirect()->route('siswa.dashboard')->with('info', 'Kamu sudah melakukan absen hari ini! ✅');
         }
 
         Presensi::create([
@@ -331,13 +319,6 @@ class QrController extends Controller
             'terlambat_menit' => $terlambatMenit,
         ]);
 
-        return view('siswa.scan_result', [
-            'status'  => 'success',
-            'message' => $status === 'Terlambat' 
-                ? "Absen berhasil! Kamu terlambat {$terlambatMenit} menit. ⚠️" 
-                : 'Absen berhasil! Kehadiran kamu telah dicatat. ✅',
-            'nama'    => $siswa->nama,
-            'kelas'   => $kelasNama,
-        ]);
+        return redirect()->route('siswa.dashboard')->with('success', 'Absensi berhasil dicatat! Status: ' . $status . ($status === 'Terlambat' ? " ({$terlambatMenit} menit)" : ''));
     }
 }

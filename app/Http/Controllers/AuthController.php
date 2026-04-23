@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -14,6 +16,9 @@ class AuthController extends Controller
         if (Auth::guard('siswa')->check()) {
             return redirect()->route('siswa.dashboard');
         }
+        if (Auth::guard('orangtua')->check()) {
+            return redirect()->route('ortu.dashboard');
+        }
         return view('auth.login');
     }
 
@@ -27,70 +32,65 @@ class AuthController extends Controller
         $inputIdentifier = trim($request->username);
         $inputPassword = $request->password;
 
-        // 1. CEK SEBAGAI GURU / STAFF (User Model)
+        // 1. CEK TABEL USERS (Administrator, Guru, Staff)
         $user = \App\Models\User::where(function($q) use ($inputIdentifier) {
             $q->whereRaw('LOWER(TRIM(username)) = ?', [strtolower($inputIdentifier)])
-            ->orWhereRaw('TRIM(nip) = ?', [$inputIdentifier])
-            ->orWhereRaw('LOWER(TRIM(fullname)) = ?', [strtolower($inputIdentifier)]);
-        })
-        ->orderByRaw("CASE WHEN position = 'Piket' THEN 1 ELSE 0 END")
-        ->first();
+            ->orWhereRaw('TRIM(nip) = ?', [$inputIdentifier]);
+        })->first();
 
-        if ($user) {
-            $dbHash = trim($user->password);
-            $dbHashPiket = trim($user->password_piket ?? '');
-
-            // Cek password guru (222)
-            if (Hash::check($inputPassword, $dbHash)) {
-                Auth::guard('web')->login($user);
-                $request->session()->regenerate();
-                session(['login_role' => 'guru']);
-                return redirect()->intended(route('dashboard'));
-            }
-
-            // Cek password piket (333)
-            if ($dbHashPiket && Hash::check($inputPassword, $dbHashPiket)) {
-                Auth::guard('web')->login($user);
-                $request->session()->regenerate();
-                session(['login_role' => 'piket']);
-                return redirect()->intended(route('dashboard'));
-            }
-
-            // Cek password umum (fallback)
-            if (Hash::check($inputPassword, $dbHash)) {
-                 Auth::guard('web')->login($user);
-                 $request->session()->regenerate();
-                 // Tentukan role default dari position
-                 $pos = strtolower($user->position ?? '');
-                 $role = 'guru';
-                 if (str_contains($pos, 'piket')) $role = 'piket';
-                 if (str_contains($pos, 'administrator')) $role = 'admin';
-                 if (str_contains($pos, 'bk')) $role = 'bk';
-                 session(['login_role' => $role]);
-                 return redirect()->intended(route('dashboard'));
-            }
+        if ($user && Hash::check($inputPassword, $user->password)) {
+            Auth::guard('web')->login($user, $request->filled('remember'));
+            $request->session()->regenerate();
+            
+            // Tentukan role default dari position untuk session
+            $pos = strtolower($user->position ?? '');
+            $role = 'guru';
+            if (str_contains($pos, 'piket')) $role = 'piket';
+            if (str_contains($pos, 'administrator')) $role = 'admin';
+            if (str_contains($pos, 'bk')) $role = 'bk';
+            if (str_contains($pos, 'tu') || str_contains($pos, 'tata usaha')) $role = 'tu';
+            
+            session(['login_role' => $role]);
+            return redirect()->intended(route('dashboard'));
         }
 
-        // 2. CEK SEBAGAI SISWA (Siswa Model)
-        $siswa = \App\Models\Siswa::where('username', $inputIdentifier)->first();
+        // 2. CEK TABEL SISWAS (Siswa)
+        $siswa = \App\Models\Siswa::where('username', $inputIdentifier)
+            ->orWhere('nis', $inputIdentifier)
+            ->first();
+            
         if ($siswa && Hash::check($inputPassword, $siswa->password)) {
-            Auth::guard('siswa')->login($siswa);
+            Auth::guard('siswa')->login($siswa, $request->filled('remember'));
             $request->session()->regenerate();
             return redirect()->intended(route('siswa.dashboard'));
         }
 
+        // 3. CEK TABEL ORANGTUAS (Orang Tua)
+        $ortu = \App\Models\Orangtua::where('username', $inputIdentifier)->first();
+        if ($ortu && Hash::check($inputPassword, $ortu->password)) {
+            Auth::guard('orangtua')->login($ortu, $request->filled('remember'));
+            $request->session()->regenerate();
+            return redirect()->intended(route('ortu.dashboard'));
+        }
+
         return back()->withErrors([
-            'username' => 'Kredensial yang diberikan tidak cocok dengan data kami.',
+            'username' => 'Username atau password yang Anda masukkan salah.',
         ])->onlyInput('username');
     }
 
     public function logout(Request $request)
     {
-        Auth::guard('web')->logout();
+        // Logout dari semua guard yang aktif
+        if (Auth::guard('web')->check()) Auth::guard('web')->logout();
+        if (Auth::guard('siswa')->check()) Auth::guard('siswa')->logout();
+        if (Auth::guard('orangtua')->check()) Auth::guard('orangtua')->logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/');
+
+        return redirect()->route('login');
     }
+
     public function updatePassword(Request $request)
     {
         $request->validate([

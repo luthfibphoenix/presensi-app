@@ -47,6 +47,11 @@ return [
             'driver' => 'session',
             'provider' => 'siswas',
         ],
+
+        'orangtua' => [
+            'driver' => 'session',
+            'provider' => 'orangtuas',
+        ],
     ],
 
     /*
@@ -75,6 +80,11 @@ return [
         'siswas' => [
             'driver' => 'eloquent',
             'model' => App\Models\Siswa::class,
+        ],
+
+        'orangtuas' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Orangtua::class,
         ],
     ],
 
