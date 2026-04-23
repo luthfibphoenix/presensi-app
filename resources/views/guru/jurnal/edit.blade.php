@@ -126,9 +126,9 @@
             </div>
         </div>
 
-        <div class="flex justify-end mt-4">
-            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Update Jurnal & Presensi
+        <div class="flex justify-end mt-8 pb-24 md:pb-0">
+            <button type="submit" class="w-full md:w-auto bg-blue-600 text-white px-8 py-4 md:py-3 rounded-2xl font-black hover:bg-blue-700 focus:ring-4 focus:ring-blue-100 transition-all shadow-lg shadow-blue-100 uppercase tracking-widest text-[10px] md:text-xs">
+                <i class="fas fa-save mr-2"></i> Update Jurnal & Presensi
             </button>
         </div>
     </form>

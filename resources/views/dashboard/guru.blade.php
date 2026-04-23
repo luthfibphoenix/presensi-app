@@ -265,26 +265,36 @@
         
         <div class="space-y-4 pb-4">
             @forelse($jadwalHariIni as $jadwal)
-                <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-blue-600"></div>
+                @php
+                    $waktuSelesaiStr = jamPelajaranToWaktu($jadwal->jam_selesai);
+                    $waktuSelesai = \Carbon\Carbon::createFromFormat('H:i', $waktuSelesaiStr, 'Asia/Jakarta')->addMinutes(45);
+                    $isSelesai = \Carbon\Carbon::now('Asia/Jakarta')->greaterThan($waktuSelesai);
+                @endphp
+                <div class="{{ $isSelesai ? 'bg-gray-50 grayscale opacity-60' : 'bg-white shadow-sm' }} p-5 rounded-3xl border border-gray-100 relative overflow-hidden transition-all duration-300">
+                    <div class="absolute top-0 left-0 w-1 h-full {{ $isSelesai ? 'bg-gray-400' : 'bg-blue-600' }}"></div>
                     <div class="flex items-start justify-between">
                         <div class="flex items-center gap-4 pl-1">
-                            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg border border-blue-100 flex-shrink-0">
+                            <div class="w-10 h-10 rounded-xl {{ $isSelesai ? 'bg-gray-200 text-gray-500' : 'bg-blue-50 text-blue-600 border-blue-100' }} flex items-center justify-center text-lg border flex-shrink-0">
                                 <i class="fas fa-book-reader text-sm"></i>
                             </div>
                             <div>
-                                <h3 class="font-black text-gray-800 leading-tight text-sm">{{ $jadwal->mata_pelajaran }}</h3>
+                                <h3 class="font-black {{ $isSelesai ? 'text-gray-500' : 'text-gray-800' }} leading-tight text-sm">{{ $jadwal->mata_pelajaran }}</h3>
                                 <div class="flex items-center gap-3 mt-1">
-                                    <p class="text-[9px] font-black text-blue-500 uppercase tracking-widest">Kelas {{ $jadwal->kelas }}</p>
-                                    <span class="text-[9px] font-bold text-gray-300 uppercase flex items-center gap-1">
+                                    <p class="text-[9px] font-black {{ $isSelesai ? 'text-gray-400' : 'text-blue-500' }} uppercase tracking-widest">Kelas {{ $jadwal->kelas }}</p>
+                                    <span class="text-[9px] font-bold {{ $isSelesai ? 'text-gray-400' : 'text-gray-300' }} uppercase flex items-center gap-1">
                                         <i class="far fa-clock"></i>
-                                        {{ jamPelajaranToWaktu($jadwal->jam_mulai) }} – {{ \Carbon\Carbon::createFromFormat('H:i', jamPelajaranToWaktu($jadwal->jam_selesai), 'Asia/Jakarta')->addMinutes(45)->format('H:i') }}
+                                        {{ jamPelajaranToWaktu($jadwal->jam_mulai) }} – {{ $waktuSelesai->format('H:i') }}
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        <div class="px-2 py-1 bg-gray-50 rounded-lg text-[8px] font-black text-gray-400 uppercase tracking-widest border border-gray-100">
-                            Jam {{ $jadwal->jam_mulai }}-{{ $jadwal->jam_selesai }}
+                        <div class="flex flex-col items-end gap-2">
+                            <div class="px-2 py-1 bg-gray-50 rounded-lg text-[8px] font-black text-gray-400 uppercase tracking-widest border border-gray-100">
+                                Jam {{ $jadwal->jam_mulai }}-{{ $jadwal->jam_selesai }}
+                            </div>
+                            @if($isSelesai)
+                            <span class="text-[7px] font-black text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded-full uppercase tracking-tighter">Selesai</span>
+                            @endif
                         </div>
                     </div>
                 </div>

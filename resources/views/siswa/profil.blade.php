@@ -40,14 +40,14 @@
                 </div>
             </div>
 
-            {{-- Info Details Grid --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 @php
                     $fields = [
-                        ['label' => 'Nama Lengkap', 'icon' => 'fa-id-card', 'value' => $siswa->nama, 'color' => 'emerald'],
-                        ['label' => 'Kelas',        'icon' => 'fa-users',   'value' => $siswa->kelas->nama_kelas ?? '-', 'color' => 'green'],
-                        ['label' => 'Username',     'icon' => 'fa-user',    'value' => $siswa->username, 'color' => 'teal'],
-                        ['label' => 'Kode Kelas',   'icon' => 'fa-tag',     'value' => $siswa->kelas->kode_kelas ?? '-', 'color' => 'emerald'],
+                        ['label' => 'NIS',          'icon' => 'fa-fingerprint', 'value' => $siswa->nis ?? '-', 'color' => 'blue'],
+                        ['label' => 'NISN',         'icon' => 'fa-id-badge',    'value' => $siswa->nisn ?? '-', 'color' => 'indigo'],
+                        ['label' => 'Nama Lengkap', 'icon' => 'fa-id-card',     'value' => $siswa->nama, 'color' => 'emerald'],
+                        ['label' => 'Kelas',        'icon' => 'fa-users',       'value' => $siswa->kelas->nama_kelas ?? '-', 'color' => 'green'],
+                        ['label' => 'Username',     'icon' => 'fa-user',        'value' => $siswa->username, 'color' => 'teal'],
+                        ['label' => 'Kode Kelas',   'icon' => 'fa-tag',         'value' => $siswa->kelas->kode_kelas ?? '-', 'color' => 'emerald'],
                     ];
                 @endphp
 
