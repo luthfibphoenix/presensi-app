@@ -68,6 +68,7 @@
                 this.showQrModal = true;
                 this.startTimer(data.expired_at);
             } else if (data.status === 'multiple') {
+                this.qrData = data;
                 this.multipleJadwals = data.jadwals;
                 this.showChoiceModal = true;
             } else {
@@ -345,8 +346,8 @@
     <div x-show="showChoiceModal" x-transition.opacity class="fixed inset-0 z-[60] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4" x-cloak>
         <div @click.outside="showChoiceModal = false" class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
             <div class="p-6 bg-blue-600 text-white">
-                <h3 class="text-xl font-black">Pilih Jadwal Aktif</h3>
-                <p class="text-sm text-blue-100 mt-1">Ditemukan lebih dari satu kelas pada jam ini.</p>
+                <h3 class="text-xl font-black">Pilih Jadwal Kelas</h3>
+                <p class="text-sm text-blue-100 mt-1" x-text="qrData?.message || 'Ditemukan lebih dari satu kelas pada jam ini.'"></p>
             </div>
             <div class="p-4 space-y-3 max-h-96 overflow-y-auto no-scrollbar">
                 <template x-for="jadwal in multipleJadwals" :key="jadwal.id">

@@ -13,14 +13,12 @@
             margin: 0;
             padding: 0;
             color: #000;
-            overflow: hidden;
             page-break-after: avoid;
         }
         .container {
             width: 210mm;
             margin: 0 auto;
             position: relative;
-            overflow: hidden;
         }
         
         /* Format 1: 1/3 A4 */
@@ -30,7 +28,6 @@
             padding: 5mm 12mm;
             box-sizing: border-box;
             position: relative;
-            overflow: hidden;
             border-bottom: 1px dashed #999;
             page-break-after: avoid;
         }
@@ -44,7 +41,6 @@
             height: 296mm;
             padding: 15mm 20mm;
             box-sizing: border-box;
-            overflow: hidden;
             page-break-after: avoid;
         }
         
@@ -239,7 +235,7 @@
                         <tr>
                             <td class="label">Alasan / Keperluan</td>
                             <td>:</td>
-                            <td>{{ $izin->alasan }}</td>
+                            <td>{{ $izin->tipe }}</td>
                         </tr>
                     </table>
                 </div>
@@ -308,12 +304,12 @@
                         <tr>
                             <td class="label">Alasan / Keperluan</td>
                             <td>:</td>
-                            <td>{{ $izin->alasan }}</td>
+                            <td>{{ $izin->tipe }}</td>
                         </tr>
                         <tr>
                             <td class="label">Keterangan Tambahan</td>
                             <td>:</td>
-                            <td>{{ $izin->tipe == 'Sakit' ? 'Sakit' : 'Kepentingan Keluarga' }}</td>
+                            <td>{{ $izin->alasan }}</td>
                         </tr>
                     </table>
 

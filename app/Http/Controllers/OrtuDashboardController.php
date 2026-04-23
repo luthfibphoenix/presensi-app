@@ -17,14 +17,49 @@ class OrtuDashboardController extends Controller
         $siswa = $ortu->siswa;
         
         // Status Hari Ini
+        $tanggal = now()->toDateString();
+        $dayMap = [
+            'Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
+            'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'
+        ];
+        $hari = $dayMap[now()->format('l')];
+
         $presensiHariIni = Presensi::where('siswa_id', $siswa->id)
-            ->whereDate('tanggal', Carbon::today())
+            ->whereDate('tanggal', $tanggal)
+            ->with('jadwal')
             ->get();
 
-        // Cek Kehadiran (Anggap jika ada record hadir/terlambat berarti masuk)
-        $isHadir = $presensiHariIni->whereIn('status', ['Hadir', 'Terlambat'])->count() > 0;
-        // Cek Alfa (Jika ada status Alfa)
-        $isAlfa = $presensiHariIni->where('status', 'Alfa')->count() > 0;
+        // Get total schedules for this student's class today
+        $totalSchedules = \App\Models\Jadwal::where('kelas', $siswa->kelas->nama_kelas)
+            ->where('hari', $hari)
+            ->count();
+
+        $presentCount = $presensiHariIni->whereIn('status', ['Hadir', 'Terlambat'])->count();
+        
+        // Determine Daily Status
+        $statusHarian = 'Belum Ada Data';
+        $colorClass = 'text-gray-500';
+
+        $izin = Izin::where('siswa_id', $siswa->id)
+            ->where('tanggal', $tanggal)
+            ->where('status', 'Disetujui')
+            ->first();
+
+        if ($izin) {
+            $statusHarian = $izin->tipe;
+            $colorClass = 'text-blue-500';
+        } elseif ($totalSchedules > 0) {
+            if ($presentCount == $totalSchedules) {
+                $statusHarian = 'Hadir Penuh';
+                $colorClass = 'text-green-500';
+            } elseif ($presentCount > 0) {
+                $statusHarian = 'Hadir Sebagian';
+                $colorClass = 'text-yellow-500';
+            } elseif ($presensiHariIni->where('status', 'Alfa')->count() > 0) {
+                $statusHarian = 'Alfa';
+                $colorClass = 'text-red-500';
+            }
+        }
         
         // Rekap Kehadiran Bulan Ini
         $startOfMonth = Carbon::now()->startOfMonth();
@@ -41,7 +76,7 @@ class OrtuDashboardController extends Controller
             'izin' => $presensiBulanIni->whereIn('status', ['Izin', 'Sakit'])->count(),
         ];
 
-        return view('ortu.dashboard', compact('siswa', 'rekap', 'presensiHariIni', 'isHadir', 'isAlfa'));
+        return view('ortu.dashboard', compact('siswa', 'rekap', 'presensiHariIni', 'statusHarian', 'colorClass', 'presentCount', 'totalSchedules'));
     }
 
     public function kehadiran(Request $request)

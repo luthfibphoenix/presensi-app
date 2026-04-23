@@ -34,9 +34,18 @@ class JurnalController extends Controller
             $kelas = \App\Models\Kelas::orderBy('nama_kelas')->get();
         }
 
-        // Since students might be needed based on class selection, we can just pass all students grouped by class or fetch via AJAX.
-        // For simplicity, passing all students grouped by class ID or name, or we can use AJAX. Let's assume we use alpine to filter.
-        $siswas = \App\Models\Siswa::with('kelas')->get();
+        // Fetch students and their approved permissions for today
+        $tanggal = now()->toDateString();
+        $siswas = \App\Models\Siswa::with('kelas')->get()->map(function($siswa) use ($tanggal) {
+            $izin = \App\Models\Izin::where('siswa_id', $siswa->id)
+                ->where('tanggal', $tanggal)
+                ->where('status', 'Disetujui')
+                ->first();
+            
+            $siswa->auto_status = $izin ? $izin->tipe : 'Hadir';
+            return $siswa;
+        });
+
         return view('guru.jurnal.create', compact('mapels', 'kelas', 'siswas'));
     }
 

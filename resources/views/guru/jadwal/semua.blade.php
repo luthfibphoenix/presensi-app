@@ -44,7 +44,7 @@
                 $isHariIni  = ($jadwal->hari === $hariIni);
                 $isWaktunya = $isHariIni && ($nowTime >= $jamMulaiStr && $nowTime <= $jamSelesaiStr);
                 $isAkanMulai= $isHariIni && ($nowTime >= date('H:i', strtotime($jamMulaiStr . ' -15 minutes')) && $nowTime < $jamMulaiStr);
-                $bolehMulai = $isWaktunya || $isAkanMulai;
+                $bolehMulai = $isHariIni; // Boleh mulai kapan saja selama hari ini
             @endphp
             <div class="flex items-center justify-between px-6 py-4 gap-4 {{ $isWaktunya ? 'bg-green-50' : '' }}">
                 <div class="flex items-center gap-4">

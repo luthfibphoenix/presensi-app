@@ -1,26 +1,37 @@
-@props(['role' => 'guru'])
+@props(['role' => session('login_role', 'guru')])
 
 @php
     $user = auth('web')->user() ?? auth('siswa')->user();
     $name = $user->fullname ?? $user->nama ?? 'User';
-    $position = ($role === 'siswa') ? 'Siswa' : ($user->position ?? 'Guru');
+    $displayPosition = match($role) {
+        'siswa' => 'Siswa',
+        'piket' => 'Guru Piket',
+        'admin' => 'Administrator',
+        'bk' => 'Guru BK',
+        'tu' => 'Tata Usaha',
+        default => 'Guru'
+    };
+    $pos = strtolower($user->position ?? '');
     
-     $pos = strtolower($user->position ?? '');
-    if ($role === 'siswa' || str_contains($pos, 'siswa')) {
+    // Gunakan $role dari session untuk menentukan warna
+    if ($role === 'siswa') {
         $bgSidebar = 'bg-emerald-900';
         $bgActive = 'bg-emerald-700/50';
-    } elseif (str_contains($pos, 'kepala sekolah')) {
-        $bgSidebar = 'bg-zinc-950';
-        $bgActive = 'bg-zinc-800/50';
-    } elseif (str_contains($pos, 'piket')) {
-        $bgSidebar = 'bg-orange-700';
-        $bgActive = 'bg-orange-600/50';
-    } elseif ($role === 'admin' || str_contains($pos, 'admin') || str_contains($pos, 'administrator')) {
+    } elseif ($role === 'admin' || str_contains($pos, 'administrator')) {
         $bgSidebar = 'bg-purple-900';
         $bgActive = 'bg-purple-700/50';
-    } else {
+    } elseif ($role === 'piket') {
+        $bgSidebar = 'bg-orange-700';
+        $bgActive = 'bg-orange-600/50';
+    } elseif ($role === 'bk') {
+        $bgSidebar = 'bg-zinc-950';
+        $bgActive = 'bg-zinc-800/50';
+    } elseif ($role === 'tu') {
         $bgSidebar = 'bg-blue-900';
         $bgActive = 'bg-blue-700/50';
+    } else {
+        $bgSidebar = 'bg-blue-900'; // Biru Royal yang vibrant sesuai gambar
+        $bgActive = 'bg-blue-600/50';
     }
 
     $fallbackUrl = 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=fff&color=333&bold=true&size=128';
@@ -82,7 +93,7 @@
                 ['label' => 'Laporan Kehadiran', 'route' => 'laporan.index', 'icon' => 'fas fa-chart-line'],
             ],
         ];
-    } elseif (str_contains($pos, 'tata usaha') || str_contains($pos, 'tu')) {
+    } elseif ($role === 'tu') {
         $menus = [
             'UTAMA' => [
                 ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'fas fa-th-large'],
@@ -93,7 +104,7 @@
                 ['label' => 'Rekap Harian', 'route' => 'laporan.rekap_harian', 'icon' => 'fas fa-calendar-check'],
             ],
         ];
-    } elseif (str_contains($pos, 'bk') || str_contains($pos, 'bimbingan konseling')) {
+    } elseif ($role === 'bk') {
         $menus = [
             'UTAMA' => [
                 ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'fas fa-th-large'],
@@ -109,7 +120,7 @@
                 ['label' => 'Catatan Siswa', 'route' => 'guru.catatan.index', 'icon' => 'fas fa-sticky-note'],
             ],
         ];
-    } elseif ($role === 'piket' || str_contains($pos, 'piket')) {
+    } elseif ($role === 'piket') {
         $menus = [
             'UTAMA' => [
                 ['label' => 'Beranda', 'route' => 'dashboard', 'icon' => 'fas fa-th-large'],
@@ -129,7 +140,7 @@
                 ['label' => 'Pengajuan Izin', 'route' => 'izin.index', 'icon' => 'fas fa-file-signature'],
             ]
         ];
-    } elseif ($role === 'kepala_sekolah' || str_contains(strtolower($user->position ?? ''), 'kepala sekolah')) {
+    } elseif ($role === 'kepala_sekolah') {
         $menus = [
             'UTAMA' => [
                 ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'fas fa-th-large'],
@@ -207,7 +218,7 @@
                         Mode Piket Aktif
                     </span>
                     <span class="text-[10px] font-bold text-orange-100 uppercase tracking-tighter">
-                        {{ $position }}
+                        {{ $displayPosition }}
                     </span>
                 </div>
             @elseif(str_contains(strtolower($user->position ?? ''), 'super administrator'))
@@ -223,7 +234,7 @@
                     </span>
                 </div>
             @else
-                <span class="text-[10px] font-bold text-white/50 uppercase tracking-widest">{{ $position }}</span>
+                <span class="text-[10px] font-bold text-white/50 uppercase tracking-widest">{{ $displayPosition }}</span>
             @endif
         </div>
     </div>

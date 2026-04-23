@@ -14,18 +14,37 @@ class OrangtuaAuthController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'username' => ['required'],
             'password' => ['required'],
         ]);
 
-        if (Auth::guard('orangtua')->attempt($credentials, $request->filled('remember'))) {
+        $identifier = $request->username;
+        $password = $request->password;
+
+        // 1. Coba cari berdasarkan NIS Siswa dulu
+        $siswa = \App\Models\Siswa::where('nis', $identifier)->first();
+        if ($siswa) {
+            // Ambil semua akun orang tua yang terhubung dengan siswa ini (bisa Ayah, Ibu, dll)
+            $ortus = \App\Models\Orangtua::where('siswa_id', $siswa->id)->get();
+            
+            foreach ($ortus as $ortu) {
+                // Coba login untuk setiap akun orang tua yang ditemukan
+                if (Auth::guard('orangtua')->attempt(['username' => $ortu->username, 'password' => $password], $request->filled('remember'))) {
+                    $request->session()->regenerate();
+                    return redirect()->intended(route('ortu.dashboard'));
+                }
+            }
+        }
+
+        // 2. Fallback: Coba login normal pakai username orang tua
+        if (Auth::guard('orangtua')->attempt(['username' => $identifier, 'password' => $password], $request->filled('remember'))) {
             $request->session()->regenerate();
             return redirect()->intended(route('ortu.dashboard'));
         }
 
         return back()->withErrors([
-            'username' => 'Username atau password salah.',
+            'username' => 'NIS Siswa / Username atau password salah.',
         ])->onlyInput('username');
     }
 

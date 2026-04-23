@@ -28,7 +28,43 @@ class DashboardController extends Controller
         }
 
         if ($loginRole === 'piket') {
-            return view('dashboard.gurupiket');
+            $today = now()->toDateString();
+            
+            // Statistik Hari Ini (Izin & Sakit diambil dari tabel Izin agar real-time dan unik per siswa)
+            $stats = [
+                'hadir' => \App\Models\Presensi::where('tanggal', $today)->whereIn('status', ['Hadir', 'Terlambat'])->distinct('siswa_id')->count(),
+                'izin' => \App\Models\Izin::where('tanggal', $today)->where('tipe', 'Izin')->where('status', 'Disetujui')->count(),
+                'sakit' => \App\Models\Izin::where('tanggal', $today)->where('tipe', 'Sakit')->where('status', 'Disetujui')->count(),
+                'alfa' => \App\Models\Presensi::where('tanggal', $today)->where('status', 'Alfa')->distinct('siswa_id')->count(),
+            ];
+
+            // Siswa Tidak Hadir Hari Ini (Ambil dari Izin yang disetujui + Alfa di presensi)
+            $todayPermits = \App\Models\Izin::with('siswa')
+                ->where('tanggal', $today)
+                ->where('status', 'Disetujui')
+                ->get()
+                ->map(function($i) {
+                    return (object)[
+                        'siswa' => $i->siswa,
+                        'status' => $i->tipe,
+                        'keterangan' => $i->alasan,
+                        'created_at' => $i->created_at,
+                        'jadwal' => (object)[
+                            'mata_pelajaran' => 'Izin Harian',
+                            'jam_mulai' => '-',
+                            'jam_selesai' => '-'
+                        ]
+                    ];
+                });
+
+            $alfaPresensi = \App\Models\Presensi::with(['siswa', 'jadwal'])
+                ->where('tanggal', $today)
+                ->where('status', 'Alfa')
+                ->get();
+
+            $absentStudents = $todayPermits->concat($alfaPresensi)->sortByDesc('created_at')->take(10);
+
+            return view('dashboard.gurupiket', compact('stats', 'absentStudents'));
         }
 
         if ($loginRole === 'bk') {
@@ -199,11 +235,22 @@ class DashboardController extends Controller
             $start = \App\Models\Jadwal::getWaktu($j->jam_mulai);
             $endStart = \App\Models\Jadwal::getWaktu($j->jam_selesai);
             if ($start && $endStart) {
+                // Rentang waktu aktif: dari jam mulai sampai jam selesai + 45 menit
                 $end = \Carbon\Carbon::createFromFormat('H:i', $endStart, 'Asia/Jakarta')->addMinutes(45)->format('H:i');
                 if ($nowTime >= $start && $nowTime <= $end) {
                     $activeJadwals[] = $j;
                 }
             }
+        }
+
+        // Jika tidak ada jadwal yang pas dengan jam sekarang, tapi ada jadwal hari ini
+        // Maka tampilkan semua jadwal hari ini sebagai pilihan
+        if (count($activeJadwals) === 0 && count($jadwals) > 0 && !$request->jadwal_id) {
+            return response()->json([
+                'status' => 'multiple',
+                'jadwals' => $jadwals,
+                'message' => 'Silakan pilih jadwal yang ingin dimulai (di luar jam pelajaran).'
+            ]);
         }
 
         if (count($activeJadwals) > 1 && !$request->jadwal_id) {

@@ -26,8 +26,8 @@
             <form action="{{ route('ortu.login.post') }}" method="POST" class="space-y-6">
                 @csrf
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2">Username</label>
-                    <input type="text" name="username" value="{{ old('username') }}" placeholder="ayah.namadepan" class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-orange-500 transition-all" required>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">NIS Siswa / Username</label>
+                    <input type="text" name="username" value="{{ old('username') }}" placeholder="Masukkan NIS Siswa atau Username" class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-orange-500 transition-all" required>
                     @error('username')
                         <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p>
                     @enderror
@@ -35,7 +35,12 @@
 
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-2">Password</label>
-                    <input type="password" name="password" placeholder="Nomor Induk Siswa" class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-orange-500 transition-all" required>
+                    <input type="password" name="password" placeholder="Contoh: ayah123 / ibu123" class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-orange-500 transition-all" required>
+                    <div class="mt-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Petunjuk Login:</p>
+                        <p class="text-[10px] text-slate-400 leading-relaxed">
+                        </p>
+                    </div>
                 </div>
 
                 <div class="flex items-center justify-between">

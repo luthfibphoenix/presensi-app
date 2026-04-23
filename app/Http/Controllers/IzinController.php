@@ -45,7 +45,7 @@ class IzinController extends Controller
             'siswa_id' => 'required|exists:siswas,id',
             'tanggal' => 'required|date',
             'alasan' => 'required|string',
-            'tipe' => 'required|string|in:Masuk Telat,Keluar Sekolah',
+            'tipe' => 'required|string|in:Izin,Sakit,Masuk Telat,Keluar Sekolah',
         ]);
 
         $izin = Izin::create([
@@ -68,8 +68,11 @@ class IzinController extends Controller
         $user = $request->user();
         $query = Izin::with('siswa.kelas');
 
-        if (strpos($user->position, 'Piket') !== false && !in_array($user->position, ['Administrator', 'Guru BK'])) {
-            $query->whereIn('tipe', ['Masuk Telat', 'Keluar Sekolah']);
+        $loginRole = session('login_role', 'umum');
+
+        if ($loginRole === 'piket') {
+            // Guru Piket sekarang bisa melihat semua tipe izin untuk memantau kehadiran siswa secara penuh
+            // $query->whereIn('tipe', ['Masuk Telat', 'Keluar Sekolah']); // Baris ini dihapus agar semua muncul
         }
 
         $izins = $query->orderBy('tanggal', 'desc')->paginate(10);

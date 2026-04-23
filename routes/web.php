@@ -60,9 +60,19 @@ Route::get('/login/piket',  function() { return redirect()->route('login'); });
 Route::get('/login/admin',  function() { return redirect()->route('login'); });
 Route::get('/login/bk',     function() { return redirect()->route('login'); });
 Route::get('/siswa/login',  function() { return redirect()->route('login'); })->name('siswa.login');
-Route::get('/ortu/login',   function() { return redirect()->route('login'); })->name('ortu.login');
+// Orang Tua Login Routes
+Route::get('/ortu/login',   [OrangtuaAuthController::class, 'showLoginForm'])->name('ortu.login');
+Route::post('/ortu/login',  [OrangtuaAuthController::class, 'login'])->name('ortu.login.post');
+Route::post('/ortu/logout', [OrangtuaAuthController::class, 'logout'])->name('ortu.logout');
+Route::get('/ortu/logout',  [OrangtuaAuthController::class, 'logout']);
+
+// Redirect old login routes
+Route::get('/login/guru',   function() { return redirect()->route('login'); });
+Route::get('/login/piket',  function() { return redirect()->route('login'); });
+Route::get('/login/admin',  function() { return redirect()->route('login'); });
+Route::get('/login/bk',     function() { return redirect()->route('login'); });
+Route::get('/siswa/login',  function() { return redirect()->route('login'); })->name('siswa.login');
 Route::post('/siswa/logout', function() { return redirect()->route('logout'); })->name('siswa.logout');
-Route::post('/ortu/logout',  function() { return redirect()->route('logout'); })->name('ortu.logout');
 
 // Web Guard (Admin, Guru, BK, Wali Kelas)
 Route::middleware('auth')->group(function () {

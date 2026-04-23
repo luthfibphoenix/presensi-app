@@ -124,7 +124,7 @@
         $isHariIni    = ($jadwal->hari === $hariIni);
         $isWaktunya   = $isHariIni && ($nowTime >= $jamMulaiStr && $nowTime <= $jamSelesaiStr);
         $isAkanMulai  = $isHariIni && ($nowTime >= date('H:i', strtotime($jamMulaiStr . ' -15 minutes')) && $nowTime < $jamMulaiStr);
-        $bolehMulai   = $isWaktunya || $isAkanMulai;
+        $bolehMulai   = true; // Selalu boleh mulai kelas di hari yang sama
     @endphp
     <div class="bg-white rounded-2xl shadow-sm border {{ $isWaktunya ? 'border-blue-300 ring-1 ring-blue-200' : 'border-gray-100' }} overflow-hidden">
         <div class="flex items-stretch">

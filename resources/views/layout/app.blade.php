@@ -121,13 +121,22 @@
 
                 <div class="flex items-center gap-4 relative" id="userMenuContainer">
                     <button id="userMenuBtn" class="flex items-center gap-4 focus:outline-none group">
-                        <div class="text-right hidden md:block">
-                            <p class="text-sm font-bold text-gray-900 leading-none mb-1 group-hover:text-blue-600 transition">{{ auth()->user()->fullname ?? auth()->user()->nama }}</p>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ auth()->user()->position ?? 'Siswa' }}</p>
-                        </div>
                         @php
+                            $loginRole = auth('siswa')->check() ? 'siswa' : session('login_role', 'guru');
+                            $displayRole = match($loginRole) {
+                                'siswa' => 'Siswa',
+                                'piket' => 'Guru Piket',
+                                'admin' => 'Administrator',
+                                'bk' => 'Guru BK',
+                                'tu' => 'Tata Usaha',
+                                default => 'Guru'
+                            };
                             $userPhoto = auth()->user()->photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->fullname ?? auth()->user()->nama) . '&background=f3f4f6&color=6b7280&bold=true';
                         @endphp
+                        <div class="text-right hidden md:block">
+                            <p class="text-sm font-bold text-gray-900 leading-none mb-1 group-hover:text-blue-600 transition">{{ auth()->user()->fullname ?? auth()->user()->nama }}</p>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ $displayRole }}</p>
+                        </div>
                         <img src="{{ $userPhoto }}" 
                              alt="User" 
                              class="w-10 h-10 rounded-full border-2 border-gray-100 object-cover shadow-sm group-hover:border-blue-200 transition">

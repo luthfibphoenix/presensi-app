@@ -79,19 +79,19 @@
                                     <td class="py-2 px-3 text-center">
                                         <div class="flex justify-center gap-4">
                                             <label class="inline-flex items-center">
-                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Hadir" class="text-green-600 focus:ring-green-500" checked>
+                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Hadir" class="text-green-600 focus:ring-green-500" :checked="siswa.auto_status === 'Hadir' || !siswa.auto_status">
                                                 <span class="ml-1 text-green-700">H</span>
                                             </label>
                                             <label class="inline-flex items-center">
-                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Sakit" class="text-blue-600 focus:ring-blue-500">
+                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Sakit" class="text-blue-600 focus:ring-blue-500" :checked="siswa.auto_status === 'Sakit'">
                                                 <span class="ml-1 text-blue-700">S</span>
                                             </label>
                                             <label class="inline-flex items-center">
-                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Izin" class="text-yellow-600 focus:ring-yellow-500">
+                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Izin" class="text-yellow-600 focus:ring-yellow-500" :checked="siswa.auto_status === 'Izin'">
                                                 <span class="ml-1 text-yellow-700">I</span>
                                             </label>
                                             <label class="inline-flex items-center">
-                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Alfa" class="text-red-600 focus:ring-red-500">
+                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Alfa" class="text-red-600 focus:ring-red-500" :checked="siswa.auto_status === 'Alfa'">
                                                 <span class="ml-1 text-red-700">A</span>
                                             </label>
                                         </div>

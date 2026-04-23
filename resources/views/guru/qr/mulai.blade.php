@@ -36,20 +36,8 @@
         </div>
 
         {{-- QR Code --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center min-h-[350px] flex flex-col justify-center">
-            @if($isPastSchedule)
-                <div class="py-8">
-                    <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-check-double text-blue-500 text-3xl"></i>
-                    </div>
-                    <p class="text-gray-800 font-bold mb-1">Jam Pelajaran Telah Selesai</p>
-                    <p class="text-gray-400 text-sm mb-6">Silakan kembali ke dashboard untuk melihat ringkasan.</p>
-                    <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition">
-                        <i class="fas fa-home"></i> Kembali ke Dashboard
-                    </a>
-                </div>
-            @elseif($isWithinSchedule)
-                @if($isExpired)
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center min-h-[350px] flex flex-col justify-center" x-data="{ forceShow: false }">
+            @if($isExpired)
                 <div class="py-8">
                     <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-qrcode text-red-300 text-3xl"></i>
@@ -64,34 +52,47 @@
                         </button>
                     </form>
                 </div>
-                @else
-                <p class="text-xs text-gray-400 uppercase tracking-wide mb-4 font-medium">Scan QR untuk Absensi</p>
-                <div id="qrcode" class="flex justify-center mb-4"></div>
-                
-                {{-- Countdown --}}
-                <div class="mt-4 p-3 rounded-xl bg-gray-50 flex items-center justify-center gap-3">
-                    <i class="fas fa-sync-alt text-blue-500 animate-spin-slow"></i>
-                    <span class="text-sm text-gray-600">Token refresh otomatis dalam: </span>
-                    <span id="countdown" class="font-mono font-bold text-lg text-blue-700">15:00</span>
+            @else
+                <div x-show="!forceShow && ({{ $isPastSchedule ? 'true' : ($isWithinSchedule ? 'false' : 'true') }})">
+                    <div class="py-8">
+                        <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas {{ $isPastSchedule ? 'fa-check-double' : 'fa-clock' }} text-blue-500 text-3xl"></i>
+                        </div>
+                        <p class="text-gray-800 font-bold mb-1">{{ $isPastSchedule ? 'Jam Pelajaran Telah Selesai' : 'Belum Waktunya Mulai' }}</p>
+                        <p class="text-gray-400 text-sm mb-6 px-6">
+                            {{ $isPastSchedule ? 'Sesi ini sudah di luar jam jadwal. Anda tetap bisa menampilkan QR jika diperlukan.' : 'Jam pelajaran belum dimulai. Gunakan tombol di bawah jika ingin memulai lebih awal.' }}
+                        </p>
+                        <div class="flex flex-col gap-3 items-center">
+                            <button @click="forceShow = true" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition">
+                                <i class="fas fa-qrcode"></i> Tampilkan QR Sekarang
+                            </button>
+                            <a href="{{ route('dashboard') }}" class="text-xs text-gray-400 hover:text-blue-600 font-medium transition">
+                                <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex gap-3 mt-4 justify-center">
-                    <form action="{{ route('guru.qr.refresh', $qrSession->id) }}" method="POST">
-                        @csrf
-                        <button type="submit"
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-xl transition">
-                            <i class="fas fa-sync-alt"></i> Manual Refresh
-                        </button>
-                    </form>
-                </div>
-                @endif
-            @else
-                <div class="py-8">
-                    <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-clock text-gray-300 text-3xl"></i>
+                <div x-show="forceShow || {{ $isWithinSchedule ? 'true' : 'false' }}" x-cloak>
+                    <p class="text-xs text-gray-400 uppercase tracking-wide mb-4 font-medium">Scan QR untuk Absensi</p>
+                    <div id="qrcode" class="flex justify-center mb-4"></div>
+                    
+                    {{-- Countdown --}}
+                    <div class="mt-4 p-3 rounded-xl bg-gray-50 flex items-center justify-center gap-3">
+                        <i class="fas fa-sync-alt text-blue-500 animate-spin-slow"></i>
+                        <span class="text-sm text-gray-600">Token refresh otomatis dalam: </span>
+                        <span id="countdown" class="font-mono font-bold text-lg text-blue-700">15:00</span>
                     </div>
-                    <p class="text-gray-500 font-bold mb-1">Belum Waktunya Mulai</p>
-                    <p class="text-gray-400 text-sm px-8">QR Code akan muncul otomatis saat jam pelajaran dimulai.</p>
+
+                    <div class="flex gap-3 mt-4 justify-center">
+                        <form action="{{ route('guru.qr.refresh', $qrSession->id) }}" method="POST">
+                            @csrf
+                            <button type="submit"
+                                class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-xl transition">
+                                <i class="fas fa-sync-alt"></i> Manual Refresh
+                            </button>
+                        </form>
+                    </div>
                 </div>
             @endif
         </div>

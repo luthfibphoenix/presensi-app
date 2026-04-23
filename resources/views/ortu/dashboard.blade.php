@@ -9,8 +9,11 @@
             <i class="fas fa-child"></i>
         </div>
         <div class="text-center md:text-left flex-1">
-            <p class="text-[9px] md:text-[10px] font-black text-teal-400 uppercase tracking-[0.2em] mb-1">Informasi Siswa</p>
-            <h2 class="text-xl md:text-3xl font-black text-slate-900 leading-tight mb-1">{{ $siswa->nama }}</h2>
+            <p class="text-[9px] md:text-[10px] font-black text-teal-400 uppercase tracking-[0.2em] mb-1">Akun {{ auth('orangtua')->user()->hubungan }}</p>
+            <h2 class="text-xl md:text-2xl font-black text-slate-900 leading-tight mb-2">Halo, {{ auth('orangtua')->user()->nama }} 👋</h2>
+            <div class="h-px w-full bg-slate-100 my-3"></div>
+            <p class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Informasi Siswa</p>
+            <h3 class="text-lg md:text-xl font-black text-slate-700 leading-tight mb-1">{{ $siswa->nama }}</h3>
             <p class="text-xs md:text-sm font-bold text-slate-500">Kelas {{ $siswa->kelas->nama_kelas }} • NIS: {{ $siswa->nis }}</p>
         </div>
         <div class="w-full md:w-auto px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100 text-center">
@@ -20,12 +23,19 @@
     </div>
 
     <!-- Banner Ketidakhadiran -->
-    @if($isAlfa)
+    @if($statusHarian == 'Alfa')
     <div class="bg-rose-600 p-5 md:p-6 rounded-3xl text-white shadow-xl shadow-rose-100 flex items-center gap-4 animate-pulse">
         <div class="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-full flex items-center justify-center shrink-0">
             <i class="fas fa-exclamation-triangle text-lg"></i>
         </div>
-        <p class="text-xs md:text-sm font-bold leading-relaxed">Anak Anda tidak hadir hari ini. Harap segera hubungi wali kelas atau pihak sekolah untuk konfirmasi.</p>
+        <p class="text-xs md:text-sm font-bold leading-relaxed">Anak Anda tidak hadir tanpa keterangan hari ini. Harap segera hubungi pihak sekolah.</p>
+    </div>
+    @elseif($statusHarian == 'Hadir Sebagian')
+    <div class="bg-amber-500 p-5 md:p-6 rounded-3xl text-white shadow-xl shadow-amber-100 flex items-center gap-4">
+        <div class="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+            <i class="fas fa-info-circle text-lg"></i>
+        </div>
+        <p class="text-xs md:text-sm font-bold leading-relaxed">Anak Anda terdeteksi hadir sebagian hari ini ({{ $presentCount }}/{{ $totalSchedules }} Jam). Harap pantau kegiatan sekolahnya.</p>
     </div>
     @endif
 
@@ -33,17 +43,32 @@
         <!-- Status Hari Ini (Col 1) -->
         <div class="bg-white p-6 rounded-3xl md:rounded-[40px] shadow-sm border border-teal-50 lg:col-span-1">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Kehadiran Hari Ini</h3>
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Ringkasan Harian</h3>
                 <span class="text-[9px] font-black text-teal-500 bg-teal-50 px-2 py-1 rounded-lg uppercase tracking-tighter">{{ now()->translatedFormat('l') }}</span>
             </div>
             <div class="flex flex-col items-center text-center py-4">
-                <div class="w-20 h-20 {{ $isHadir ? 'bg-emerald-50 text-emerald-600' : ($isAlfa ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-400') }} rounded-[2rem] flex items-center justify-center text-4xl mb-4 border-4 border-white shadow-xl">
-                    <i class="fas {{ $isHadir ? 'fa-check-circle' : ($isAlfa ? 'fa-times-circle' : 'fa-clock') }}"></i>
+                @php
+                    $icon = 'fa-clock';
+                    $bgClass = 'bg-slate-50 text-slate-400';
+                    if($statusHarian == 'Hadir Penuh') { $icon = 'fa-check-circle'; $bgClass = 'bg-emerald-50 text-emerald-600'; }
+                    elseif($statusHarian == 'Hadir Sebagian') { $icon = 'fa-adjust'; $bgClass = 'bg-amber-50 text-amber-600'; }
+                    elseif($statusHarian == 'Alfa') { $icon = 'fa-times-circle'; $bgClass = 'bg-rose-50 text-rose-600'; }
+                    elseif(in_array($statusHarian, ['Izin', 'Sakit', 'Dispensasi'])) { $icon = 'fa-envelope-open-text'; $bgClass = 'bg-blue-50 text-blue-600'; }
+                @endphp
+                
+                <div class="w-20 h-20 {{ $bgClass }} rounded-[2rem] flex items-center justify-center text-4xl mb-4 border-4 border-white shadow-xl">
+                    <i class="fas {{ $icon }}"></i>
                 </div>
-                <h4 class="text-lg font-black {{ $isHadir ? 'text-emerald-700' : ($isAlfa ? 'text-rose-700' : 'text-slate-700') }} mb-1">
-                    {{ $isHadir ? 'Sudah Di Sekolah' : ($isAlfa ? 'Alpa / Tidak Hadir' : 'Menunggu Pelajaran') }}
+                <h4 class="text-lg font-black {{ $colorClass }} mb-1">
+                    {{ $statusHarian }}
                 </h4>
-                <p class="text-xs font-bold text-slate-400">{{ now()->translatedFormat('d F Y') }}</p>
+                <p class="text-xs font-bold text-slate-400">
+                    @if($totalSchedules > 0)
+                        {{ $presentCount }}/{{ $totalSchedules }} Jam Pelajaran
+                    @else
+                        Tidak Ada Jadwal
+                    @endif
+                </p>
             </div>
         </div>
 
