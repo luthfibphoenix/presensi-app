@@ -1,63 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Orang Tua - Presensi App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Login Orang Tua - SmartPresensi</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .bg-gradient-mesh {
+            background-color: #f8fafc;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(13, 148, 136, 0.1) 0px, transparent 50%);
+        }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-6">
-    <div class="max-w-md w-full">
-        <div class="text-center mb-8">
-            <div class="w-20 h-20 bg-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-orange-100">
-                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
+<body class="bg-gradient-mesh min-h-screen flex items-center justify-center p-5">
+    <div class="max-w-[420px] w-full space-y-8">
+        <div class="text-center">
+            <div class="w-20 h-20 bg-gradient-to-br from-teal-500 to-teal-700 rounded-[2rem] flex items-center justify-center text-white mx-auto mb-6 shadow-2xl shadow-teal-200 rotate-3 transition-transform hover:rotate-0">
+                <i class="fa-solid fa-graduation-cap text-3xl"></i>
             </div>
-            <h1 class="text-2xl font-bold text-slate-900">Portal Orang Tua</h1>
-            <p class="text-slate-500">Silakan masuk untuk memantau kehadiran anak Anda</p>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight leading-none">Smart<span class="text-teal-600">Presensi</span></h1>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-3">Portal Orang Tua</p>
         </div>
 
-        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+        <div class="glass-card p-8 md:p-10 rounded-[3rem] shadow-2xl shadow-slate-200/50">
             <form action="{{ route('ortu.login.post') }}" method="POST" class="space-y-6">
                 @csrf
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2">NIS Siswa / Username</label>
-                    <input type="text" name="username" value="{{ old('username') }}" placeholder="Masukkan NIS Siswa atau Username" class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-orange-500 transition-all" required>
+                <div class="space-y-2">
+                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Username / NIS</label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-teal-500 transition-colors">
+                            <i class="fa-solid fa-user-circle"></i>
+                        </div>
+                        <input type="text" name="username" value="{{ old('username') }}" placeholder="Contoh: rizka.3398" 
+                            class="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border border-slate-100 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 transition-all text-sm font-bold placeholder:text-slate-300 placeholder:font-medium" required>
+                    </div>
                     @error('username')
-                        <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p>
+                        <p class="text-rose-500 text-[10px] font-bold mt-1 ml-1">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2">Password</label>
-                    <input type="password" name="password" placeholder="Contoh: ayah123 / ibu123" class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-orange-500 transition-all" required>
-                    <div class="mt-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Petunjuk Login:</p>
-                        <p class="text-[10px] text-slate-400 leading-relaxed">
-                        </p>
+                <div class="space-y-2">
+                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Password Keamanan</label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-teal-500 transition-colors">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <input type="password" name="password" placeholder="Default: ortu123" 
+                            class="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border border-slate-100 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 transition-all text-sm font-bold placeholder:text-slate-300 placeholder:font-medium" required>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" name="remember" class="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500">
-                        <span class="text-sm font-medium text-slate-600">Ingat Saya</span>
+                <div class="flex items-center justify-between px-1">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" name="remember" class="w-5 h-5 rounded-lg border-slate-200 text-teal-600 focus:ring-teal-500 transition-all">
+                        <span class="text-[11px] font-bold text-slate-500 group-hover:text-teal-600 transition-colors">Ingat Saya</span>
                     </label>
                 </div>
 
-                <button type="submit" class="w-full py-4 bg-orange-500 text-white font-bold rounded-2xl shadow-lg shadow-orange-100 hover:bg-orange-600 transition-all">
-                    Masuk ke Dashboard
+                <button type="submit" class="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white font-black rounded-2xl shadow-xl shadow-teal-100 transition-all active:scale-[0.98] flex items-center justify-center gap-3 uppercase tracking-widest text-xs">
+                    Masuk Sekarang
+                    <i class="fa-solid fa-arrow-right-long text-[10px]"></i>
                 </button>
             </form>
+
+            <div class="mt-8 pt-8 border-t border-slate-50">
+                <div class="flex items-start gap-4">
+                    <div class="w-8 h-8 bg-teal-50 text-teal-600 rounded-lg flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-circle-info text-xs"></i>
+                    </div>
+                    <p class="text-[10px] text-slate-400 font-medium leading-relaxed">
+                        Gunakan username yang terdiri dari <span class="font-bold text-slate-600">nama depan anak dan NIS</span>. Jika belum memiliki akun, hubungi admin sekolah.
+                    </p>
+                </div>
+            </div>
         </div>
 
-        <p class="text-center mt-8 text-sm text-slate-400 font-medium">
-            Copyright &copy; 2026 Presensi App
+        <p class="text-center text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+            &copy; 2026 SmartPresensi SMKN 7 Purworejo
         </p>
     </div>
 </body>

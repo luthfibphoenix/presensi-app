@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 class GenerateAkunOrtu extends Command
 {
     protected $signature = 'generate:akun-ortu';
-    protected $description = 'Generate atau update akun orang tua dengan format username ayah.NIS atau ibu.NIS dan password ortu123';
+    protected $description = 'Generate atau update akun orang tua dengan format username (nama depan anak).NIS dan password ortu123';
 
     public function handle()
     {
@@ -31,21 +31,17 @@ class GenerateAkunOrtu extends Command
                 continue;
             }
 
-            // Ayah
-            if (!empty($siswa->nama_ayah)) {
-                $usernameAyah = "ayah.{$nis}";
-                $res = $this->upsertAccount($siswa, $siswa->nama_ayah, 'Ayah', $usernameAyah, $passwordDefault);
-                if ($res === 'created') $countCreated++;
-                elseif ($res === 'updated') $countUpdated++;
-            }
+            // Format Username: (nama depan anak).nis
+            $namaDepan = strtolower(explode(' ', trim($siswa->nama))[0]);
+            $username = "{$namaDepan}.{$nis}";
 
-            // Ibu
-            if (!empty($siswa->nama_ibu)) {
-                $usernameIbu = "ibu.{$nis}";
-                $res = $this->upsertAccount($siswa, $siswa->nama_ibu, 'Ibu', $usernameIbu, $passwordDefault);
-                if ($res === 'created') $countCreated++;
-                elseif ($res === 'updated') $countUpdated++;
-            }
+            // Prioritas nama Ibu, jika tidak ada baru Ayah
+            $namaOrtu = $siswa->nama_ibu ?: $siswa->nama_ayah;
+            $hubungan = $siswa->nama_ibu ? 'Ibu' : 'Ayah';
+
+            $res = $this->upsertAccount($siswa, $namaOrtu, $hubungan, $username, $passwordDefault);
+            if ($res === 'created') $countCreated++;
+            elseif ($res === 'updated') $countUpdated++;
         }
 
         $this->info("\nSelesai!");
@@ -55,17 +51,21 @@ class GenerateAkunOrtu extends Command
 
     private function upsertAccount($siswa, $nama, $hubungan, $username, $passwordHash)
     {
-        // Cari akun yang sudah ada untuk siswa ini & hubungan ini
-        $account = Orangtua::where('siswa_id', $siswa->id)
-                           ->where('hubungan', $hubungan)
-                           ->first();
+        // Cari akun yang sudah ada untuk siswa ini (apapun hubungannya)
+        $account = Orangtua::where('siswa_id', $siswa->id)->first();
 
         if ($account) {
+            // Bersihkan akun ganda jika ada (misal dulu ada Ayah & Ibu terpisah)
+            Orangtua::where('siswa_id', $siswa->id)
+                    ->where('id', '!=', $account->id)
+                    ->delete();
+
             // Update username dan password sesuai format baru
             $account->update([
                 'username' => $username,
                 'password' => $passwordHash,
-                'nama' => $nama
+                'nama' => $nama,
+                'hubungan' => $hubungan
             ]);
             $this->line("<fg=yellow>Updated:</> {$nama} -> <fg=cyan>{$username}</>");
             return 'updated';

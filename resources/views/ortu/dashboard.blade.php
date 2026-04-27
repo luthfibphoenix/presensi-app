@@ -81,7 +81,7 @@
     <!-- Grid Rekapitulasi -->
     <div class="space-y-4">
         <h3 class="text-[10px] font-black text-white uppercase tracking-widest px-2 italic">Statistik {{ now()->translatedFormat('F') }}</h3>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-neo p-5 rounded-[2rem] flex items-center gap-4">
                 <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
                     <i class="fas fa-check"></i>

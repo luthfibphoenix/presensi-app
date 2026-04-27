@@ -38,32 +38,32 @@
                 <tbody class="divide-y divide-slate-50">
                     @forelse($riwayat as $tanggal => $r)
                         @if($r->is_collapsed)
-                        {{-- Tampilan Baris Tunggal untuk Izin/Sakit --}}
-                        <tr class="bg-blue-50/30">
+                        {{-- Tampilan 1 Baris untuk Izin/Sakit (Collapse) --}}
+                        <tr class="bg-blue-50/40">
                             <td class="px-6 py-5">
                                 <p class="text-xs md:text-sm font-black text-slate-800">{{ Carbon\Carbon::parse($r->tanggal)->translatedFormat('d F Y') }}</p>
                                 <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{{ Carbon\Carbon::parse($r->tanggal)->translatedFormat('l') }}</p>
                             </td>
                             <td class="hidden md:table-cell px-6 py-5">
-                                <p class="text-xs md:text-sm font-bold text-slate-700">Seluruh Mata Pelajaran Hari Ini</p>
-                                <p class="text-[9px] font-bold text-slate-400 uppercase italic">Terdata dalam satu pengajuan izin</p>
+                                <p class="text-xs md:text-sm font-black text-blue-700">Izin Seluruh Mata Pelajaran</p>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Berlaku untuk {{ $r->total_mapel }} Jam Pelajaran</p>
                             </td>
                             <td class="hidden sm:table-cell px-6 py-5">
-                                <span class="inline-flex items-center px-3 py-1 bg-blue-100/50 text-blue-600 rounded-lg text-[10px] font-black uppercase">
+                                <span class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-[10px] font-black uppercase">
                                     Full Day
                                 </span>
                             </td>
                             <td class="px-6 py-5 text-center">
                                 @php
-                                    $colorClass = $r->status == 'Sakit' ? 'bg-red-100 text-red-600 border-red-200' : 'bg-blue-100 text-blue-600 border-blue-200';
+                                    $colorClass = $r->status == 'Sakit' ? 'bg-red-500 text-white border-red-600' : 'bg-blue-500 text-white border-blue-600';
                                 @endphp
-                                <span class="inline-flex items-center px-4 py-1.5 rounded-xl border {{ $colorClass }} text-[9px] font-black uppercase tracking-tighter shadow-sm">
+                                <span class="inline-flex items-center px-4 py-1.5 rounded-xl border {{ $colorClass }} text-[9px] font-black uppercase tracking-tighter shadow-md">
                                     {{ $r->status }}
                                 </span>
                             </td>
                         </tr>
                         @else
-                            {{-- Tampilan Detail Per Mapel untuk Hadir/Alfa --}}
+                            {{-- Tampilan Normal (Per Mapel) --}}
                             @foreach($r->all_items as $item)
                             <tr class="hover:bg-teal-50/30 transition-colors">
                                 <td class="px-6 py-5">
@@ -74,7 +74,7 @@
                                 </td>
                                 <td class="hidden md:table-cell px-6 py-5">
                                     <p class="text-xs md:text-sm font-bold text-slate-700">{{ $item->jadwal->mata_pelajaran ?? 'Umum / Lainnya' }}</p>
-                                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Jam: {{ $item->jadwal->jam_mulai ?? '-' }} - {{ $item->jadwal->jam_selesai ?? '-' }}</p>
+                                    <p class="text-[9px] font-bold text-slate-400 uppercase">Guru Pengampu Mata Pelajaran</p>
                                 </td>
                                 <td class="hidden sm:table-cell px-6 py-5">
                                     <span class="inline-flex items-center px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black uppercase">

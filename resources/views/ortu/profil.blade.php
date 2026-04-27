@@ -8,8 +8,8 @@
             <i class="fas fa-user-shield"></i>
         </div>
         <div class="text-center md:text-left flex-1">
-            <h3 class="text-xl md:text-2xl font-black text-slate-900 leading-tight mb-1">{{ auth('orangtua')->user()->nama }}</h3>
-            <p class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em]">{{ auth('orangtua')->user()->hubungan }} Siswa</p>
+            <h3 class="text-xl md:text-2xl font-black text-slate-900 leading-tight mb-1">Orang Tua {{ $siswa->nama }}</h3>
+            <p class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Wali Murid Resmi</p>
         </div>
         <div class="flex items-center gap-3">
             <button @click="showModal = true" class="px-5 py-3 bg-teal-50 text-teal-600 font-bold rounded-2xl text-xs flex items-center gap-2 hover:bg-teal-100 transition-colors">

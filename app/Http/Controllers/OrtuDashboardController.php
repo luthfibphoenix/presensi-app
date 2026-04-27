@@ -69,11 +69,17 @@ class OrtuDashboardController extends Controller
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->get();
             
+        // Hitung izin berdasarkan jumlah pengajuan harian yang disetujui (bukan per jam pelajaran)
+        $totalIzinDisetujui = Izin::where('siswa_id', $siswa->id)
+            ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
+            ->where('status', 'approve')
+            ->count();
+
         $rekap = [
             'hadir' => $presensiBulanIni->where('status', 'Hadir')->count(),
             'terlambat' => $presensiBulanIni->where('status', 'Terlambat')->count(),
             'alfa' => $presensiBulanIni->where('status', 'Alfa')->count(),
-            'izin' => $presensiBulanIni->whereIn('status', ['Izin', 'Sakit'])->count(),
+            'izin' => $totalIzinDisetujui,
         ];
 
         return view('ortu.dashboard', compact('siswa', 'rekap', 'presensiHariIni', 'statusHarian', 'colorClass', 'presentCount', 'totalSchedules'));
@@ -89,7 +95,6 @@ class OrtuDashboardController extends Controller
 
         $rawRiwayat = Presensi::where('siswa_id', $siswa->id)
             ->whereMonth('tanggal', $bulan)
-            ->whereYear('tahun', $tahun) // Note: ensure column name matches your DB, usually Year is part of 'tanggal' but sometimes a separate column exists. If not, use whereYear('tanggal', $tahun)
             ->whereYear('tanggal', $tahun)
             ->with('jadwal')
             ->orderBy('tanggal', 'desc')
@@ -100,16 +105,14 @@ class OrtuDashboardController extends Controller
             $first = $items->first();
             $statuses = $items->pluck('status')->unique();
             
-            // Jika ada Izin atau Sakit dalam hari tersebut, anggap izin hari itu (collapse)
-            if ($statuses->contains('Izin')) {
-                $first->status = 'Izin';
+            // Jika ada Izin atau Sakit dalam hari tersebut, anggap izin harian (collapse jadi 1 baris)
+            if ($statuses->contains('Izin') || $statuses->contains('Sakit')) {
+                $first->status = $statuses->contains('Sakit') ? 'Sakit' : 'Izin';
                 $first->is_collapsed = true;
-            } elseif ($statuses->contains('Sakit')) {
-                $first->status = 'Sakit';
-                $first->is_collapsed = true;
+                $first->total_mapel = $items->count();
             } else {
                 $first->is_collapsed = false;
-                $first->all_items = $items; // Keep all subjects for normal days
+                $first->all_items = $items;
             }
             
             return $first;
