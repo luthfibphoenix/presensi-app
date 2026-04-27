@@ -56,7 +56,7 @@
                     </label>
                     <div class="relative">
                         <input type="date" name="tanggal" required value="{{ date('Y-m-d') }}"
-                               class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all appearance-none">
+                               class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-base font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all appearance-none outline-none">
                     </div>
                 </div>
 
@@ -67,7 +67,7 @@
                         Tipe Keterangan
                     </label>
                     <select name="tipe" required
-                            class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all appearance-none">
+                            class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-base font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all appearance-none outline-none">
                         <option value="Izin">Izin (Keperluan Keluarga/Pribadi)</option>
                         <option value="Sakit">Sakit (Membutuhkan Istirahat)</option>
                     </select>
@@ -80,8 +80,8 @@
                     <i class="fas fa-comment-dots text-teal-500"></i>
                     Alasan / Keterangan Lengkap
                 </label>
-                <textarea name="alasan" required rows="4" placeholder="Tuliskan alasan yang jelas agar mudah dipahami sekolah..."
-                          class="w-full bg-slate-50 border border-slate-100 rounded-3xl px-6 py-5 text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all resize-none placeholder:text-slate-300"></textarea>
+                <textarea name="alasan" required rows="3" placeholder="Tuliskan alasan yang jelas agar mudah dipahami sekolah..."
+                          class="w-full bg-slate-50 border border-slate-100 rounded-3xl px-6 py-5 text-base font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all resize-none placeholder:text-slate-300 outline-none"></textarea>
             </div>
 
             <!-- Bukti -->

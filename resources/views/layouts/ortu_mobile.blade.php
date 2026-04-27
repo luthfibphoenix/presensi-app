@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0d9488">
     <title>Portal Ortu - SMKN 7 Purworejo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -144,7 +147,7 @@
     </div>
 
     <!-- Main Content Area -->
-    <div class="pt-20 min-h-screen pb-32">
+    <div class="pt-20 min-h-[100dvh] pb-32">
         <!-- Decoration Background -->
         <div class="fixed top-0 left-0 right-0 h-64 bg-teal-600 -z-10 rounded-b-[3rem] shadow-2xl shadow-teal-100/50"></div>
         

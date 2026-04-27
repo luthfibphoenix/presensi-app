@@ -46,7 +46,8 @@
             <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Siswa Tidak Hadir Hari Ini</h3>
             <span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-black uppercase">{{ now()->translatedFormat('d F Y') }}</span>
         </div>
-        <div class="overflow-x-auto">
+        {{-- Desktop View --}}
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-left">
                 <thead>
                     <tr class="bg-slate-50/50">
@@ -93,6 +94,39 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        {{-- Mobile View --}}
+        <div class="md:hidden divide-y divide-slate-50">
+            @forelse($absentStudents as $absent)
+            <div class="p-5 flex items-center justify-between gap-4">
+                <div class="flex-1">
+                    <h4 class="text-sm font-black text-slate-800">{{ $absent->siswa->nama }}</h4>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-2">{{ $absent->siswa->kelas->nama_kelas }}</p>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[8px] font-black uppercase italic">JP {{ $absent->jadwal->jam_mulai }}</span>
+                        <span class="text-[9px] font-bold text-slate-500 truncate max-w-[120px]">{{ $absent->jadwal->mata_pelajaran }}</span>
+                    </div>
+                </div>
+                <div class="shrink-0">
+                    @php
+                        $badgeClass = match($absent->status) {
+                            'Alfa' => 'bg-rose-100 text-rose-600 border-rose-200',
+                            'Izin' => 'bg-amber-100 text-amber-600 border-amber-200',
+                            'Sakit' => 'bg-blue-100 text-blue-600 border-blue-200',
+                            default => 'bg-slate-100 text-slate-600 border-slate-200'
+                        };
+                    @endphp
+                    <span class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase border {{ $badgeClass }}">
+                        {{ $absent->status }}
+                    </span>
+                </div>
+            </div>
+            @empty
+            <div class="p-10 text-center">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest italic">Belum ada catatan ketidakhadiran.</p>
+            </div>
+            @endforelse
         </div>
     </div>
 </div>

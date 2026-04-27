@@ -10,7 +10,7 @@
         </div>
         
         <form action="{{ route('ortu.kehadiran') }}" method="GET" class="w-full md:w-auto flex items-center gap-2">
-            <select name="bulan" class="flex-1 md:w-48 bg-slate-50 border-none rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500 appearance-none">
+            <select name="bulan" class="flex-1 md:w-48 bg-slate-50 border-none rounded-2xl px-5 py-3.5 text-base font-bold text-slate-700 focus:ring-2 focus:ring-teal-500 appearance-none outline-none">
                 @for($m=1; $m<=12; $m++)
                     <option value="{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}" {{ $bulan == $m ? 'selected' : '' }}>
                         {{ Carbon\Carbon::create()->month($m)->translatedFormat('F') }}

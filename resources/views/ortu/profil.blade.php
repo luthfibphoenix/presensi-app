@@ -90,9 +90,9 @@
             <form action="{{ route('ortu.password.update') }}" method="POST" class="space-y-4">
                 @csrf
                 <div class="grid gap-4">
-                    <input type="password" name="current_password" placeholder="Password Saat Ini" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-teal-100 text-sm font-bold" required>
-                    <input type="password" name="new_password" placeholder="Password Baru" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-teal-100 text-sm font-bold" required>
-                    <input type="password" name="new_password_confirmation" placeholder="Konfirmasi Password Baru" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-teal-100 text-sm font-bold" required>
+                    <input type="password" name="current_password" placeholder="Password Saat Ini" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-teal-100 text-base font-bold outline-none" required>
+                    <input type="password" name="new_password" placeholder="Password Baru" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-teal-100 text-base font-bold outline-none" required>
+                    <input type="password" name="new_password_confirmation" placeholder="Konfirmasi Password Baru" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-teal-100 text-base font-bold outline-none" required>
                 </div>
                 
                 <div class="flex gap-3 pt-6">

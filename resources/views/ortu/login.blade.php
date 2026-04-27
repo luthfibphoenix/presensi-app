@@ -2,13 +2,20 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0d9488">
     <title>Login Orang Tua - SmartPresensi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background-color: #f8fafc; 
+            -webkit-tap-highlight-color: transparent;
+        }
         .glass-card {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(20px);
@@ -23,10 +30,10 @@
         }
     </style>
 </head>
-<body class="bg-gradient-mesh min-h-screen flex items-center justify-center p-5">
-    <div class="max-w-[420px] w-full space-y-8">
-        <div class="text-center">
-            <div class="w-20 h-20 bg-gradient-to-br from-teal-500 to-teal-700 rounded-[2rem] flex items-center justify-center text-white mx-auto mb-6 shadow-2xl shadow-teal-200 rotate-3 transition-transform hover:rotate-0">
+<body class="bg-gradient-mesh min-h-[100dvh] flex flex-col items-center justify-center p-6">
+    <div class="max-w-[420px] w-full space-y-8 my-auto">
+        <div class="text-center animate-fade-in">
+            <div class="w-20 h-20 bg-gradient-to-br from-teal-500 to-teal-700 rounded-[2.5rem] flex items-center justify-center text-white mx-auto mb-6 shadow-2xl shadow-teal-200 rotate-3 transition-transform hover:rotate-0">
                 <i class="fa-solid fa-graduation-cap text-3xl"></i>
             </div>
             <h1 class="text-3xl font-black text-slate-900 tracking-tight leading-none">Smart<span class="text-teal-600">Presensi</span></h1>
@@ -43,7 +50,7 @@
                             <i class="fa-solid fa-user-circle"></i>
                         </div>
                         <input type="text" name="username" value="{{ old('username') }}" placeholder="Contoh: rizka.3398" 
-                            class="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border border-slate-100 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 transition-all text-sm font-bold placeholder:text-slate-300 placeholder:font-medium" required>
+                            class="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border border-slate-100 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 transition-all text-base font-bold placeholder:text-slate-300 placeholder:font-medium outline-none" required>
                     </div>
                     @error('username')
                         <p class="text-rose-500 text-[10px] font-bold mt-1 ml-1">{{ $message }}</p>
@@ -57,7 +64,7 @@
                             <i class="fa-solid fa-lock"></i>
                         </div>
                         <input type="password" name="password" placeholder="Default: ortu123" 
-                            class="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border border-slate-100 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 transition-all text-sm font-bold placeholder:text-slate-300 placeholder:font-medium" required>
+                            class="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border border-slate-100 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 transition-all text-base font-bold placeholder:text-slate-300 placeholder:font-medium outline-none" required>
                     </div>
                 </div>
 

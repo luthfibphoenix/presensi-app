@@ -40,7 +40,7 @@
                     }
                 }" class="relative">
                     <button type="button" @click="open = !open" 
-                            class="w-full flex items-center justify-between bg-gray-50 px-5 py-3.5 rounded-2xl border-2 border-gray-50 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-sm">
+                            class="w-full flex items-center justify-between bg-gray-50 px-5 py-3.5 rounded-2xl border-2 border-gray-50 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-base">
                         <span x-text="selectedName"></span>
                         <i class="fas fa-chevron-down text-xs text-gray-300 transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
                     </button>
@@ -78,7 +78,7 @@
                     <input type="hidden" name="siswa_id" id="siswa_id_input" required>
                     <button type="button" @click="if(selectedKelas) open = !open" 
                             :class="!selectedKelas ? 'opacity-50 cursor-not-allowed' : ''"
-                            class="w-full flex items-center justify-between bg-gray-50 px-5 py-3.5 rounded-2xl border-2 border-gray-50 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-sm">
+                            class="w-full flex items-center justify-between bg-gray-50 px-5 py-3.5 rounded-2xl border-2 border-gray-50 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-base">
                         <span x-text="selectedName"></span>
                         <i class="fas fa-chevron-down text-xs text-gray-300 transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
                     </button>
@@ -108,7 +108,7 @@
                 }" class="relative">
                     <input type="hidden" name="tipe" id="tipe_input" value="Masuk Telat">
                     <button type="button" @click="open = !open" 
-                            class="w-full flex items-center justify-between bg-gray-50 px-5 py-3.5 rounded-2xl border-2 border-gray-50 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-sm">
+                            class="w-full flex items-center justify-between bg-gray-50 px-5 py-3.5 rounded-2xl border-2 border-gray-50 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-base">
                         <span x-text="selectedName"></span>
                         <i class="fas fa-chevron-down text-xs text-gray-300 transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
                     </button>
@@ -122,16 +122,18 @@
                 </div>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
-                <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2">Tanggal</label>
+                <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" 
+                    class="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-5 py-3.5 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-base" required>
             </div>
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Alasan / Catatan</label>
-                <input type="text" name="alasan" placeholder="Contoh: Ban bocor / Izin ke Puskesmas" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2">Alasan / Catatan</label>
+                <input type="text" name="alasan" placeholder="Contoh: Ban bocor / Izin ke Puskesmas" 
+                    class="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-5 py-3.5 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-base" required>
             </div>
-            <div class="lg:col-span-3 flex justify-end">
-                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded font-bold shadow-md transition">
-                    Simpan Data
+            <div class="lg:col-span-3 flex justify-end pt-2">
+                <button type="submit" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-black shadow-lg shadow-blue-100 transition-all uppercase tracking-widest text-xs">
+                    Simpan Data Izin
                 </button>
             </div>
         </form>
@@ -144,7 +146,8 @@
         <h3 class="text-lg font-medium text-gray-900">Daftar Pengajuan Izin Siswa</h3>
     </div>
     
-    <div class="overflow-x-auto">
+    {{-- Desktop View --}}
+    <div class="hidden md:block overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
@@ -221,6 +224,69 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile View --}}
+    <div class="md:hidden divide-y divide-gray-100">
+        @forelse($izins as $izin)
+            <div class="p-5 space-y-4 hover:bg-gray-50 transition-colors">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ \Carbon\Carbon::parse($izin->tanggal)->translatedFormat('d F Y') }}</p>
+                        <h4 class="text-sm font-black text-gray-900">{{ $izin->siswa->nama ?? 'Unknown' }}</h4>
+                        <p class="text-xs font-bold text-gray-500">{{ $izin->siswa->kelas->nama_kelas ?? '' }}</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase
+                        @if($izin->status == 'pending') bg-yellow-100 text-yellow-700
+                        @elseif($izin->status == 'approve') bg-emerald-100 text-emerald-700
+                        @else bg-rose-100 text-rose-700
+                        @endif">
+                        {{ $izin->status == 'pending' ? 'Menunggu' : ($izin->status == 'approve' ? 'Disetujui' : 'Ditolak') }}
+                    </span>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <span class="px-2 py-1 rounded text-[9px] font-black uppercase
+                        @if($izin->tipe == 'Masuk Telat') bg-orange-100 text-orange-700
+                        @elseif($izin->tipe == 'Keluar Sekolah') bg-purple-100 text-purple-700
+                        @elseif($izin->tipe == 'Sakit') bg-rose-100 text-rose-700
+                        @else bg-blue-100 text-blue-700
+                        @endif">
+                        {{ $izin->tipe }}
+                    </span>
+                    @if($izin->bukti)
+                        <a href="{{ asset($izin->bukti) }}" target="_blank" class="inline-flex items-center text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100">
+                            <i class="fas fa-image mr-1"></i> BUKTI
+                        </a>
+                    @endif
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 italic text-xs text-gray-600">
+                    "{{ $izin->alasan }}"
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                    @if($izin->status == 'pending')
+                        <form action="{{ route('izin.approve', $izin->id) }}" method="POST" class="flex-1">
+                            @csrf
+                            <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100">Setujui</button>
+                        </form>
+                        <form action="{{ route('izin.reject', $izin->id) }}" method="POST" class="flex-1">
+                            @csrf
+                            <button type="submit" class="w-full bg-white text-rose-600 border border-rose-100 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest">Tolak</button>
+                        </form>
+                    @else
+                        <a href="{{ route('izin.print', $izin->id) }}" target="_blank" class="w-full bg-blue-50 text-blue-600 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-center border border-blue-100">
+                            <i class="fas fa-print mr-2"></i> Cetak Surat
+                        </a>
+                    @endif
+                </div>
+            </div>
+        @empty
+            <div class="p-10 text-center">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest italic">Belum ada pengajuan izin.</p>
+            </div>
+        @endforelse
     </div>
     
     @if($izins->hasPages())
