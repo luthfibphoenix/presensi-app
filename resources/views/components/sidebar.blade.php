@@ -101,7 +101,6 @@
             'ADMINISTRASI TU' => [
                 ['label' => 'Surat Dinas (SPPD)', 'route' => 'tu.surat_dinas', 'icon' => 'fas fa-plane-departure'],
                 ['label' => 'Database Siswa', 'route' => 'siswa.index', 'icon' => 'fas fa-users'],
-                ['label' => 'Rekap Harian', 'route' => 'laporan.rekap_harian', 'icon' => 'fas fa-calendar-check'],
             ],
         ];
     } elseif ($role === 'bk') {
@@ -179,13 +178,7 @@
             ]),
         ];
 
-        if ($user->is_wali === true) {
-            // Keep Siswa Wali
-        } else {
-            $menus['ADMINISTRASI'] = array_filter($menus['ADMINISTRASI'], function($item) {
-                return $item['label'] !== 'Siswa Wali';
-            });
-        }
+
     }
 @endphp
 

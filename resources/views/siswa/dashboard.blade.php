@@ -261,4 +261,11 @@
 <style>
     [x-cloak] { display: none !important; }
 </style>
+@push('scripts')
+<script>
+    setInterval(() => {
+        window.location.reload();
+    }, 5000);
+</script>
+@endpush
 @endsection

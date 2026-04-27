@@ -88,6 +88,9 @@ class JurnalController extends Controller
     {
         $query = \App\Models\JurnalMengajar::with('presensi')->where('user_id', auth()->id());
         
+        if ($request->jurnal_id) {
+            $query->where('id', $request->jurnal_id);
+        }
         if ($request->tanggal) {
             $query->whereDate('tanggal', $request->tanggal);
         }

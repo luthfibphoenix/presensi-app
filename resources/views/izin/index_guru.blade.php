@@ -174,7 +174,16 @@
                             {{ $izin->tipe }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">{{ $izin->alasan }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                        {{ $izin->alasan }}
+                        @if($izin->bukti)
+                            <div class="mt-1">
+                                <a href="{{ asset($izin->bukti) }}" target="_blank" class="inline-flex items-center text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 hover:bg-blue-100 transition">
+                                    <i class="fas fa-image mr-1"></i> LIHAT BUKTI
+                                </a>
+                            </div>
+                        @endif
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         @if($izin->status == 'pending')
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Menunggu</span>

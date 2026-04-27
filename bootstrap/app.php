@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'orangtua' => \App\Http\Middleware\OrangtuaMiddleware::class,
+            'siswa.autologout' => \App\Http\Middleware\StudentAutoLogout::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

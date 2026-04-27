@@ -7,244 +7,354 @@
     $jamSelesaiStr = \Carbon\Carbon::createFromFormat('H:i', jamPelajaranToWaktu($jadwal->jam_selesai), 'Asia/Jakarta')->addMinutes(45)->format('H:i');
     $isExpired     = \Carbon\Carbon::now('Asia/Jakarta')->greaterThan($expiredAt);
     $secontsLeft   = max(0, \Carbon\Carbon::now('Asia/Jakarta')->diffInSeconds($expiredAt, false));
+    $user = auth()->user();
 @endphp
 
-<div class="h-full overflow-y-auto no-scrollbar pb-24 md:pb-6">
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<style>
+    body { background-color: #f1f5f9 !important; color: #1e293b; }
+    .light-card { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 1.25rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); }
+    .light-input { background-color: #f8fafc; border: 1px solid #cbd5e1; color: #334155; }
+    .light-input:focus { border-color: #3b82f6; ring: 2px solid #bfdbfe; background-color: #ffffff; }
+    .btn-light-action { background-color: #ffffff; border: 1px solid #e2e8f0; color: #64748b; transition: all 0.2s; }
+    .btn-light-action:hover { background-color: #f8fafc; color: #1e293b; border-color: #cbd5e1; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
 
-    {{-- ── Kolom Kiri: Info Kelas & QR ── --}}
-    <div class="space-y-5">
+<div class="min-h-screen pb-12 px-4 md:px-0 max-w-5xl mx-auto">
 
-        {{-- Info Kelas --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div class="flex items-start justify-between gap-3">
+    <div class="space-y-6">
+        
+        {{-- Card 1: Sesi Pelajaran Aktif --}}
+        <div class="light-card p-6">
+            <div class="flex justify-between items-start">
                 <div>
-                    <p class="text-xs font-medium text-blue-500 uppercase tracking-wide mb-1">Sesi Aktif</p>
-                    <h2 class="text-xl font-bold text-gray-800">{{ $jadwal->mata_pelajaran }}</h2>
-                    <p class="text-gray-500 text-sm mt-1">
-                        <i class="fas fa-users text-xs mr-1"></i> Kelas {{ $jadwal->kelas }}
-                        &nbsp;·&nbsp;
-                        <i class="fas fa-clock text-xs mr-1"></i> {{ $jamMulaiStr }} – {{ $jamSelesaiStr }}
-                        &nbsp;·&nbsp;
-                        <i class="fas fa-calendar text-xs mr-1"></i> {{ $jadwal->hari }}
-                    </p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">SESI PELAJARAN AKTIF</p>
+                    <h2 class="text-2xl font-black text-slate-800">{{ $jadwal->mata_pelajaran }}</h2>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <span class="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600">
+                            <i class="far fa-calendar-alt text-blue-500"></i> {{ $jadwal->hari }}
+                        </span>
+                        <span class="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600">
+                            <i class="far fa-clock text-blue-500"></i> {{ $jamMulaiStr }} – {{ $jamSelesaiStr }}
+                        </span>
+                        <span class="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600">
+                            <i class="far fa-folder text-blue-500"></i> {{ $jadwal->kelas }}
+                        </span>
+                    </div>
                 </div>
-                <span class="flex-shrink-0 px-3 py-1 rounded-full text-xs font-bold {{ $isExpired ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
-                    {{ $isExpired ? '⏱ QR Expired' : '🟢 QR Aktif' }}
-                </span>
+                <div class="bg-emerald-50 border border-emerald-100 rounded-full px-4 py-1.5 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)] animate-pulse"></span>
+                    <span class="text-xs font-bold text-emerald-600">QR Aktif</span>
+                </div>
             </div>
         </div>
 
-        {{-- QR Code --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center min-h-[350px] flex flex-col justify-center" x-data="{ forceShow: false }">
-            @if($isExpired)
-                <div class="py-8">
-                    <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-qrcode text-red-300 text-3xl"></i>
+        {{-- Card 2: Jurnal Mengajar --}}
+        <div class="light-card p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-edit text-slate-400"></i> Jurnal Mengajar
+                </h3>
+                @if($jurnal && $jurnal->id)
+                <a href="{{ route('guru.jurnal.cetak', ['jurnal_id' => $jurnal->id]) }}" target="_blank" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1.5 transition underline underline-offset-4 decoration-2">
+                    <i class="fas fa-print"></i> Cetak jurnal
+                </a>
+                @endif
+            </div>
+            
+            <form action="{{ route('guru.mulai.kelas.jurnal', $qrSession->id) }}" method="POST">
+                @csrf
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">MATERI HARI INI</label>
+                        <textarea id="jurnal-textarea" name="ringkasan_materi" rows="4" 
+                                  class="w-full light-input rounded-xl p-4 text-sm font-medium resize-none focus:outline-none transition-all"
+                                  placeholder="Tuliskan ringkasan materi yang diajarkan hari ini...">{{ $jurnal->ringkasan_materi ?? '' }}</textarea>
                     </div>
-                    <p class="text-red-600 font-semibold mb-1">QR Code Sudah Kadaluarsa</p>
-                    <p class="text-gray-400 text-sm mb-5">Klik Refresh QR untuk membuat token baru.</p>
+                    
+                    <button type="submit" class="w-full py-3.5 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold rounded-xl shadow-lg shadow-slate-200 transition flex items-center justify-center gap-2 uppercase tracking-wide">
+                        <i class="fas fa-save opacity-60"></i> Simpan jurnal & sync absensi
+                    </button>
+                    
+                    <p id="jurnal-status" class="text-[10px] text-slate-400 text-center font-bold uppercase tracking-tighter italic">
+                        @if($jurnal && $jurnal->updated_at)
+                            Tersimpan {{ $jurnal->updated_at->format('H:i') }} WIB
+                        @endif
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {{-- Card 3: QR Code --}}
+            <div class="light-card p-6 flex flex-col items-center">
+                <p class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-6">QR CODE PRESENSI</p>
+                
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-inner mb-6">
+                    <div id="qrcode"></div>
+                </div>
+                
+                <div class="text-center space-y-1.5 mb-8">
+                    <p class="text-sm font-bold text-slate-700">Tunjukkan ke siswa untuk absensi.</p>
+                    <p class="text-xs text-slate-400 font-medium">Berlaku selama sesi pelajaran berlangsung.</p>
+                </div>
+
+                <div class="w-full space-y-3">
+                    <div class="flex items-center justify-between px-5 py-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-sync-alt text-blue-500 text-[10px] animate-spin-slow"></i>
+                            <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">Auto-refresh</span>
+                        </div>
+                        <span id="countdown" class="font-mono font-bold text-blue-600 text-base">15:00</span>
+                    </div>
+                    
                     <form action="{{ route('guru.qr.refresh', $qrSession->id) }}" method="POST">
                         @csrf
-                        <button type="submit"
-                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow transition">
-                            <i class="fas fa-sync-alt"></i> Refresh QR
+                        <button type="submit" class="w-full py-3 btn-light-action text-xs font-bold rounded-xl flex items-center justify-center gap-2 uppercase tracking-widest">
+                            <i class="fas fa-redo opacity-60"></i> Manual refresh QR
                         </button>
                     </form>
                 </div>
-            @else
-                <div x-show="!forceShow && ({{ $isPastSchedule ? 'true' : ($isWithinSchedule ? 'false' : 'true') }})">
-                    <div class="py-8">
-                        <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas {{ $isPastSchedule ? 'fa-check-double' : 'fa-clock' }} text-blue-500 text-3xl"></i>
-                        </div>
-                        <p class="text-gray-800 font-bold mb-1">{{ $isPastSchedule ? 'Jam Pelajaran Telah Selesai' : 'Belum Waktunya Mulai' }}</p>
-                        <p class="text-gray-400 text-sm mb-6 px-6">
-                            {{ $isPastSchedule ? 'Sesi ini sudah di luar jam jadwal. Anda tetap bisa menampilkan QR jika diperlukan.' : 'Jam pelajaran belum dimulai. Gunakan tombol di bawah jika ingin memulai lebih awal.' }}
-                        </p>
-                        <div class="flex flex-col gap-3 items-center">
-                            <button @click="forceShow = true" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition">
-                                <i class="fas fa-qrcode"></i> Tampilkan QR Sekarang
-                            </button>
-                            <a href="{{ route('dashboard') }}" class="text-xs text-gray-400 hover:text-blue-600 font-medium transition">
-                                <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
-                            </a>
-                        </div>
-                    </div>
-                </div>
+            </div>
 
-                <div x-show="forceShow || {{ $isWithinSchedule ? 'true' : 'false' }}" x-cloak>
-                    <p class="text-xs text-gray-400 uppercase tracking-wide mb-4 font-medium">Scan QR untuk Absensi</p>
-                    <div id="qrcode" class="flex justify-center mb-4"></div>
-                    
-                    {{-- Countdown --}}
-                    <div class="mt-4 p-3 rounded-xl bg-gray-50 flex items-center justify-center gap-3">
-                        <i class="fas fa-sync-alt text-blue-500 animate-spin-slow"></i>
-                        <span class="text-sm text-gray-600">Token refresh otomatis dalam: </span>
-                        <span id="countdown" class="font-mono font-bold text-lg text-blue-700">15:00</span>
-                    </div>
-
-                    <div class="flex gap-3 mt-4 justify-center">
-                        <form action="{{ route('guru.qr.refresh', $qrSession->id) }}" method="POST">
-                            @csrf
-                            <button type="submit"
-                                class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-xl transition">
-                                <i class="fas fa-sync-alt"></i> Manual Refresh
-                            </button>
-                        </form>
-                    </div>
+            {{-- Card 4: Kehadiran --}}
+            <div class="light-card p-6 flex flex-col">
+                <div class="flex justify-between items-center mb-1">
+                    <h3 class="font-bold text-slate-800">Kehadiran Siswa</h3>
+                    <span class="text-blue-600 font-black text-xl" id="jumlah-hadir-badge">
+                        {{ $presensis->whereIn('status', ['Hadir', 'Terlambat'])->count() }} / {{ $allStudents->count() }}
+                    </span>
                 </div>
-            @endif
+                <p class="text-[10px] text-slate-400 font-bold mb-5" id="last-update-text">Terakhir update: {{ now()->format('H:i') }} WIB</p>
+
+                <div class="flex-1 overflow-y-auto no-scrollbar max-h-[320px]">
+                    <table id="daftar-hadir" class="w-full">
+                        @foreach($allStudents as $i => $student)
+                        @php
+                            $p = $presensis->get($student->id);
+                            $status = $p ? $p->status : 'Belum Absen';
+                            
+                            $statusClass = match($status) {
+                                'Hadir' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                'Terlambat' => 'bg-orange-50 text-orange-600 border-orange-100',
+                                'Izin', 'Sakit' => 'bg-blue-50 text-blue-600 border-blue-100',
+                                default => 'bg-slate-50 text-slate-400 border-slate-100'
+                            };
+
+                            $isIzin = in_array($status, ['Sakit', 'Izin']);
+                            
+                            // Escape single quotes for JS
+                            $safeNama = str_replace("'", "\\'", $student->nama);
+                            $safeKet = str_replace("'", "\\'", $p->keterangan ?? '-');
+                            $safeBukti = $p && $p->bukti ? asset($p->bukti) : '';
+                            
+                            $clickHandler = $isIzin ? "onclick=\"showIzinDetail('{$safeNama}', '{$status}', '{$safeKet}', '{$safeBukti}')\"" : "";
+                        @endphp
+                        <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
+                            <td class="py-3 px-4">
+                                <p class="text-xs font-black text-slate-700">{{ $student->nama }}</p>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <span {!! $clickHandler !!} class="inline-flex items-center px-3 py-1 rounded-xl border text-[10px] font-black uppercase tracking-tighter {{ $statusClass }} {{ $isIzin ? 'cursor-pointer hover:scale-105 transition-transform' : '' }}">
+                                    {{ $status }}
+                                    @if($isIzin) <i class="fas fa-info-circle ml-1.5 opacity-50"></i> @endif
+                                </span>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </table>
+                </div>
+                
+                <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
+                        Refresh: <span id="last-refresh-time">{{ now()->format('H:i:s') }}</span> 
+                        <span class="mx-2 text-slate-200">|</span> 
+                        <a href="#" class="text-blue-500 hover:text-blue-700">Lihat semua siswa <i class="fas fa-chevron-right ml-1 text-[8px]"></i></a>
+                    </p>
+                </div>
+            </div>
         </div>
-
 
     </div>
-
-    {{-- ── Kolom Kanan: Daftar Hadir ── --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <div>
-                <h3 class="font-semibold text-gray-800">Status Kehadiran Siswa</h3>
-                <p class="text-xs text-gray-400 mt-0.5" id="last-refresh">Memuat data...</p>
-            </div>
-            <div class="text-right">
-                <p class="text-2xl font-bold text-blue-700" id="jumlah-hadir">{{ $presensis->whereIn('status', ['Hadir', 'Terlambat'])->count() }}</p>
-                <p class="text-xs text-gray-400">/ <span id="total-siswa">{{ $allStudents->count() }}</span> hadir</p>
-            </div>
-        </div>
-
-        <div class="flex-1 overflow-y-auto max-h-64 lg:max-h-[calc(100vh-18rem)]">
-            <ul id="daftar-hadir" class="divide-y divide-gray-50">
-                @foreach($allStudents as $i => $student)
-                @php
-                    $p = $presensis->get($student->id);
-                    $status = $p ? $p->status : 'Belum Absen';
-                    
-                    $colorClass = 'bg-gray-100 text-gray-500';
-                    $icon = 'fas fa-clock';
-                    $subtext = 'Belum Absen';
-
-                    if($status == 'Hadir') { 
-                        $colorClass = 'bg-green-100 text-green-700'; 
-                        $icon = 'fas fa-check-circle';
-                        $subtext = 'Hadir Tepat Waktu';
-                    } elseif($status == 'Terlambat') { 
-                        $colorClass = 'bg-yellow-100 text-yellow-700'; 
-                        $icon = 'fas fa-exclamation-circle';
-                        $subtext = 'Terlambat ' . ($p->terlambat_menit ?? 0) . ' mnt';
-                    } elseif($status == 'Alfa') { 
-                        $colorClass = 'bg-red-100 text-red-700'; 
-                        $icon = 'fas fa-times-circle';
-                        $subtext = 'Tidak Hadir (Alfa)';
-                    } elseif($status == 'Izin') { 
-                        $colorClass = 'bg-blue-100 text-blue-700'; 
-                        $icon = 'fas fa-envelope';
-                        $subtext = 'Izin';
-                    } elseif($status == 'Sakit') { 
-                        $colorClass = 'bg-orange-100 text-orange-700'; 
-                        $icon = 'fas fa-heartbeat';
-                        $subtext = 'Sakit';
-                    }
-                @endphp
-                <li class="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 transition">
-                    <div class="w-8 h-8 rounded-full {{ $colorClass }} flex items-center justify-center font-bold text-xs flex-shrink-0">
-                        {{ $i + 1 }}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="font-medium text-gray-800 truncate text-sm">{{ $student->nama }}</p>
-                        <p class="text-[10px] uppercase font-bold tracking-wider opacity-70">{{ $subtext }}</p>
-                    </div>
-                    <i class="{{ $icon }} {{ $colorClass }} bg-transparent text-lg opacity-50"></i>
-                </li>
-                @endforeach
-            </ul>
-        </div>
-        <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-400 text-right">
-            Terakhir refresh: <span id="last-refresh">{{ now()->format('H:i:s') }}</span>
-    </div>
-</div>
 </div>
 
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-// ── Generate QR ──
-@if(!$isExpired)
-new QRCode(document.getElementById("qrcode"), {
-    text: "{{ $qrUrl }}",
-    width: 280, height: 280,
-    colorDark: "#1e40af", colorLight: "#ffffff",
-    correctLevel: QRCode.CorrectLevel.H
-});
+    // ── Generate QR ──
+    @if(!$isExpired)
+    new QRCode(document.getElementById("qrcode"), {
+        text: "{{ $qrUrl }}",
+        width: 180, height: 180,
+        colorDark: "#1e293b", colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
 
-// ── Countdown ──
-let secondsLeft = {{ $secontsLeft }};
-const countdownEl = document.getElementById('countdown');
+    // ── Countdown ──
+    let secondsLeft = {{ $secontsLeft }};
+    const countdownEl = document.getElementById('countdown');
 
-function updateCountdown() {
-    if (secondsLeft <= 0) {
-        countdownEl.textContent = '00:00';
-        countdownEl.classList.replace('text-blue-700', 'text-red-600');
-        // Reload page to show expired state
-        setTimeout(() => window.location.reload(), 1000);
-        return;
+    function updateCountdown() {
+        if (secondsLeft <= 0) {
+            countdownEl.textContent = '00:00';
+            countdownEl.classList.add('text-red-500');
+            setTimeout(() => window.location.reload(), 1000);
+            return;
+        }
+        const min = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
+        const sec = String(Math.floor(secondsLeft % 60)).padStart(2, '0');
+        countdownEl.textContent = min + ':' + sec;
+        secondsLeft--;
     }
-    const minutes = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
-    const seconds = String(Math.floor(secondsLeft % 60)).padStart(2, '0');
-    countdownEl.textContent = minutes + ':' + seconds;
-    
-    if (secondsLeft <= 60) countdownEl.classList.replace('text-blue-700', 'text-red-600');
-    secondsLeft--;
-}
-updateCountdown();
-setInterval(updateCountdown, 1000);
-@endif
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+    @endif
 
-// ── Auto-refresh daftar hadir ──
-function refreshHadir() {
-    fetch("{{ route('guru.qr.status.json', $jadwal->id) }}")
-        .then(r => r.json())
-        .then(data => {
-            document.getElementById('jumlah-hadir').textContent = data.hadir_count;
-            document.getElementById('total-siswa').textContent = data.total_count;
-            document.getElementById('last-refresh').textContent = 'Terakhir update: ' + new Date().toLocaleTimeString('id-ID') + ' WIB';
+    // ── Auto-refresh Logic ──
+    function refreshHadir() {
+        fetch("{{ route('guru.qr.status.json', $jadwal->id) }}")
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('jumlah-hadir-badge').textContent = data.hadir_count + ' / ' + data.total_count;
+                document.getElementById('last-update-text').textContent = 'Terakhir update: ' + new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) + ' WIB';
+                document.getElementById('last-refresh-time').textContent = new Date().toLocaleTimeString('id-ID');
 
-            const list = document.getElementById('daftar-hadir');
-            list.innerHTML = data.students.map((s, i) => {
-                let colorClass = 'bg-gray-100 text-gray-500';
-                let icon = 'fas fa-clock';
-                let subtext = 'Belum Absen';
+                const list = document.getElementById('daftar-hadir');
+                list.innerHTML = data.students.map((s, i) => {
+                    let statusClass = 'bg-slate-50 text-slate-400 border-slate-100';
+                    if(s.status == 'Hadir') statusClass = 'bg-emerald-50 text-emerald-600 border-emerald-100';
+                    else if(s.status == 'Terlambat') statusClass = 'bg-orange-50 text-orange-600 border-orange-100';
+                    else if(s.status == 'Izin' || s.status == 'Sakit') statusClass = 'bg-blue-50 text-blue-600 border-blue-100';
 
-                if(s.status == 'Hadir') { 
-                    colorClass = 'bg-green-100 text-green-700'; icon = 'fas fa-check-circle'; subtext = 'Hadir Tepat Waktu';
-                } else if(s.status == 'Terlambat') { 
-                    colorClass = 'bg-yellow-100 text-yellow-700'; icon = 'fas fa-exclamation-circle'; subtext = 'Terlambat ' + (s.terlambat_menit || 0) + ' mnt';
-                } else if(s.status == 'Alfa') { 
-                    colorClass = 'bg-red-100 text-red-700'; icon = 'fas fa-times-circle'; subtext = 'Tidak Hadir (Alfa)';
-                } else if(s.status == 'Izin') { 
-                    colorClass = 'bg-blue-100 text-blue-700'; icon = 'fas fa-envelope'; subtext = 'Izin';
-                } else if(s.status == 'Sakit') { 
-                    colorClass = 'bg-orange-100 text-orange-700'; icon = 'fas fa-heartbeat'; subtext = 'Sakit';
-                }
+                    let isIzin = s.status === 'Sakit' || s.status === 'Izin';
+                    let clickable = isIzin ? 'cursor-pointer hover:scale-105 transition-transform' : '';
+                    
+                    // Escape quotes for JS
+                    let safeNama = s.nama.replace(/'/g, "\\'");
+                    let safeKet = (s.keterangan || '-').replace(/'/g, "\\'");
+                    let safeBukti = s.bukti || '';
 
-                return `
-                <li class="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 transition">
-                    <div class="w-8 h-8 rounded-full ${colorClass} flex items-center justify-center font-bold text-xs flex-shrink-0">
-                        ${i + 1}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="font-medium text-gray-800 truncate text-sm">${s.nama}</p>
-                        <p class="text-[10px] uppercase font-bold tracking-wider opacity-70">${subtext}</p>
-                    </div>
-                    <i class="${icon} ${colorClass} bg-transparent text-lg opacity-50"></i>
-                </li>`;
-            }).join('');
-        })
-        .catch(console.error);
-}
+                    let clickHandler = isIzin ? `onclick="showIzinDetail('${safeNama}', '${s.status}', '${safeKet}', '${safeBukti}')"` : '';
 
-setInterval(refreshHadir, 10000);
-refreshHadir();
+                    return `
+                        <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
+                            <td class="py-3 px-4">
+                                <p class="text-xs font-black text-slate-700">${s.nama}</p>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <span ${clickHandler} class="inline-flex items-center px-3 py-1 rounded-xl border text-[10px] font-black uppercase tracking-tighter ${statusClass} ${clickable}">
+                                    ${s.status}
+                                    ${isIzin ? '<i class="fas fa-info-circle ml-1.5 opacity-50"></i>' : ''}
+                                </span>
+                            </td>
+                        </tr>`;
+                }).join('');
+            });
+    }
+
+    setInterval(refreshHadir, 5000);
+    refreshHadir();
+
+    // ── Auto-save Jurnal Logic ──
+    const journalTextarea = document.getElementById('jurnal-textarea');
+    const journalStatus = document.getElementById('jurnal-status');
+    let autoSaveTimeout;
+
+    if (journalTextarea) {
+        journalTextarea.addEventListener('input', () => {
+            journalStatus.textContent = 'Mengetik...';
+            
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                journalStatus.textContent = 'Menyimpan...';
+                
+                const formData = new FormData();
+                formData.append('ringkasan_materi', journalTextarea.value);
+                formData.append('_token', '{{ csrf_token() }}');
+
+                fetch("{{ route('guru.mulai.kelas.jurnal', $qrSession->id) }}", {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if(data.success) {
+                        journalStatus.textContent = 'Tersimpan ' + data.last_save + ' WIB';
+                    } else {
+                        journalStatus.textContent = 'Gagal menyimpan';
+                    }
+                })
+                .catch(() => {
+                    journalStatus.textContent = 'Koneksi terputus';
+                });
+            }, 2000); // Save after 2 seconds of inactivity
+        });
+    }
+
+    // Modal Detail Izin (Global Scope)
+    function showIzinDetail(nama, tipe, alasan, bukti) {
+        console.log('Opening modal for:', nama); // Debugging
+        document.getElementById('modal-nama').textContent = nama;
+        document.getElementById('modal-tipe').textContent = tipe;
+        document.getElementById('modal-alasan').textContent = alasan;
+        
+        const buktiLink = document.getElementById('modal-bukti');
+        if (bukti && bukti !== 'null' && bukti !== '' && bukti !== 'undefined') {
+            buktiLink.href = bukti;
+            buktiLink.classList.remove('hidden');
+        } else {
+            buktiLink.classList.add('hidden');
+        }
+
+        const modal = document.getElementById('izin-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeIzinModal() {
+        const modal = document.getElementById('izin-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
 </script>
 @endpush
+
+<!-- Modal Detail Izin -->
+<div id="izin-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-4">
+    <div onclick="closeIzinModal()" class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity"></div>
+    
+    <div class="relative bg-white w-full max-w-sm rounded-[3rem] shadow-2xl overflow-hidden animate-fade-in-up">
+        <!-- Header Pop-up -->
+        <div class="bg-slate-50/50 p-8 pb-4 flex flex-col items-center text-center">
+            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-3xl flex items-center justify-center text-2xl mb-4 shadow-inner">
+                <i class="fas fa-file-signature"></i>
+            </div>
+            <h3 id="modal-nama" class="text-xl font-black text-slate-900 leading-tight"></h3>
+            <div id="modal-tipe" class="mt-2 px-4 py-1 rounded-full bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest border border-blue-100"></div>
+        </div>
+
+        <!-- Konten Pop-up -->
+        <div class="p-8 pt-4 space-y-6">
+            <div class="space-y-2">
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Keterangan / Alasan</p>
+                <div class="bg-slate-50 p-5 rounded-[2rem] border border-slate-100 relative">
+                    <p id="modal-alasan" class="text-xs font-bold text-slate-600 leading-relaxed italic text-center"></p>
+                    <i class="fas fa-quote-left absolute top-3 left-4 text-slate-200 text-lg opacity-30"></i>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <a id="modal-bukti" href="#" target="_blank" class="flex items-center justify-center gap-3 w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] uppercase tracking-widest py-4 rounded-2xl shadow-lg shadow-emerald-100 transition-all hover:scale-[1.02] active:scale-95">
+                    <i class="fas fa-camera"></i>
+                    Lihat Lampiran Foto
+                </a>
+                <button onclick="closeIzinModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-black text-[10px] uppercase tracking-widest py-4 rounded-2xl transition-all">
+                    Tutup Detail
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection

@@ -368,4 +368,11 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+    setInterval(() => {
+        window.location.reload();
+    }, 5000);
+</script>
+@endpush
 @endsection

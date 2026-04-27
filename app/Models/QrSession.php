@@ -10,6 +10,7 @@ class QrSession extends Model
 
     protected $fillable = [
         'jadwal_id',
+        'guru_id',
         'tanggal',
         'token',
         'expired_at',
@@ -18,5 +19,10 @@ class QrSession extends Model
     public function jadwal()
     {
         return $this->belongsTo(Jadwal::class);
+    }
+
+    public function jurnal()
+    {
+        return $this->hasOne(JurnalMengajar::class, 'qr_session_id');
     }
 }

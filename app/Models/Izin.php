@@ -12,6 +12,7 @@ class Izin extends Model
         'siswa_id',
         'tanggal',
         'alasan',
+        'bukti',
         'status',
         'tipe',
         'petugas_piket',

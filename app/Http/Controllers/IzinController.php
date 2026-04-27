@@ -14,6 +14,53 @@ class IzinController extends Controller
         return view('izin.index', compact('izins'));
     }
 
+    public function indexOrangtua(Request $request)
+    {
+        $orangtua = auth('orangtua')->user();
+        if (!$orangtua) return redirect()->route('login');
+        
+        $siswaIds = \App\Models\Siswa::where('no_hp_ortu', $orangtua->username)
+                    ->orWhere('username_ortu', $orangtua->username)
+                    ->pluck('id');
+                    
+        $izins = Izin::with('siswa')->whereIn('siswa_id', $siswaIds)->orderBy('tanggal', 'desc')->paginate(10);
+        $siswas = \App\Models\Siswa::whereIn('id', $siswaIds)->get();
+        
+        return view('izin.index_ortu', compact('izins', 'siswas'));
+    }
+
+    public function storeOrangtua(Request $request)
+    {
+        $request->validate([
+            'siswa_id' => 'required|exists:siswas,id',
+            'tanggal' => 'required|date',
+            'alasan' => 'required|string',
+            'tipe' => 'required|string|in:Izin,Sakit',
+        ]);
+
+        $orangtua = auth('orangtua')->user();
+        // Pastikan siswa yang dipilih adalah anak dari ortu ini
+        $isChild = \App\Models\Siswa::where('id', $request->siswa_id)
+                    ->where(function($q) use ($orangtua) {
+                        $q->where('no_hp_ortu', $orangtua->username)
+                          ->orWhere('username_ortu', $orangtua->username);
+                    })->exists();
+
+        if (!$isChild) {
+            return redirect()->back()->with('error', 'Siswa tidak valid.');
+        }
+
+        Izin::create([
+            'siswa_id' => $request->siswa_id,
+            'tanggal'  => $request->tanggal,
+            'alasan'   => $request->alasan . ' (Input oleh Ortu)',
+            'status'   => 'pending',
+            'tipe'     => $request->tipe,
+        ]);
+
+        return redirect()->back()->with('success', 'Permohonan izin berhasil dikirim. Menunggu verifikasi Guru Piket.');
+    }
+
     public function storeSiswa(Request $request)
     {
         $request->validate([

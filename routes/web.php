@@ -129,6 +129,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/dashboard/end-session',    [DashboardController::class, 'endSession'])->name('dashboard.end_session');
         Route::post('/guru/qr/generate',        [\App\Http\Controllers\QrController::class, 'generate'])->name('guru.qr.generate');
         Route::get('/guru/mulai-kelas/{sessionId}',  [\App\Http\Controllers\QrController::class, 'mulaiKelas'])->name('guru.mulai.kelas');
+        Route::post('/guru/mulai-kelas/{sessionId}/jurnal', [\App\Http\Controllers\QrController::class, 'saveJurnal'])->name('guru.mulai.kelas.jurnal');
         Route::post('/guru/qr/refresh/{sessionId}',  [\App\Http\Controllers\QrController::class, 'refresh'])->name('guru.qr.refresh');
         Route::post('/guru/qr/end/{sessionId}',      [\App\Http\Controllers\QrController::class, 'end'])->name('guru.qr.end');
 
@@ -164,7 +165,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Siswa Guard
-Route::middleware('auth:siswa')->group(function () {
+Route::middleware(['auth:siswa', 'siswa.autologout'])->group(function () {
     Route::get('/siswa/dashboard',      [DashboardController::class, 'siswaDashboard'])->name('siswa.dashboard');
     Route::get('/siswa/scan',           [\App\Http\Controllers\QrController::class, 'scanner'])->name('presensi.scan');
     Route::get('/siswa/scan/{token}',   [\App\Http\Controllers\QrController::class, 'scan'])->name('siswa.scan');
@@ -183,6 +184,7 @@ Route::prefix('ortu')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\OrtuDashboardController::class, 'index'])->name('ortu.dashboard');
         Route::get('/kehadiran', [\App\Http\Controllers\OrtuDashboardController::class, 'kehadiran'])->name('ortu.kehadiran');
         Route::get('/izin',      [\App\Http\Controllers\OrtuDashboardController::class, 'izin'])->name('ortu.izin');
+        Route::post('/izin',     [\App\Http\Controllers\OrtuDashboardController::class, 'storeIzin'])->name('ortu.izin.store');
         Route::get('/profil',    [\App\Http\Controllers\OrtuDashboardController::class, 'profil'])->name('ortu.profil');
         Route::post('/profil/password', [\App\Http\Controllers\OrtuDashboardController::class, 'updatePassword'])->name('ortu.password.update');
     });

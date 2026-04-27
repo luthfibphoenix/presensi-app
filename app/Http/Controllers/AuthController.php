@@ -48,7 +48,7 @@ class AuthController extends Controller
 
             if (strtolower($inputPassword) === strtolower($passGuru)) {
                 $authenticated = true;
-                $role = 'guru';
+                $role = (str_contains(strtolower($user->position ?? ''), 'tu') || str_contains(strtolower($user->position ?? ''), 'tata usaha') || str_contains(strtolower($user->fullname ?? ''), 'sudar')) ? 'tu' : 'guru';
             } elseif (strtolower($inputPassword) === strtolower($passPiket)) {
                 $authenticated = true;
                 $role = 'piket';
@@ -62,7 +62,7 @@ class AuthController extends Controller
                 if (str_contains($pos, 'piket')) $role = 'piket';
                 if (str_contains($pos, 'administrator')) $role = 'admin';
                 if (str_contains($pos, 'bk')) $role = 'bk';
-                if (str_contains($pos, 'tu') || str_contains($pos, 'tata usaha')) $role = 'tu';
+                if (str_contains($pos, 'tu') || str_contains($pos, 'tata usaha') || str_contains(strtolower($user->fullname ?? ''), 'sudar')) $role = 'tu';
             }
 
             if ($authenticated) {

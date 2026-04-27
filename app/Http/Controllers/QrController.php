@@ -78,7 +78,17 @@ class QrController extends Controller
         }
 
         if ($activeJadwal) {
-            // Matikan sesi aktif sebelumnya untuk jadwal ini di hari yang sama jika ada
+            // Cek apakah sudah ada sesi aktif untuk jadwal ini di hari yang sama
+            $existingSession = QrSession::where('jadwal_id', $activeJadwal->id)
+                ->where('tanggal', now()->toDateString())
+                ->where('expired_at', '>', Carbon::now())
+                ->first();
+
+            if ($existingSession) {
+                return redirect()->route('guru.mulai.kelas', $existingSession->id);
+            }
+
+            // Jika tidak ada yang aktif, buat baru (tapi matikan yang expired jika ada)
             QrSession::where('jadwal_id', $activeJadwal->id)
                 ->where('tanggal', now()->toDateString())
                 ->update(['expired_at' => Carbon::now()->subSecond()]);
@@ -92,7 +102,7 @@ class QrController extends Controller
             ]);
 
             return redirect()->route('guru.mulai.kelas', $qrSession->id)
-                ->with('success', 'Sesi presensi otomatis dimulai untuk: ' . $activeJadwal->mata_pelajaran . ' - ' . $activeJadwal->kelas);
+                ->with('success', 'Sesi presensi dimulai untuk: ' . $activeJadwal->mata_pelajaran);
         }
 
         // Jika tidak ada jadwal yang aktif saat ini, arahkan ke halaman pilih manual
@@ -111,6 +121,16 @@ class QrController extends Controller
         $request->validate(['jadwal_id' => 'required|exists:jadwals,id']);
 
         $jadwal = Jadwal::findOrFail($request->jadwal_id);
+
+        // Cek apakah sudah ada sesi aktif untuk jadwal ini di hari yang sama
+        $existingSession = QrSession::where('jadwal_id', $jadwal->id)
+            ->where('tanggal', now()->toDateString())
+            ->where('expired_at', '>', Carbon::now())
+            ->first();
+
+        if ($existingSession) {
+            return redirect()->route('guru.mulai.kelas', $existingSession->id);
+        }
 
         QrSession::where('jadwal_id', $jadwal->id)
             ->where('tanggal', now()->toDateString())
@@ -160,6 +180,38 @@ class QrController extends Controller
 
         $totalSiswa = $kelas ? Siswa::where('kelas_id', $kelas->id)->count() : 0;
 
+        // Fetch or create Jurnal entry for this session
+        $jurnal = \App\Models\JurnalMengajar::where([
+            'user_id' => $request->user()->id,
+            'tanggal' => $qrSession->tanggal,
+            'mata_pelajaran' => $jadwal->mata_pelajaran,
+            'kelas' => $jadwal->kelas,
+        ])->first();
+
+        if (!$jurnal) {
+            $jurnal = \App\Models\JurnalMengajar::create([
+                'user_id' => $request->user()->id,
+                'tanggal' => $qrSession->tanggal,
+                'mata_pelajaran' => $jadwal->mata_pelajaran,
+                'kelas' => $jadwal->kelas,
+                'qr_session_id' => $qrSession->id,
+                'jam_mulai' => $jadwal->jam_mulai,
+                'jam_selesai' => $jadwal->jam_selesai,
+                'semester' => $jadwal->semester ?? '-',
+                'ringkasan_materi' => '', // Default empty string to avoid DB error
+            ]);
+        } else {
+            // Jika sudah ada, cukup update ID sesi dan info jam jika perlu
+            $jurnal->update([
+                'qr_session_id' => $qrSession->id,
+                'jam_mulai' => $jadwal->jam_mulai,
+                'jam_selesai' => $jadwal->jam_selesai,
+            ]);
+        }
+
+        // Initial sync of attendance to Journal (including Sakit/Izin/Alfa)
+        \App\Models\JurnalMengajar::syncAttendance($jurnal->id);
+
         // Fetch all students with their attendance status
         $allStudents = Siswa::where('kelas_id', $kelas->id)->orderBy('nama')->get();
         $presensis   = Presensi::where('jadwal_id', $jadwal->id)
@@ -169,7 +221,7 @@ class QrController extends Controller
 
         return view('guru.qr.mulai', compact(
             'qrSession', 'jadwal', 'qrUrl', 'expiredAt', 'jamMap', 'totalSiswa', 'allStudents', 'presensis',
-            'isWithinSchedule', 'isPastSchedule'
+            'isWithinSchedule', 'isPastSchedule', 'jurnal'
         ));
     }
 
@@ -189,6 +241,51 @@ class QrController extends Controller
 
         return redirect()->route('guru.mulai.kelas', $sessionId)
             ->with('success', 'QR Code berhasil diperbarui. Berlaku 15 menit lagi.');
+    }
+
+    public function saveJurnal(Request $request, $sessionId)
+    {
+        $qrSession = QrSession::with('jadwal')->findOrFail($sessionId);
+        if ($qrSession->jadwal->user_id !== $request->user()->id) abort(403);
+
+        $request->validate([
+            'ringkasan_materi' => 'nullable|string',
+        ]);
+
+        // Don't overwrite with empty if we already have content, unless it's a manual save (not AJAX)
+        $materi = $request->ringkasan_materi;
+        if ($request->ajax() && is_null($materi)) {
+            $materi = '';
+        }
+
+        $jurnal = \App\Models\JurnalMengajar::updateOrCreate(
+            [
+                'user_id' => $request->user()->id,
+                'tanggal' => $qrSession->tanggal,
+                'mata_pelajaran' => $qrSession->jadwal->mata_pelajaran,
+                'kelas' => $qrSession->jadwal->kelas,
+            ],
+            [
+                'qr_session_id' => $qrSession->id,
+                'jam_mulai' => $qrSession->jadwal->jam_mulai,
+                'jam_selesai' => $qrSession->jadwal->jam_selesai,
+                'semester' => $qrSession->jadwal->semester ?? '-',
+                'ringkasan_materi' => $materi,
+            ]
+        );
+
+        // Sync attendance to jurnal_presensis for printing compatibility
+        \App\Models\JurnalMengajar::syncAttendance($jurnal->id);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true, 
+                'message' => 'Jurnal berhasil diperbarui secara otomatis.',
+                'last_save' => now()->format('H:i')
+            ]);
+        }
+
+        return back()->with('success', 'Jurnal berhasil disimpan.');
     }
 
     public function end(Request $request, $sessionId)
@@ -225,10 +322,22 @@ class QrController extends Controller
 
         $students = $allStudents->map(function($student) use ($presensis) {
             $p = $presensis->get($student->id);
+            
+            // Cari data izin jika statusnya Sakit/Izin
+            $izin = null;
+            if ($p && in_array($p->status, ['Sakit', 'Izin'])) {
+                $izin = \App\Models\Izin::where('siswa_id', $student->id)
+                    ->where('tanggal', now()->toDateString())
+                    ->where('status', 'approve')
+                    ->first();
+            }
+
             return [
                 'nama' => $student->nama,
                 'status' => $p ? $p->status : 'Belum Absen',
                 'terlambat_menit' => $p ? $p->terlambat_menit : 0,
+                'keterangan' => $izin ? $izin->alasan : ($p->keterangan ?? '-'),
+                'bukti' => ($izin && $izin->bukti) ? asset($izin->bukti) : null,
             ];
         });
 
@@ -318,6 +427,12 @@ class QrController extends Controller
             'status'     => $status,
             'terlambat_menit' => $terlambatMenit,
         ]);
+
+        // Auto-sync to Journal if journal entry exists
+        $jurnal = \App\Models\JurnalMengajar::where('qr_session_id', $qrSession->id)->first();
+        if ($jurnal) {
+            \App\Models\JurnalMengajar::syncAttendance($jurnal->id);
+        }
 
         return redirect()->route('siswa.dashboard')->with('success', 'Absensi berhasil dicatat! Status: ' . $status . ($status === 'Terlambat' ? " ({$terlambatMenit} menit)" : ''));
     }

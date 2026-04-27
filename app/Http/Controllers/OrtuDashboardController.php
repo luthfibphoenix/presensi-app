@@ -87,12 +87,33 @@ class OrtuDashboardController extends Controller
         $bulan = $request->get('bulan', date('m'));
         $tahun = $request->get('tahun', date('Y'));
 
-        $riwayat = Presensi::where('siswa_id', $siswa->id)
+        $rawRiwayat = Presensi::where('siswa_id', $siswa->id)
             ->whereMonth('tanggal', $bulan)
+            ->whereYear('tahun', $tahun) // Note: ensure column name matches your DB, usually Year is part of 'tanggal' but sometimes a separate column exists. If not, use whereYear('tanggal', $tahun)
             ->whereYear('tanggal', $tahun)
             ->with('jadwal')
             ->orderBy('tanggal', 'desc')
             ->get();
+
+        // Group by Date
+        $riwayat = $rawRiwayat->groupBy('tanggal')->map(function($items) {
+            $first = $items->first();
+            $statuses = $items->pluck('status')->unique();
+            
+            // Jika ada Izin atau Sakit dalam hari tersebut, anggap izin hari itu (collapse)
+            if ($statuses->contains('Izin')) {
+                $first->status = 'Izin';
+                $first->is_collapsed = true;
+            } elseif ($statuses->contains('Sakit')) {
+                $first->status = 'Sakit';
+                $first->is_collapsed = true;
+            } else {
+                $first->is_collapsed = false;
+                $first->all_items = $items; // Keep all subjects for normal days
+            }
+            
+            return $first;
+        });
 
         return view('ortu.kehadiran', compact('riwayat', 'bulan', 'tahun', 'siswa'));
     }
@@ -107,6 +128,38 @@ class OrtuDashboardController extends Controller
             ->get();
 
         return view('ortu.izin', compact('izins', 'siswa'));
+    }
+
+    public function storeIzin(Request $request)
+    {
+        $request->validate([
+            'tanggal' => 'required|date',
+            'tipe' => 'required|in:Izin,Sakit',
+            'alasan' => 'required|string|max:255',
+            'bukti' => 'nullable|image|mimes:jpeg,png,jpg|max:5120', // Maksimal 5MB
+        ]);
+
+        $ortu = Auth::guard('orangtua')->user();
+        $siswa = $ortu->siswa;
+
+        $buktiPath = null;
+        if ($request->hasFile('bukti')) {
+            $file = $request->file('bukti');
+            $filename = time() . '_' . $siswa->nis . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('storage/bukti_izin'), $filename);
+            $buktiPath = 'storage/bukti_izin/' . $filename;
+        }
+
+        Izin::create([
+            'siswa_id' => $siswa->id,
+            'tanggal' => $request->tanggal,
+            'tipe' => $request->tipe,
+            'alasan' => $request->alasan . ' (Input oleh Ortu)',
+            'bukti' => $buktiPath,
+            'status' => 'pending', 
+        ]);
+
+        return back()->with('success', 'Permohonan izin berhasil dikirim dengan lampiran bukti.');
     }
 
     public function profil()

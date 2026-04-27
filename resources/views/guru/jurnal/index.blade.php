@@ -10,7 +10,7 @@
             <a href="{{ route('guru.jurnal.cetak') }}" target="_blank" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
                 <i class="fas fa-print mr-1"></i> Cetak Jurnal
             </a>
-            <a href="{{ route('guru.jurnal.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
+            <a href="{{ route('presensi.auto_generate') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
                 <i class="fas fa-plus mr-1"></i> Buat Jurnal Baru
             </a>
         </div>
@@ -38,6 +38,9 @@
                     <td class="py-3 px-4 text-sm text-gray-800">{{ Str::limit($jurnal->ringkasan_materi, 50) }}</td>
                     <td class="py-3 px-4 text-center">
                         <div class="flex justify-center gap-2">
+                            <a href="{{ route('guru.jurnal.cetak', ['jurnal_id' => $jurnal->id]) }}" target="_blank" class="text-emerald-500 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 p-1.5 rounded" title="Cetak Jurnal">
+                                <i class="fas fa-print"></i>
+                            </a>
                             <a href="{{ route('guru.jurnal.edit', $jurnal->id) }}" class="text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 p-1.5 rounded" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
@@ -60,4 +63,15 @@
         </table>
     </div>
 </div>
+@push('scripts')
+<script>
+    // Live Auto-Refresh every 5 seconds
+    setInterval(() => {
+        // We use fetch to check for updates or just reload the content
+        // For simplicity and to ensure all data is fresh, we reload the page
+        // but only if the user is not interacting with something (like a delete confirm)
+        window.location.reload();
+    }, 5000);
+</script>
+@endpush
 @endsection

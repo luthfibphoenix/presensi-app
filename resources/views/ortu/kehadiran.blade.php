@@ -36,35 +36,67 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
-                    @forelse($riwayat as $r)
-                    <tr class="hover:bg-teal-50/30 transition-colors">
-                        <td class="px-6 py-5">
-                            <p class="text-xs md:text-sm font-black text-slate-800">{{ Carbon\Carbon::parse($r->tanggal)->translatedFormat('d F Y') }}</p>
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{{ Carbon\Carbon::parse($r->tanggal)->translatedFormat('l') }}</p>
-                        </td>
-                        <td class="hidden md:table-cell px-6 py-5">
-                            <p class="text-xs md:text-sm font-bold text-slate-700">{{ $r->jadwal->mata_pelajaran ?? 'Umum / Lainnya' }}</p>
-                            <p class="text-[9px] font-bold text-slate-400 uppercase">Bersama Guru Pengampu</p>
-                        </td>
-                        <td class="hidden sm:table-cell px-6 py-5">
-                            <span class="inline-flex items-center px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black uppercase">
-                                JP {{ $r->jadwal->jam_mulai ?? '-' }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-5 text-center">
-                            @php
-                                $colorClass = match($r->status) {
-                                    'Hadir' => 'bg-emerald-100 text-emerald-600 border-emerald-200',
-                                    'Terlambat' => 'bg-amber-100 text-amber-600 border-amber-200',
-                                    'Alfa' => 'bg-rose-100 text-rose-600 border-rose-200',
-                                    default => 'bg-blue-100 text-blue-600 border-blue-200'
-                                };
-                            @endphp
-                            <span class="inline-flex items-center px-4 py-1.5 rounded-xl border {{ $colorClass }} text-[9px] font-black uppercase tracking-tighter shadow-sm">
-                                {{ $r->status }}
-                            </span>
-                        </td>
-                    </tr>
+                    @forelse($riwayat as $tanggal => $r)
+                        @if($r->is_collapsed)
+                        {{-- Tampilan Baris Tunggal untuk Izin/Sakit --}}
+                        <tr class="bg-blue-50/30">
+                            <td class="px-6 py-5">
+                                <p class="text-xs md:text-sm font-black text-slate-800">{{ Carbon\Carbon::parse($r->tanggal)->translatedFormat('d F Y') }}</p>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{{ Carbon\Carbon::parse($r->tanggal)->translatedFormat('l') }}</p>
+                            </td>
+                            <td class="hidden md:table-cell px-6 py-5">
+                                <p class="text-xs md:text-sm font-bold text-slate-700">Seluruh Mata Pelajaran Hari Ini</p>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase italic">Terdata dalam satu pengajuan izin</p>
+                            </td>
+                            <td class="hidden sm:table-cell px-6 py-5">
+                                <span class="inline-flex items-center px-3 py-1 bg-blue-100/50 text-blue-600 rounded-lg text-[10px] font-black uppercase">
+                                    Full Day
+                                </span>
+                            </td>
+                            <td class="px-6 py-5 text-center">
+                                @php
+                                    $colorClass = $r->status == 'Sakit' ? 'bg-red-100 text-red-600 border-red-200' : 'bg-blue-100 text-blue-600 border-blue-200';
+                                @endphp
+                                <span class="inline-flex items-center px-4 py-1.5 rounded-xl border {{ $colorClass }} text-[9px] font-black uppercase tracking-tighter shadow-sm">
+                                    {{ $r->status }}
+                                </span>
+                            </td>
+                        </tr>
+                        @else
+                            {{-- Tampilan Detail Per Mapel untuk Hadir/Alfa --}}
+                            @foreach($r->all_items as $item)
+                            <tr class="hover:bg-teal-50/30 transition-colors">
+                                <td class="px-6 py-5">
+                                    @if($loop->first)
+                                    <p class="text-xs md:text-sm font-black text-slate-800">{{ Carbon\Carbon::parse($item->tanggal)->translatedFormat('d F Y') }}</p>
+                                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{{ Carbon\Carbon::parse($item->tanggal)->translatedFormat('l') }}</p>
+                                    @endif
+                                </td>
+                                <td class="hidden md:table-cell px-6 py-5">
+                                    <p class="text-xs md:text-sm font-bold text-slate-700">{{ $item->jadwal->mata_pelajaran ?? 'Umum / Lainnya' }}</p>
+                                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Jam: {{ $item->jadwal->jam_mulai ?? '-' }} - {{ $item->jadwal->jam_selesai ?? '-' }}</p>
+                                </td>
+                                <td class="hidden sm:table-cell px-6 py-5">
+                                    <span class="inline-flex items-center px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black uppercase">
+                                        JP {{ $item->jadwal->jam_mulai ?? '-' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-5 text-center">
+                                    @php
+                                        $colorClass = match($item->status) {
+                                            'Hadir' => 'bg-emerald-100 text-emerald-600 border-emerald-200',
+                                            'Terlambat' => 'bg-amber-100 text-amber-600 border-amber-200',
+                                            'Alfa' => 'bg-rose-100 text-rose-600 border-rose-200',
+                                            default => 'bg-blue-100 text-blue-600 border-blue-200'
+                                        };
+                                    @endphp
+                                    <span class="inline-flex items-center px-4 py-1.5 rounded-xl border {{ $colorClass }} text-[9px] font-black uppercase tracking-tighter shadow-sm">
+                                        {{ $item->status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @endforeach
+                        @endif
                     @empty
                     <tr>
                         <td colspan="4" class="px-6 py-20 text-center">

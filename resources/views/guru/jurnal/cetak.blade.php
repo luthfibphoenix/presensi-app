@@ -51,13 +51,14 @@
                 <td>
                     @php
                         $hadir = $jurnal->presensi->where('status', 'Hadir')->count();
+                        $terlambat = $jurnal->presensi->where('status', 'Terlambat')->count();
                         $sakit = $jurnal->presensi->where('status', 'Sakit')->count();
                         $izin = $jurnal->presensi->where('status', 'Izin')->count();
-                        $alfa = $jurnal->presensi->where('status', 'Alfa')->count();
+                        $alfa = $jurnal->presensi->whereIn('status', ['Alfa', 'Belum Absen'])->count();
                         
-                        $tidakHadir = $jurnal->presensi->whereIn('status', ['Sakit', 'Izin', 'Alfa']);
+                        $tidakHadir = $jurnal->presensi->whereIn('status', ['Sakit', 'Izin']);
                     @endphp
-                    H: {{ $hadir }}, S: {{ $sakit }}, I: {{ $izin }}, A: {{ $alfa }}<br>
+                    H: {{ $hadir + $terlambat }}, S: {{ $sakit }}, I: {{ $izin }}, A: {{ $alfa }}<br>
                     @if($tidakHadir->count() > 0)
                         <span style="font-size: 10pt;">Keterangan:</span><br>
                         <ul style="margin: 0; padding-left: 15px; font-size: 10pt;">
