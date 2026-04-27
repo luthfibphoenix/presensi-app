@@ -111,5 +111,80 @@
             </table>
         </div>
     </div>
+
+    <!-- Daftar Pengajuan Izin -->
+    <div class="space-y-4">
+        <div class="px-2">
+            <h3 class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Riwayat Pengajuan</h3>
+            <h2 class="text-lg md:text-xl font-black text-slate-900 leading-tight">Daftar Izin & Sakit</h2>
+        </div>
+
+        <div class="bg-white rounded-[2.5rem] shadow-sm border border-teal-50 overflow-hidden">
+            @forelse($izins as $izin)
+            <div class="p-6 {{ !$loop->last ? 'border-bottom border-slate-50' : '' }} group hover:bg-slate-50/50 transition-all">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-lg border border-teal-100">
+                            <i class="fas {{ $izin->tipe == 'Sakit' ? 'fa-hospital-user' : 'fa-envelope-open-text' }}"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-black text-slate-800">{{ Carbon\Carbon::parse($izin->tanggal)->translatedFormat('d F Y') }}</h4>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ $izin->tipe }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        @php
+                            $statusColor = $izin->status == 'approve' || $izin->status == 'Disetujui' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : ($izin->status == 'reject' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-amber-50 text-amber-600 border-amber-100');
+                            $statusLabel = $izin->status == 'approve' || $izin->status == 'Disetujui' ? 'Disetujui' : ($izin->status == 'reject' ? 'Ditolak' : 'Menunggu');
+                        @endphp
+                        <span class="inline-flex items-center px-4 py-1.5 rounded-xl {{ $statusColor }} border text-[9px] font-black uppercase shadow-sm">
+                            {{ $statusLabel }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <p class="text-[11px] font-medium text-slate-600 italic">
+                        "{{ str_replace(' (Input oleh Ortu)', '', $izin->alasan) }}"
+                    </p>
+                    
+                    @if($izin->status == 'approve' || $izin->status == 'Disetujui')
+                    <div class="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-[10px] text-emerald-600">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <p class="text-[9px] font-bold text-slate-500">
+                            Disetujui oleh: <span class="text-slate-800">{{ $izin->petugas_piket ?? $izin->approvedBy->fullname ?? 'Petugas Sekolah' }}</span>
+                        </p>
+                    </div>
+                    @endif
+                </div>
+
+                <div class="mt-4 flex flex-wrap items-center gap-2">
+                    @if($izin->bukti)
+                    <a href="{{ asset($izin->bukti) }}" target="_blank" class="flex-1 min-w-[120px] text-center text-[9px] font-black text-teal-600 bg-teal-50 py-3 rounded-xl border border-teal-100 hover:bg-teal-100 transition-all">
+                        <i class="fas fa-image mr-1"></i> LIHAT BUKTI
+                    </a>
+                    @endif
+                    
+                    @if($izin->status == 'Disetujui' || $izin->status == 'approve')
+                    <a href="{{ route('izin.print', $izin->id) }}" target="_blank" class="flex-1 min-w-[120px] text-center text-[9px] font-black text-white bg-slate-900 py-3 rounded-xl shadow-lg hover:bg-slate-800 transition-all">
+                        <i class="fas fa-print mr-1"></i> CETAK SURAT
+                    </a>
+                    @endif
+                </div>
+            </div>
+            @if(!$loop->last)
+                <div class="h-px bg-slate-50 mx-6"></div>
+            @endif
+            @empty
+            <div class="p-12 text-center flex flex-col items-center">
+                <i class="fas fa-history text-3xl text-slate-200 mb-3"></i>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Belum ada riwayat pengajuan</p>
+            </div>
+            @endforelse
+        </div>
+    </div>
 </div>
 @endsection

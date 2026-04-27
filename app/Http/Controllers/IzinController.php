@@ -203,6 +203,24 @@ class IzinController extends Controller
     public function print($id)
     {
         $izin = Izin::with(['siswa.kelas', 'approvedBy'])->findOrFail($id);
+
+        // 1. Proteksi Status: Hanya yang sudah disetujui yang bisa dicetak
+        if ($izin->status !== 'approve' && $izin->status !== 'Disetujui') {
+            abort(403, 'Surat izin belum disetujui atau telah ditolak, sehingga tidak dapat dicetak.');
+        }
+
+        // 2. Keamanan Ortu: Pastikan hanya anak sendiri
+        if (auth('orangtua')->check()) {
+            $ortu = auth('orangtua')->user();
+            if ($izin->siswa_id != $ortu->siswa_id) {
+                abort(403, 'Anda tidak memiliki hak akses untuk mencetak surat izin ini.');
+            }
+            
+            // Gunakan tampilan khusus orang tua
+            $kepala = \App\Models\User::where('position', 'like', '%Kepala Sekolah%')->first();
+            return view('ortu.print', compact('izin', 'kepala', 'ortu'));
+        }
+
         $kepala = \App\Models\User::where('position', 'like', '%Kepala Sekolah%')->first();
         return view('izin.print', compact('izin', 'kepala'));
     }

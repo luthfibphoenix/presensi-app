@@ -98,7 +98,7 @@ class QrController extends Controller
                 'jadwal_id'  => $activeJadwal->id,
                 'tanggal'    => now()->toDateString(),
                 'token'      => $token,
-                'expired_at' => Carbon::now()->addMinutes(15),
+                'expired_at' => Carbon::now()->addSeconds(30),
             ]);
 
             return redirect()->route('guru.mulai.kelas', $qrSession->id)
@@ -112,36 +112,75 @@ class QrController extends Controller
 
     public function generateView(Request $request)
     {
-        $jadwals = Jadwal::where('user_id', $request->user()->id)->get();
-        return view('guru.qr.generate', compact('jadwals'));
+        $user = auth()->user();
+        $position = $user->position;
+        
+        // Tarik kelas yang PERNAH diajar oleh guru ini dari tabel jadwal
+        $historyClasses = Jadwal::where('user_id', $user->id)
+            ->select('kelas')
+            ->distinct()
+            ->pluck('kelas');
+
+        if ($historyClasses->isNotEmpty()) {
+            $kelases = Kelas::whereIn('nama_kelas', $historyClasses)->orderBy('nama_kelas')->get();
+        } else {
+            // Jika belum ada riwayat (karena baru dihapus), pakai logika cerdas posisi
+            $kelases = Kelas::orderBy('nama_kelas')->get();
+            if (str_contains(strtolower($position), 'guru')) {
+                $mapping = ['listrik' => 'TITL', 'busana' => 'TB', 'akuntansi' => 'AKL', 'akl' => 'AKL'];
+                foreach ($mapping as $key => $code) {
+                    if (str_contains(strtolower($position), $key)) {
+                        $kelases = Kelas::where('nama_kelas', 'like', "%$code%")->orderBy('nama_kelas')->get();
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Tarik mapel yang PERNAH diajar oleh guru ini
+        $historyMapels = Jadwal::where('user_id', $user->id)
+            ->select('mata_pelajaran')
+            ->distinct()
+            ->get();
+
+        $defaultMapel = "";
+        if ($historyMapels->isNotEmpty()) {
+            $defaultMapel = $historyMapels->first()->mata_pelajaran;
+        } elseif (str_contains(strtolower($position), 'guru')) {
+            $defaultMapel = trim(str_ireplace('guru', '', $position));
+        }
+
+        return view('guru.qr.generate', compact('kelases', 'historyMapels', 'defaultMapel'));
     }
 
     public function generate(Request $request)
     {
-        $request->validate(['jadwal_id' => 'required|exists:jadwals,id']);
+        $request->validate([
+            'kelas' => 'required|string',
+            'mata_pelajaran' => 'required|string',
+            'jam_mulai' => 'required|integer',
+            'jam_selesai' => 'required|integer',
+        ]);
 
-        $jadwal = Jadwal::findOrFail($request->jadwal_id);
+        $hariIni = Carbon::now()->locale('id')->isoFormat('dddd');
+        $hariIni = ucfirst(strtolower($hariIni));
 
-        // Cek apakah sudah ada sesi aktif untuk jadwal ini di hari yang sama
-        $existingSession = QrSession::where('jadwal_id', $jadwal->id)
-            ->where('tanggal', now()->toDateString())
-            ->where('expired_at', '>', Carbon::now())
-            ->first();
-
-        if ($existingSession) {
-            return redirect()->route('guru.mulai.kelas', $existingSession->id);
-        }
-
-        QrSession::where('jadwal_id', $jadwal->id)
-            ->where('tanggal', now()->toDateString())
-            ->update(['expired_at' => Carbon::now()->subSecond()]);
+        // Buat Jadwal Baru untuk sesi ini
+        $jadwal = Jadwal::create([
+            'user_id' => auth()->id(),
+            'hari' => $hariIni,
+            'kelas' => $request->kelas,
+            'mata_pelajaran' => $request->mata_pelajaran,
+            'jam_mulai' => $request->jam_mulai,
+            'jam_selesai' => $request->jam_selesai,
+        ]);
 
         $token = Str::uuid()->toString();
         $qrSession = QrSession::create([
             'jadwal_id'  => $jadwal->id,
             'tanggal'    => now()->toDateString(),
             'token'      => $token,
-            'expired_at' => Carbon::now()->addMinutes(15),
+            'expired_at' => Carbon::now()->addSeconds(30),
         ]);
 
         return redirect()->route('guru.mulai.kelas', $qrSession->id);
@@ -150,6 +189,10 @@ class QrController extends Controller
     public function mulaiKelas(Request $request, $sessionId)
     {
         $qrSession = QrSession::with('jadwal')->findOrFail($sessionId);
+
+        if (!$qrSession->jadwal) {
+            return redirect()->route('presensi.auto_generate')->with('error', 'Data jadwal untuk sesi ini tidak ditemukan. Silakan buat sesi baru.');
+        }
 
         if ($qrSession->jadwal->user_id !== $request->user()->id) {
             abort(403);
@@ -236,11 +279,33 @@ class QrController extends Controller
         $newToken = Str::uuid()->toString();
         $qrSession->update([
             'token'      => $newToken,
-            'expired_at' => Carbon::now()->addMinutes(15),
+            'expired_at' => Carbon::now()->addSeconds(15), // Token hanya berlaku 15 detik
         ]);
 
         return redirect()->route('guru.mulai.kelas', $sessionId)
-            ->with('success', 'QR Code berhasil diperbarui. Berlaku 15 menit lagi.');
+            ->with('success', 'QR Code berhasil diperbarui. Berlaku 15 detik.');
+    }
+
+    public function tokenRefreshJson(Request $request, $sessionId)
+    {
+        $qrSession = QrSession::with('jadwal')->findOrFail($sessionId);
+        if ($qrSession->jadwal->user_id !== $request->user()->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $newToken = Str::uuid()->toString();
+        $qrSession->update([
+            'token'      => $newToken,
+            'expired_at' => Carbon::now()->addSeconds(15),
+        ]);
+
+        $newUrl = config('app.url') . '/siswa/scan/' . $newToken . '?ngrok-skip-browser-warning=true';
+
+        return response()->json([
+            'token' => $newToken,
+            'url' => $newUrl,
+            'qr_image' => 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($newUrl)
+        ]);
     }
 
     public function saveJurnal(Request $request, $sessionId)

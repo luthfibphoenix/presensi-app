@@ -247,8 +247,8 @@
                             <p>Purworejo, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
                             <p>Guru Piket,</p>
                             <div class="ttd-space"></div>
-                            <p class="ttd-name">{{ auth('web')->user()->fullname }}</p>
-                            <p>NIP. {{ auth('web')->user()->nip ?? '-' }}</p>
+                            <p class="ttd-name">{{ $izin->petugas_piket ?? '................................' }}</p>
+                            <p>NIP. {{ $izin->approvedBy->nip ?? '................................' }}</p>
                         </td>
                     </tr>
                 </table>
@@ -309,7 +309,7 @@
                         <tr>
                             <td class="label">Keterangan Tambahan</td>
                             <td>:</td>
-                            <td>{{ $izin->alasan }}</td>
+                            <td>{{ str_replace(' (Input oleh Ortu)', '', $izin->alasan) }}</td>
                         </tr>
                     </table>
 
@@ -325,8 +325,8 @@
                             <p>Purworejo, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
                             <p>Guru Piket,</p>
                             <div class="ttd-space" style="height: 80px;"></div>
-                            <p class="ttd-name">{{ auth('web')->user()->fullname }}</p>
-                            <p>NIP. {{ auth('web')->user()->nip ?? '................................' }}</p>
+                            <p class="ttd-name">{{ $izin->petugas_piket ?? '................................' }}</p>
+                            <p>NIP. {{ $izin->approvedBy->nip ?? '................................' }}</p>
                         </td>
                     </tr>
                 </table>

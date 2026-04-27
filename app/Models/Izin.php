@@ -17,6 +17,8 @@ class Izin extends Model
         'tipe',
         'petugas_piket',
         'approved_by',
+        'latitude',
+        'longitude',
     ];
 
     public function siswa()

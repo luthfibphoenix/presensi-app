@@ -3,23 +3,68 @@
 @section('title', 'Generate QR Presensi')
 
 @section('content')
-<div class="bg-white rounded-lg shadow overflow-hidden p-6 mb-6">
-    <h3 class="text-lg font-medium text-gray-900 mb-4">Buat Sesi Presensi Baru</h3>
+<div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-8 md:p-10 mb-8">
+    <div class="mb-8">
+        <h2 class="text-2xl font-black text-slate-800 leading-tight">Mulai Sesi Kelas</h2>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Input Detail Pelajaran Hari Ini</p>
+    </div>
     
-    <form action="{{ route('guru.qr.generate') }}" method="POST">
+    <form action="{{ route('guru.qr.generate') }}" method="POST" class="space-y-8">
         @csrf
-        <div class="mb-4">
-            <label for="jadwal_id" class="block text-sm font-medium text-gray-700 mb-2">Pilih Jadwal Kelas</label>
-            <select id="jadwal_id" name="jadwal_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border" required>
-                <option value="">-- Pilih Jadwal --</option>
-                @foreach($jadwals as $jadwal)
-                    <option value="{{ $jadwal->id }}">{{ $jadwal->kelas }} - {{ $jadwal->mata_pelajaran }} ({{ $jadwal->hari }}, {{ $jadwal->jam_mulai }}-{{ $jadwal->jam_selesai }})</option>
-                @endforeach
-            </select>
+        
+        <div class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {{-- Kelas --}}
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kelas</label>
+                    <select name="kelas" required
+                            class="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-4 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-base appearance-none">
+                        <option value="">Pilih Kelas</option>
+                        @foreach($kelases as $k)
+                            <option value="{{ $k->nama_kelas }}">{{ $k->nama_kelas }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Mapel --}}
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mata Pelajaran</label>
+                    <input type="text" name="mata_pelajaran" list="mapel-list" 
+                           value="{{ $defaultMapel }}"
+                           placeholder="Ketik Mapel..." required
+                           class="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-4 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-base">
+                    <datalist id="mapel-list">
+                        @foreach($historyMapels as $m)
+                            <option value="{{ $m->mata_pelajaran }}">
+                        @endforeach
+                    </datalist>
+                </div>
+
+                {{-- Jam Ke --}}
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Jam Mulai</label>
+                    <select name="jam_mulai" required
+                            class="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-4 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-base">
+                        @for($i=1; $i<=12; $i++)
+                            <option value="{{ $i }}">Jam Ke-{{ $i }}</option>
+                        @endfor
+                    </select>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Jam Selesai</label>
+                    <select name="jam_selesai" required
+                            class="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-4 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-base">
+                        @for($i=1; $i<=12; $i++)
+                            <option value="{{ $i }}" {{ $i == 2 ? 'selected' : '' }}>Jam Ke-{{ $i }}</option>
+                        @endfor
+                    </select>
+                </div>
+            </div>
         </div>
         
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Generate QR Code
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-[2rem] shadow-xl shadow-blue-100 transition-all uppercase tracking-[0.3em] text-xs active:scale-95">
+            <i class="fas fa-qrcode mr-2 opacity-50"></i> Generate QR Code
         </button>
     </form>
 </div>

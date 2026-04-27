@@ -50,20 +50,21 @@
                 <td>{{ $jurnal->ringkasan_materi }}</td>
                 <td>
                     @php
-                        $hadir = $jurnal->presensi->where('status', 'Hadir')->count();
-                        $terlambat = $jurnal->presensi->where('status', 'Terlambat')->count();
-                        $sakit = $jurnal->presensi->where('status', 'Sakit')->count();
-                        $izin = $jurnal->presensi->where('status', 'Izin')->count();
-                        $alfa = $jurnal->presensi->whereIn('status', ['Alfa', 'Belum Absen'])->count();
+                        $hadirCount = $jurnal->presensi->whereIn('status', ['Hadir', 'Terlambat'])->count();
+                        $sakitCount = $jurnal->presensi->where('status', 'Sakit')->count();
+                        $izinCount = $jurnal->presensi->where('status', 'Izin')->count();
+                        $alfaCount = $jurnal->presensi->whereIn('status', ['Alfa', 'Belum Absen'])->count();
                         
-                        $tidakHadir = $jurnal->presensi->whereIn('status', ['Sakit', 'Izin']);
+                        $absenList = $jurnal->presensi->whereIn('status', ['Sakit', 'Izin', 'Alfa', 'Belum Absen']);
                     @endphp
-                    H: {{ $hadir + $terlambat }}, S: {{ $sakit }}, I: {{ $izin }}, A: {{ $alfa }}<br>
-                    @if($tidakHadir->count() > 0)
-                        <span style="font-size: 10pt;">Keterangan:</span><br>
-                        <ul style="margin: 0; padding-left: 15px; font-size: 10pt;">
-                            @foreach($tidakHadir as $p)
-                                <li>{{ $p->nama_siswa }} ({{ $p->status }})</li>
+
+                    @if($absenList->count() == 0)
+                        <div style="text-align: center; font-weight: bold; margin-top: 10px;">Hadir Semua</div>
+                    @else
+                        <span style="font-size: 9pt; font-weight: bold;">Keterangan:</span>
+                        <ul style="margin: 5px 0 0 0; padding-left: 15px; font-size: 9pt;">
+                            @foreach($absenList as $p)
+                                <li>{{ $p->nama_siswa }} ({{ $p->status == 'Belum Absen' ? 'Alfa' : $p->status }})</li>
                             @endforeach
                         </ul>
                     @endif

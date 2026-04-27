@@ -101,24 +101,37 @@ class OrtuDashboardController extends Controller
             ->get();
 
         // Group by Date
-        $riwayat = $rawRiwayat->groupBy('tanggal')->map(function($items) {
+        $riwayat = $rawRiwayat->groupBy('tanggal')->map(function($items) use ($siswa) {
             $first = $items->first();
             $statuses = $items->pluck('status')->unique();
             
+            // Cari data izin yang disetujui untuk tanggal ini
+            $izinRecord = Izin::where('siswa_id', $siswa->id)
+                ->whereDate('tanggal', $first->tanggal)
+                ->where('status', 'approve')
+                ->first();
+
             // Jika ada Izin atau Sakit dalam hari tersebut, anggap izin harian (collapse jadi 1 baris)
             if ($statuses->contains('Izin') || $statuses->contains('Sakit')) {
                 $first->status = $statuses->contains('Sakit') ? 'Sakit' : 'Izin';
                 $first->is_collapsed = true;
                 $first->total_mapel = $items->count();
+                $first->izin_id = $izinRecord ? $izinRecord->id : null;
             } else {
                 $first->is_collapsed = false;
                 $first->all_items = $items;
+                $first->izin_id = $izinRecord ? $izinRecord->id : null;
             }
             
             return $first;
         });
 
-        return view('ortu.kehadiran', compact('riwayat', 'bulan', 'tahun', 'siswa'));
+        // Ambil Semua Pengajuan Izin (untuk Riwayat Izin)
+        $izins = Izin::with('approvedBy')->where('siswa_id', $siswa->id)
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+        return view('ortu.kehadiran', compact('riwayat', 'bulan', 'tahun', 'siswa', 'izins'));
     }
 
     public function izin()
@@ -139,14 +152,35 @@ class OrtuDashboardController extends Controller
             'tanggal' => 'required|date',
             'tipe' => 'required|in:Izin,Sakit',
             'alasan' => 'required|string|max:255',
-            'bukti' => 'nullable|image|mimes:jpeg,png,jpg|max:5120', // Maksimal 5MB
+            'bukti' => 'required|image|mimes:jpeg,png,jpg|max:10240', // Maksimal 10MB
+            'latitude' => 'nullable|string',
+            'longitude' => 'nullable|string',
         ]);
 
         $ortu = Auth::guard('orangtua')->user();
         $siswa = $ortu->siswa;
 
         $buktiPath = null;
-        if ($request->hasFile('bukti')) {
+
+        // Prioritaskan file yang sudah dikompres (Base64)
+        if ($request->bukti_compressed) {
+            $imageData = $request->bukti_compressed;
+            $imageData = str_replace('data:image/jpeg;base64,', '', $imageData);
+            $imageData = str_replace(' ', '+', $imageData);
+            $imageBinary = base64_decode($imageData);
+            
+            $filename = time() . '_' . $siswa->nis . '.jpg';
+            $directory = public_path('storage/bukti_izin');
+            
+            if (!file_exists($directory)) {
+                mkdir($directory, 0777, true);
+            }
+            
+            file_put_contents($directory . '/' . $filename, $imageBinary);
+            $buktiPath = 'storage/bukti_izin/' . $filename;
+        } 
+        // Fallback ke file asli jika kompresi gagal
+        elseif ($request->hasFile('bukti')) {
             $file = $request->file('bukti');
             $filename = time() . '_' . $siswa->nis . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('storage/bukti_izin'), $filename);
@@ -159,10 +193,12 @@ class OrtuDashboardController extends Controller
             'tipe' => $request->tipe,
             'alasan' => $request->alasan . ' (Input oleh Ortu)',
             'bukti' => $buktiPath,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
             'status' => 'pending', 
         ]);
 
-        return back()->with('success', 'Permohonan izin berhasil dikirim dengan lampiran bukti.');
+        return redirect()->route('ortu.kehadiran')->with('success', 'Permohonan izin berhasil dikirim. Silakan cek statusnya di bawah tabel absensi.');
     }
 
     public function profil()

@@ -183,30 +183,47 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
     // ── Generate QR ──
-    @if(!$isExpired)
-    new QRCode(document.getElementById("qrcode"), {
-        text: "{{ $qrUrl }}",
-        width: 180, height: 180,
-        colorDark: "#1e293b", colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
+    let qrGenerator = null;
+    function renderQRCode(url) {
+        const qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = ""; // Clear existing
+        qrGenerator = new QRCode(qrContainer, {
+            text: url,
+            width: 180, height: 180,
+            colorDark: "#1e293b", colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
 
-    // ── Countdown ──
-    let secondsLeft = {{ $secontsLeft }};
+    @if(!$isExpired)
+    renderQRCode("{{ $qrUrl }}");
+
+    // ── Dynamic QR Refresh Logic ──
+    let secondsLeft = 15; // Reset ke 15 detik untuk setiap token
     const countdownEl = document.getElementById('countdown');
 
     function updateCountdown() {
         if (secondsLeft <= 0) {
-            countdownEl.textContent = '00:00';
-            countdownEl.classList.add('text-red-500');
-            setTimeout(() => window.location.reload(), 1000);
+            refreshQRCode();
             return;
         }
-        const min = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
-        const sec = String(Math.floor(secondsLeft % 60)).padStart(2, '0');
-        countdownEl.textContent = min + ':' + sec;
+        countdownEl.textContent = '00:' + String(secondsLeft).padStart(2, '0');
         secondsLeft--;
     }
+
+    function refreshQRCode() {
+        countdownEl.textContent = '--:--';
+        fetch("{{ route('guru.qr.refresh_json', $qrSession->id) }}")
+            .then(r => r.json())
+            .then(data => {
+                if(data.url) {
+                    renderQRCode(data.url);
+                    secondsLeft = 15; // Reset timer
+                }
+            })
+            .catch(err => console.error("Gagal refresh QR:", err));
+    }
+
     updateCountdown();
     setInterval(updateCountdown, 1000);
     @endif

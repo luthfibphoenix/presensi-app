@@ -184,6 +184,11 @@
                                 <a href="{{ asset($izin->bukti) }}" target="_blank" class="inline-flex items-center text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 hover:bg-blue-100 transition">
                                     <i class="fas fa-image mr-1"></i> LIHAT BUKTI
                                 </a>
+                                @if($izin->latitude && $izin->longitude)
+                                    <a href="https://www.google.com/maps?q={{ $izin->latitude }},{{ $izin->longitude }}" target="_blank" class="inline-flex items-center text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 hover:bg-emerald-100 transition ml-1">
+                                        <i class="fas fa-location-dot mr-1"></i> LOKASI
+                                    </a>
+                                @endif
                             </div>
                         @endif
                     </td>
@@ -208,7 +213,7 @@
                                 <button type="submit" class="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-2 py-1 rounded">Tolak</button>
                             </form>
                         </div>
-                        @else
+                        @elseif($izin->status == 'approve')
                         <div class="flex justify-end space-x-2">
                             <a href="{{ route('izin.print', $izin->id) }}" target="_blank" class="text-blue-600 hover:text-blue-900 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded flex items-center gap-1">
                                 <i class="fas fa-print text-xs"></i> Cetak
@@ -259,6 +264,11 @@
                             <i class="fas fa-image mr-1"></i> BUKTI
                         </a>
                     @endif
+                    @if($izin->latitude && $izin->longitude)
+                        <a href="https://www.google.com/maps?q={{ $izin->latitude }},{{ $izin->longitude }}" target="_blank" class="inline-flex items-center text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100">
+                            <i class="fas fa-location-dot mr-1"></i> LOKASI
+                        </a>
+                    @endif
                 </div>
 
                 <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 italic text-xs text-gray-600">
@@ -275,7 +285,7 @@
                             @csrf
                             <button type="submit" class="w-full bg-white text-rose-600 border border-rose-100 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest">Tolak</button>
                         </form>
-                    @else
+                    @elseif($izin->status == 'approve')
                         <a href="{{ route('izin.print', $izin->id) }}" target="_blank" class="w-full bg-blue-50 text-blue-600 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-center border border-blue-100">
                             <i class="fas fa-print mr-2"></i> Cetak Surat
                         </a>

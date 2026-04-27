@@ -93,7 +93,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/laporan/rekap-harian', [LaporanController::class, 'rekapHarian'])->name('laporan.rekap_harian');
         Route::get('/izin-guru',            [IzinController::class, 'indexGuru'])->name('izin.guru');
         Route::post('/izin-guru',           [IzinController::class, 'storeGuru'])->name('izin.store.guru');
-        Route::get('/izin/print/{id}',      [IzinController::class, 'print'])->name('izin.print');
         Route::post('/izin-guru/{id}/approve', [IzinController::class, 'approve'])->name('izin.approve');
         Route::post('/izin-guru/{id}/reject',  [IzinController::class, 'reject'])->name('izin.reject');
         
@@ -131,6 +130,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/guru/mulai-kelas/{sessionId}',  [\App\Http\Controllers\QrController::class, 'mulaiKelas'])->name('guru.mulai.kelas');
         Route::post('/guru/mulai-kelas/{sessionId}/jurnal', [\App\Http\Controllers\QrController::class, 'saveJurnal'])->name('guru.mulai.kelas.jurnal');
         Route::post('/guru/qr/refresh/{sessionId}',  [\App\Http\Controllers\QrController::class, 'refresh'])->name('guru.qr.refresh');
+        Route::get('/guru/qr/refresh-json/{sessionId}', [\App\Http\Controllers\QrController::class, 'tokenRefreshJson'])->name('guru.qr.refresh_json');
         Route::post('/guru/qr/end/{sessionId}',      [\App\Http\Controllers\QrController::class, 'end'])->name('guru.qr.end');
 
         Route::get('/guru/qr/status',                [\App\Http\Controllers\QrController::class, 'statusIndex'])->name('guru.qr.status.index');
@@ -163,6 +163,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('/guru/catatan/{id}', [\App\Http\Controllers\CatatanSiswaController::class, 'destroy'])->name('catatan.destroy');
     });
 });
+
+// Rute Cetak Izin (Bisa diakses Guru & Ortu)
+Route::get('/izin/print/{id}', [IzinController::class, 'print'])->name('izin.print');
+
 
 // Siswa Guard
 Route::middleware(['auth:siswa', 'siswa.autologout'])->group(function () {
