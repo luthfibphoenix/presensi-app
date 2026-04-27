@@ -30,217 +30,93 @@
     </div>
 </div>
 
+{{-- Bagian Atas: Tombol Mulai Sesi Baru --}}
 @if($jadwals->isEmpty())
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-    <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-        <i class="fas fa-calendar-times text-blue-400 text-2xl"></i>
-    </div>
-    <h3 class="text-lg font-semibold text-gray-700 mb-1">Tidak ada jadwal hari ini</h3>
-    <p class="text-gray-400 text-sm">Anda tidak memiliki jadwal mengajar pada hari {{ $hariIni }}.</p>
-    <a href="{{ route('jadwal.semua') }}" class="mt-4 inline-block text-blue-500 text-sm hover:underline">Lihat semua jadwal →</a>
-</div>
-@else
-<div x-data="{ 
-    showQrModal: false, 
-    showChoiceModal: false,
-    loading: false,
-    qrData: null,
-    multipleJadwals: [],
-    timer: '15:00',
-    timerColor: 'text-emerald-500',
-    interval: null,
-
-    async generateQR(jadwalId = null) {
-        this.loading = true;
-        this.showChoiceModal = false;
-        try {
-            const response = await fetch('/dashboard/generate-qr', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']')?.content || '{{ csrf_token() }}',
-                    'ngrok-skip-browser-warning': 'true'
-                },
-                body: JSON.stringify({ jadwal_id: jadwalId })
-            });
-            const data = await response.json();
-            
-            if (data.status === 'success') {
-                if (data.redirect_url) {
-                    window.location.href = data.redirect_url;
-                    return;
-                }
-                this.qrData = data;
-                this.showQrModal = true;
-                this.startTimer(data.expired_at);
-            } else if (data.status === 'multiple') {
-                this.multipleJadwals = data.jadwals;
-                this.showChoiceModal = true;
-            } else {
-                alert(data.message || 'Gagal generate QR Code');
-            }
-        } catch (e) {
-            console.error(e);
-            alert('Error: ' + e.message + '\n\nCoba refresh halaman dan ulangi.');
-        } finally {
-            this.loading = false;
-        }
-    },
-
-    startTimer(expiryStr) {
-        if (this.interval) clearInterval(this.interval);
-        const expiry = new Date(expiryStr).getTime();
+    {{-- Versi BESAR (Hero) - Jika belum ada sesi --}}
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 mb-8 text-center bg-gradient-to-br from-white to-blue-50/30">
+        <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
+            <i class="fas fa-qrcode text-white text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-black text-slate-800 mb-1">Mulai Presensi Baru</h3>
+        <p class="text-slate-400 text-xs mb-6">Pilih kelas dan mapel untuk membuat QR Code baru</p>
         
-        this.interval = setInterval(() => {
-            const now = new Date().getTime();
-            const diff = expiry - now;
-            
-            if (diff <= 0) {
-                clearInterval(this.interval);
-                this.timer = '00:00';
-                this.generateQR(this.qrData.jadwal_id);
-                return;
-            }
-            
-            const minutes = Math.floor(diff / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            this.timer = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            
-            if (minutes >= 5) {
-                this.timerColor = 'text-emerald-500';
-            } else if (minutes >= 2) {
-                this.timerColor = 'text-amber-500';
-            } else {
-                this.timerColor = 'text-red-500';
-            }
-        }, 1000);
-    }
-}">
-<div class="grid gap-4">
-    @foreach($jadwals as $jadwal)
-    @php
-        $jamMulaiStr  = jamPelajaranToWaktu($jadwal->jam_mulai);
-        $jamSelesaiStr= \Carbon\Carbon::createFromFormat('H:i', jamPelajaranToWaktu($jadwal->jam_selesai), 'Asia/Jakarta')->addMinutes(45)->format('H:i');
-        $isHariIni    = ($jadwal->hari === $hariIni);
-        $isWaktunya   = $isHariIni && ($nowTime >= $jamMulaiStr && $nowTime <= $jamSelesaiStr);
-        $isAkanMulai  = $isHariIni && ($nowTime >= date('H:i', strtotime($jamMulaiStr . ' -15 minutes')) && $nowTime < $jamMulaiStr);
-        $bolehMulai   = true; // Selalu boleh mulai kelas di hari yang sama
-    @endphp
-    <div class="bg-white rounded-2xl shadow-sm border {{ $isWaktunya ? 'border-blue-300 ring-1 ring-blue-200' : 'border-gray-100' }} overflow-hidden">
-        <div class="flex items-stretch">
-            <div class="w-1.5 {{ $isWaktunya ? 'bg-green-400' : ($isAkanMulai ? 'bg-yellow-400' : 'bg-gray-200') }} flex-shrink-0"></div>
-            <div class="flex-1 p-4 md:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div class="flex-1 min-w-0">
-                    <div class="flex flex-wrap items-center gap-2 mb-2">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[10px] font-bold">
-                            <i class="far fa-clock"></i> {{ $jamMulaiStr }} – {{ $jamSelesaiStr }} (Jam {{ $jadwal->jam_mulai }}-{{ $jadwal->jam_selesai }})
-                        </span>
-                        @if($isWaktunya)
-                        <span class="px-2.5 py-1 rounded-lg bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider animate-pulse">
-                            Berlangsung
-                        </span>
-                        @endif
-                    </div>
-                    <h3 class="text-base md:text-lg font-black text-gray-800 leading-tight mb-1 truncate">{{ $jadwal->mata_pelajaran }}</h3>
-                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400 font-medium">
-                        <span class="flex items-center gap-1.5"><i class="fas fa-users text-[10px]"></i> Kelas {{ $jadwal->kelas }}</span>
-                        <span class="flex items-center gap-1.5"><i class="fas fa-bookmark text-[10px]"></i> Semester {{ $jadwal->semester }}</span>
-                    </div>
-                </div>
+        <a href="{{ route('presensi.generate.view') }}" 
+           class="inline-flex items-center gap-3 px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-100 transition-all active:scale-95 uppercase tracking-widest text-[10px]">
+            <i class="fas fa-plus-circle text-base"></i> Buat Sesi Sekarang
+        </a>
+    </div>
+@else
+    {{-- Versi KECIL (Compact) - Jika sudah ada sesi aktif --}}
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-8 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                <i class="fas fa-plus text-sm"></i>
+            </div>
+            <div>
+                <h3 class="text-sm font-black text-slate-800 leading-none">Ada Sesi Berjalan</h3>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Ingin memulai kelas lain?</p>
+            </div>
+        </div>
+        <a href="{{ route('presensi.generate.view') }}" 
+           class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-md transition-all active:scale-95 uppercase tracking-widest text-[8px]">
+            Buat Sesi Baru
+        </a>
+    </div>
+@endif
 
-                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-                    @if($isWaktunya)
-                        @php
-                            $jakartaNow = \Carbon\Carbon::now('Asia/Jakarta');
-                            $actualEndTime = \Carbon\Carbon::createFromFormat('H:i', $jamSelesaiStr, 'Asia/Jakarta');
-                            $timeToAkhiri = (clone $actualEndTime)->subMinutes(30);
-                            $bolehAkhiri = $jakartaNow->greaterThanOrEqualTo($timeToAkhiri);
-                            $session = \App\Models\QrSession::where('jadwal_id', $jadwal->id)
-                                        ->where('tanggal', $jakartaNow->toDateString())
-                                        ->orderBy('created_at', 'desc')
-                                        ->first();
-                        @endphp
-                        
-                        @if($session)
-                        <div class="group relative">
-                            <button :disabled="!{{ $bolehAkhiri ? 'true' : 'false' }}" 
-                                    @click="{{ $bolehAkhiri ? 'document.getElementById(\'end-form-'.$jadwal->id.'\').submit()' : '' }}"
-                                    class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-400 text-xs font-bold rounded-xl {{ $bolehAkhiri ? 'hover:bg-red-50 hover:text-red-500 cursor-pointer' : 'cursor-not-allowed' }} transition">
-                                <i class="fas fa-power-off"></i> Akhiri Sesi
-                            </button>
-                            @if(!$bolehAkhiri)
-                            <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-10">
-                                <div class="bg-gray-800 text-white text-[10px] rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
-                                    Tombol aktif 30 menit sebelum kelas selesai (jam {{ $timeToAkhiri->format('H:i') }})
+{{-- Bagian Bawah: Daftar Sesi Aktif --}}
+<div class="space-y-4">
+    <div class="flex items-center gap-3 px-1">
+        <div class="h-1 w-8 bg-blue-500 rounded-full"></div>
+        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Sesi Berjalan Hari Ini</h4>
+    </div>
+
+    @if($jadwals->isEmpty())
+        <div class="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-[2rem] p-12 text-center">
+            <p class="text-slate-400 text-sm font-medium italic">Belum ada sesi kelas yang dimulai hari ini.</p>
+        </div>
+    @else
+        <div class="grid gap-4">
+            @foreach($jadwals as $jadwal)
+                @php
+                    $session = $jadwal->qrSessions->first();
+                @endphp
+                <div class="flex items-center gap-4">
+                    <a href="{{ route('guru.mulai.kelas', $session->id) }}" 
+                       class="group bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex-1 flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-slate-50 group-hover:bg-blue-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-blue-500 transition-colors">
+                                <i class="fas fa-chalkboard-teacher text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-black text-slate-800 group-hover:text-blue-600 transition-colors">{{ $jadwal->mata_pelajaran }}</h3>
+                                <div class="flex items-center gap-3 mt-0.5 text-[11px] font-bold text-slate-400">
+                                    <span class="flex items-center gap-1.5"><i class="fas fa-users"></i> {{ $jadwal->kelas }}</span>
+                                    <span class="w-1 h-1 rounded-full bg-slate-200"></span>
+                                    <span class="flex items-center gap-1.5"><i class="far fa-clock"></i> Jam {{ $jadwal->jam_mulai }} - {{ $jadwal->jam_selesai }}</span>
                                 </div>
                             </div>
-                            @endif
-                            <form id="end-form-{{ $jadwal->id }}" action="{{ route('dashboard.end_session') }}" method="POST" class="hidden">
-                                @csrf
-                                <input type="hidden" name="session_id" value="{{ $session->id }}">
-                            </form>
                         </div>
-                        @endif
-                    @endif
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-1 bg-green-100 text-green-600 text-[10px] font-black uppercase rounded-lg">Aktif</span>
+                            <i class="fas fa-chevron-right text-slate-300 group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </a>
 
-                    @if($bolehMulai)
-                    <button @click="generateQR({{ $jadwal->id }})" :disabled="loading"
-                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md transition whitespace-nowrap disabled:opacity-50">
-                        <i class="fas fa-play-circle"></i> {{ $isWaktunya ? 'Mulai / Refresh' : 'Mulai Kelas' }}
-                    </button>
-                    @else
-                    <div class="group relative">
-                        <button disabled
-                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-300 text-xs font-bold rounded-xl cursor-not-allowed whitespace-nowrap">
-                            <i class="fas fa-clock"></i> Mulai Kelas
+                    {{-- Tombol Hentikan Sesi --}}
+                    <form action="{{ route('guru.qr.end', $session->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghentikan sesi presensi ini?')">
+                        @csrf
+                        <button type="submit" 
+                                class="w-12 h-12 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl border border-red-100 transition-all flex items-center justify-center shadow-sm active:scale-90"
+                                title="Hentikan Sesi">
+                            <i class="fas fa-power-off"></i>
                         </button>
-                        <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-10">
-                            <div class="bg-gray-800 text-white text-[10px] rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
-                                Belum waktunya — Mulai jam {{ $jamMulaiStr }}
-                            </div>
-                        </div>
-                    </div>
-                    @endif
+                    </form>
                 </div>
-            </div>
+            @endforeach
         </div>
-    </div>
-    @endforeach
+    @endif
 </div>
-
-{{-- Modal QR Code --}}
-<div x-show="showQrModal" x-transition.opacity class="fixed inset-0 z-[60] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4" x-cloak>
-    <div @click.outside="showQrModal = false" class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden text-center">
-        <div class="p-6 border-b border-gray-50 bg-gray-50/50">
-            <h3 class="text-xl font-black text-gray-900 mb-1" x-text="qrData?.mapel"></h3>
-            <div class="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                <span class="text-blue-600" x-text="qrData?.kelas"></span>
-                <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                <span x-text="qrData?.hari"></span>
-                <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                <span x-text="qrData?.jam"></span>
-            </div>
-        </div>
-        <div class="p-8 flex flex-col items-center">
-            <div class="bg-white p-4 rounded-3xl shadow-inner border border-gray-100 mb-6 group transition-all duration-500 hover:shadow-xl overflow-hidden" x-html="qrData?.qr_code">
-            </div>
-            
-            <div class="flex items-center gap-2 bg-gray-50 px-6 py-3 rounded-2xl mb-6 font-black border-2 border-gray-100" :class="timerColor">
-                <i class="fas fa-clock"></i>
-                <span class="text-2xl tracking-tighter font-mono" x-text="timer"></span>
-            </div>
-
-            <p class="text-xs text-gray-400 px-4 leading-relaxed">
-                Tunjukkan QR Code ini kepada siswa untuk melakukan scan presensi.
-            </p>
-        </div>
-        <div class="p-6 bg-gray-50 flex justify-center">
-            <button @click="showQrModal = false" class="bg-white text-gray-800 border border-gray-200 px-8 py-2.5 rounded-xl font-bold hover:bg-gray-100 transition-all">Tutup</button>
-        </div>
-    </div>
-</div>
-</div>
-@endif
 
 @push('scripts')
 <script>
@@ -249,7 +125,9 @@ function updateTime() {
     const now = new Date();
     const h = String(now.getHours()).padStart(2,'0');
     const m = String(now.getMinutes()).padStart(2,'0');
-    document.getElementById('jam-sekarang').textContent = h + ':' + m;
+    if(document.getElementById('jam-sekarang')) {
+        document.getElementById('jam-sekarang').textContent = h + ':' + m;
+    }
 }
 setInterval(updateTime, 1000);
 </script>

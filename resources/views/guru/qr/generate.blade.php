@@ -29,15 +29,23 @@
                 {{-- Mapel --}}
                 <div class="space-y-2">
                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mata Pelajaran</label>
-                    <input type="text" name="mata_pelajaran" list="mapel-list" 
-                           value="{{ $defaultMapel }}"
-                           placeholder="Ketik Mapel..." required
-                           class="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-4 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-base">
-                    <datalist id="mapel-list">
-                        @foreach($historyMapels as $m)
-                            <option value="{{ $m->mata_pelajaran }}">
-                        @endforeach
-                    </datalist>
+                    <div class="relative">
+                        <select name="mata_pelajaran" required
+                                class="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-4 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-base appearance-none">
+                            @if($historyMapels->isEmpty())
+                                <option value="{{ $defaultMapel }}">{{ $defaultMapel }}</option>
+                            @else
+                                @foreach($historyMapels as $m)
+                                    <option value="{{ $m->mata_pelajaran }}" {{ $m->mata_pelajaran == $defaultMapel ? 'selected' : '' }}>
+                                        {{ $m->mata_pelajaran }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                        <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <i class="fas fa-chevron-down text-slate-300"></i>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Jam Ke --}}

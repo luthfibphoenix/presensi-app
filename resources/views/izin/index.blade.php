@@ -20,7 +20,8 @@
 @endif
 
 <div class="max-w-7xl mx-auto space-y-4 md:space-y-6">
-    {{-- Form Section --}}
+    {{-- Form Section hanya muncul jika bukan Siswa --}}
+    @if(auth()->user()->position != 'Siswa')
     <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-6 md:p-8">
         <div class="flex items-center gap-4 mb-6">
             <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
@@ -28,7 +29,7 @@
             </div>
             <div>
                 <h2 class="text-lg md:text-xl font-black text-gray-900 tracking-tight">Pengajuan Izin</h2>
-                <p class="text-[10px] md:text-sm text-gray-400 font-bold uppercase tracking-wide">Silakan isi detail izin Anda</p>
+                <p class="text-[10px] md:text-sm text-gray-400 font-bold uppercase tracking-wide">Silakan isi detail izin</p>
             </div>
         </div>
         
@@ -62,7 +63,7 @@
                 <label for="alasan" class="block text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1">Alasan Terperinci</label>
                 <textarea id="alasan" name="alasan" rows="3" 
                           class="w-full px-5 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-sm shadow-sm" 
-                          placeholder="Jelaskan alasan pengajuan izin Anda..." required></textarea>
+                          placeholder="Jelaskan alasan pengajuan izin..." required></textarea>
             </div>
             
             <button type="submit" class="w-full md:w-auto px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-100 transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-2">
@@ -70,6 +71,16 @@
             </button>
         </form>
     </div>
+    @else
+    {{-- Info Box untuk Siswa --}}
+    <div class="bg-blue-600 rounded-[2rem] p-8 text-white relative overflow-hidden shadow-xl shadow-blue-100 mb-8">
+        <div class="relative z-10">
+            <h2 class="text-2xl font-black mb-2">Riwayat Izin Anda</h2>
+            <p class="text-blue-100 text-sm font-bold opacity-80 uppercase tracking-wider">Pengajuan izin sekarang dilakukan melalui akun Orang Tua.</p>
+        </div>
+        <i class="fas fa-info-circle absolute -right-4 -bottom-4 text-9xl opacity-10 rotate-12"></i>
+    </div>
+    @endif
 
     {{-- History Section --}}
     <div class="space-y-4">

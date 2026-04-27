@@ -22,9 +22,19 @@ class QrController extends Controller
     {
         $hariIni = Carbon::now()->locale('id')->isoFormat('dddd');
         $hariIni = ucfirst(strtolower($hariIni));
+        $today = Carbon::now()->toDateString();
 
+        // Hanya ambil jadwal yang memiliki sesi AKTIF (belum expired) hari ini
         $jadwals = Jadwal::where('user_id', $request->user()->id)
-            ->where('hari', $hariIni)
+            ->whereHas('qrSessions', function($q) use ($today) {
+                $q->where('tanggal', $today)
+                  ->where('expired_at', '>', now());
+            })
+            ->with(['qrSessions' => function($q) use ($today) {
+                $q->where('tanggal', $today)
+                  ->where('expired_at', '>', now())
+                  ->orderBy('created_at', 'desc');
+            }])
             ->orderBy('jam_mulai')
             ->get();
 
