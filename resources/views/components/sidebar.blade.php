@@ -3,7 +3,7 @@
 @php
     $user = auth('web')->user() ?? auth('siswa')->user();
     $name = $user->fullname ?? $user->nama ?? 'User';
-    $displayPosition = match($role) {
+    $displayPosition = $user->position ?? match($role) {
         'siswa' => 'Siswa',
         'piket' => 'Guru Piket',
         'admin' => 'Administrator',

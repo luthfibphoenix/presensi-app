@@ -123,7 +123,10 @@
                     <button id="userMenuBtn" class="flex items-center gap-4 focus:outline-none group">
                         @php
                             $loginRole = auth('siswa')->check() ? 'siswa' : session('login_role', 'guru');
-                            $displayRole = match($loginRole) {
+                            $user = auth()->user();
+                            
+                            // Ambil posisi spesifik dari database, jika tidak ada baru gunakan role generic
+                            $displayRole = $user->position ?? match($loginRole) {
                                 'siswa' => 'Siswa',
                                 'piket' => 'Guru Piket',
                                 'admin' => 'Administrator',
@@ -131,11 +134,12 @@
                                 'tu' => 'Tata Usaha',
                                 default => 'Guru'
                             };
-                            $userPhoto = auth()->user()->photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->fullname ?? auth()->user()->nama) . '&background=f3f4f6&color=6b7280&bold=true';
+                            
+                            $userPhoto = $user->photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->fullname ?? $user->nama) . '&background=f3f4f6&color=6b7280&bold=true';
                         @endphp
                         <div class="text-right hidden md:block">
-                            <p class="text-sm font-bold text-gray-900 leading-none mb-1 group-hover:text-blue-600 transition">{{ auth()->user()->fullname ?? auth()->user()->nama }}</p>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ $displayRole }}</p>
+                            <p class="text-sm font-bold text-gray-900 leading-none mb-1 group-hover:text-blue-600 transition">{{ $user->fullname ?? $user->nama }}</p>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ $displayRole }}</p>
                         </div>
                         <img src="{{ $userPhoto }}" 
                              alt="User" 
@@ -311,9 +315,9 @@
                     <span class="text-[10px] font-medium">Siswa</span>
                 </a>
             @else
-                <a href="{{ route('guru.catatan.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('guru.catatan.index') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
-                    <i class="fas fa-sticky-note text-lg mb-1"></i>
-                    <span class="text-[10px] font-medium">Catatan</span>
+                <a href="{{ route('jadwal.hari.ini') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('jadwal.hari.ini') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
+                    <i class="fas fa-calendar-day text-lg mb-1"></i>
+                    <span class="text-[10px] font-medium">Jadwal</span>
                 </a>
             @endif
 

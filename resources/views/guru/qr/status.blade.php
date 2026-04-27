@@ -74,10 +74,7 @@
 
 @push('scripts')
 <script>
-    // Auto-refresh the page every 10 seconds to show real-time updates
-    setTimeout(function() {
-        window.location.reload();
-    }, 10000);
+    // Auto-refresh dihapus
 </script>
 @endpush
 

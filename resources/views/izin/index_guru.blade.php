@@ -162,7 +162,12 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($izins as $izin)
                 <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ \Carbon\Carbon::parse($izin->tanggal)->format('d M Y') }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($izin->tanggal)->format('d M Y') }}</div>
+                        @if($izin->created_at)
+                            <div class="text-[10px] font-bold text-blue-500 uppercase tracking-tighter">{{ $izin->created_at->format('H:i') }} WIB</div>
+                        @endif
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                         {{ $izin->siswa->nama ?? 'Unknown' }}
                         <div class="text-xs text-gray-500">{{ $izin->siswa->kelas->nama_kelas ?? '' }}</div>
@@ -237,7 +242,12 @@
             <div class="p-5 space-y-4 hover:bg-gray-50 transition-colors">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ \Carbon\Carbon::parse($izin->tanggal)->translatedFormat('d F Y') }}</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                            {{ \Carbon\Carbon::parse($izin->tanggal)->translatedFormat('d F Y') }}
+                            @if($izin->created_at)
+                                • <span class="text-blue-500">{{ $izin->created_at->format('H:i') }} WIB</span>
+                            @endif
+                        </p>
                         <h4 class="text-sm font-black text-gray-900">{{ $izin->siswa->nama ?? 'Unknown' }}</h4>
                         <p class="text-xs font-bold text-gray-500">{{ $izin->siswa->kelas->nama_kelas ?? '' }}</p>
                     </div>

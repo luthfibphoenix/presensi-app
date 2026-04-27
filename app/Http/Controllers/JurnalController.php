@@ -11,6 +11,7 @@ class JurnalController extends Controller
         $jurnals = \App\Models\JurnalMengajar::with('presensi')
             ->where('user_id', auth()->id())
             ->orderBy('tanggal', 'desc')
+            ->orderBy('id', 'desc')
             ->get();
             
         return view('guru.jurnal.index', compact('jurnals'));
@@ -169,10 +170,23 @@ class JurnalController extends Controller
     public function destroy($id)
     {
         $jurnal = \App\Models\JurnalMengajar::where('user_id', auth()->id())->findOrFail($id);
-        // Cascading delete for presensi is not explicitly set in DB level for earlier models, so let's delete them manually.
         \App\Models\JurnalPresensi::where('jurnal_id', $jurnal->id)->delete();
         $jurnal->delete();
 
         return redirect()->route('guru.jurnal.index')->with('success', 'Jurnal berhasil dihapus.');
+    }
+
+    public function deleteAll()
+    {
+        $userId = auth()->id();
+        $jurnalIds = \App\Models\JurnalMengajar::where('user_id', $userId)->pluck('id');
+        
+        // Delete associated attendance first
+        \App\Models\JurnalPresensi::whereIn('jurnal_id', $jurnalIds)->delete();
+        
+        // Delete all journals for this teacher
+        \App\Models\JurnalMengajar::where('user_id', $userId)->delete();
+
+        return redirect()->route('guru.jurnal.index')->with('success', 'Semua riwayat jurnal Anda telah dibersihkan.');
     }
 }

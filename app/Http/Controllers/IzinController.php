@@ -10,7 +10,7 @@ class IzinController extends Controller
     public function indexSiswa(Request $request)
     {
         $siswa = $request->user('siswa');
-        $izins = Izin::where('siswa_id', $siswa->id)->orderBy('tanggal', 'desc')->paginate(10);
+        $izins = Izin::where('siswa_id', $siswa->id)->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate(10);
         return view('izin.index', compact('izins'));
     }
 
@@ -23,7 +23,7 @@ class IzinController extends Controller
                     ->orWhere('username_ortu', $orangtua->username)
                     ->pluck('id');
                     
-        $izins = Izin::with('siswa')->whereIn('siswa_id', $siswaIds)->orderBy('tanggal', 'desc')->paginate(10);
+        $izins = Izin::with('siswa')->whereIn('siswa_id', $siswaIds)->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate(10);
         $siswas = \App\Models\Siswa::whereIn('id', $siswaIds)->get();
         
         return view('izin.index_ortu', compact('izins', 'siswas'));
@@ -122,7 +122,7 @@ class IzinController extends Controller
             // $query->whereIn('tipe', ['Masuk Telat', 'Keluar Sekolah']); // Baris ini dihapus agar semua muncul
         }
 
-        $izins = $query->orderBy('tanggal', 'desc')->paginate(10);
+        $izins = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate(10);
         $siswas = \App\Models\Siswa::with('kelas')->orderBy('nama')->get();
         $kelases = \App\Models\Kelas::orderBy('nama_kelas')->get();
 

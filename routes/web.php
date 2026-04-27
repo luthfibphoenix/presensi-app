@@ -144,6 +144,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/guru/jurnal/cetak', [JurnalController::class, 'cetak'])->name('guru.jurnal.cetak');
         Route::get('/guru/jurnal/{jurnal}/edit', [JurnalController::class, 'edit'])->name('guru.jurnal.edit');
         Route::put('/guru/jurnal/{jurnal}', [JurnalController::class, 'update'])->name('guru.jurnal.update');
+        Route::delete('/guru/jurnal/all', [JurnalController::class, 'deleteAll'])->name('guru.jurnal.deleteAll');
         Route::delete('/guru/jurnal/{jurnal}', [JurnalController::class, 'destroy'])->name('guru.jurnal.destroy');
         
         // Penilaian

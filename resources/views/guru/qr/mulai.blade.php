@@ -273,42 +273,11 @@
     setInterval(refreshHadir, 5000);
     refreshHadir();
 
-    // ── Auto-save Jurnal Logic ──
+    // ── Auto-save Jurnal Logic (DIMATIKAN SEMENTARA UNTUK DEBUG) ──
+    /*
     const journalTextarea = document.getElementById('jurnal-textarea');
-    const journalStatus = document.getElementById('jurnal-status');
-    let autoSaveTimeout;
-
-    if (journalTextarea) {
-        journalTextarea.addEventListener('input', () => {
-            journalStatus.textContent = 'Mengetik...';
-            
-            clearTimeout(autoSaveTimeout);
-            autoSaveTimeout = setTimeout(() => {
-                journalStatus.textContent = 'Menyimpan...';
-                
-                const formData = new FormData();
-                formData.append('ringkasan_materi', journalTextarea.value);
-                formData.append('_token', '{{ csrf_token() }}');
-
-                fetch("{{ route('guru.mulai.kelas.jurnal', $qrSession->id) }}", {
-                    method: 'POST',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                    body: formData
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if(data.success) {
-                        journalStatus.textContent = 'Tersimpan ' + data.last_save + ' WIB';
-                    } else {
-                        journalStatus.textContent = 'Gagal menyimpan';
-                    }
-                })
-                .catch(() => {
-                    journalStatus.textContent = 'Koneksi terputus';
-                });
-            }, 2000); // Save after 2 seconds of inactivity
-        });
-    }
+    ...
+    */
 
     // Modal Detail Izin (Global Scope)
     function showIzinDetail(nama, tipe, alasan, bukti) {

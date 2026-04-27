@@ -202,7 +202,7 @@
                 <i class="fas fa-chalkboard"></i>
             </div>
             <div>
-                <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Kelas</p>
+                <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Jadwal</p>
                 <h3 class="text-lg font-black text-gray-800 leading-none">{{ $kelasAktif }}</h3>
             </div>
         </div>
@@ -370,9 +370,7 @@
 </div>
 @push('scripts')
 <script>
-    setInterval(() => {
-        window.location.reload();
-    }, 5000);
+    // Auto-refresh dihapus sesuai permintaan
 </script>
 @endpush
 @endsection

@@ -76,40 +76,40 @@
             <p class="text-slate-400 text-sm font-medium italic">Belum ada sesi kelas yang dimulai hari ini.</p>
         </div>
     @else
-        <div class="grid gap-4">
+        <div class="grid gap-3 md:gap-4">
             @foreach($jadwals as $jadwal)
                 @php
                     $session = $jadwal->qrSessions->first();
                 @endphp
-                <div class="flex items-center gap-4">
+                <div class="flex items-stretch gap-2">
                     <a href="{{ route('guru.mulai.kelas', $session->id) }}" 
-                       class="group bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex-1 flex items-center justify-between gap-4">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-slate-50 group-hover:bg-blue-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-blue-500 transition-colors">
-                                <i class="fas fa-chalkboard-teacher text-xl"></i>
+                       class="group bg-white rounded-2xl border border-slate-100 p-4 md:p-5 shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex-1 flex items-center justify-between gap-3 min-w-0">
+                        <div class="flex items-center gap-3 md:gap-4 min-w-0">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-slate-50 group-hover:bg-blue-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-blue-500 transition-colors flex-shrink-0">
+                                <i class="fas fa-chalkboard-teacher text-lg md:text-xl"></i>
                             </div>
-                            <div>
-                                <h3 class="font-black text-slate-800 group-hover:text-blue-600 transition-colors">{{ $jadwal->mata_pelajaran }}</h3>
-                                <div class="flex items-center gap-3 mt-0.5 text-[11px] font-bold text-slate-400">
-                                    <span class="flex items-center gap-1.5"><i class="fas fa-users"></i> {{ $jadwal->kelas }}</span>
-                                    <span class="w-1 h-1 rounded-full bg-slate-200"></span>
-                                    <span class="flex items-center gap-1.5"><i class="far fa-clock"></i> Jam {{ $jadwal->jam_mulai }} - {{ $jadwal->jam_selesai }}</span>
+                            <div class="min-w-0">
+                                <h3 class="font-black text-slate-800 group-hover:text-blue-600 transition-colors text-sm md:text-base truncate">{{ $jadwal->mata_pelajaran }}</h3>
+                                <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 text-[10px] md:text-[11px] font-bold text-slate-400">
+                                    <span class="flex items-center gap-1"><i class="fas fa-users"></i> {{ $jadwal->kelas }}</span>
+                                    <span class="hidden md:inline w-1 h-1 rounded-full bg-slate-200"></span>
+                                    <span class="flex items-center gap-1"><i class="far fa-clock"></i> {{ $jadwal->jam_mulai }}-{{ $jadwal->jam_selesai }}</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <span class="px-3 py-1 bg-green-100 text-green-600 text-[10px] font-black uppercase rounded-lg">Aktif</span>
-                            <i class="fas fa-chevron-right text-slate-300 group-hover:translate-x-1 transition-transform"></i>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <span class="hidden sm:inline-block px-3 py-1 bg-green-100 text-green-600 text-[10px] font-black uppercase rounded-lg">Aktif</span>
+                            <i class="fas fa-chevron-right text-slate-300 group-hover:translate-x-1 transition-transform text-xs"></i>
                         </div>
                     </a>
 
                     {{-- Tombol Hentikan Sesi --}}
-                    <form action="{{ route('guru.qr.end', $session->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghentikan sesi presensi ini?')">
+                    <form action="{{ route('guru.qr.end', $session->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghentikan sesi presensi ini?')" class="flex">
                         @csrf
                         <button type="submit" 
-                                class="w-12 h-12 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl border border-red-100 transition-all flex items-center justify-center shadow-sm active:scale-90"
+                                class="w-12 md:w-14 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl border border-red-100 transition-all flex items-center justify-center shadow-sm active:scale-90 flex-shrink-0"
                                 title="Hentikan Sesi">
-                            <i class="fas fa-power-off"></i>
+                            <i class="fas fa-power-off text-sm md:text-base"></i>
                         </button>
                     </form>
                 </div>

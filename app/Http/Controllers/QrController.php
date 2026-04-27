@@ -24,15 +24,16 @@ class QrController extends Controller
         $hariIni = ucfirst(strtolower($hariIni));
         $today = Carbon::now()->toDateString();
 
-        // Hanya ambil jadwal yang memiliki sesi AKTIF (belum expired) hari ini
+        // Ambil jadwal yang memiliki sesi hari ini yang BELUM diakhiri secara manual
+        // (Sesi dianggap berakhir manual jika expired_at lebih lama dari 1 menit yang lalu)
         $jadwals = Jadwal::where('user_id', $request->user()->id)
             ->whereHas('qrSessions', function($q) use ($today) {
                 $q->where('tanggal', $today)
-                  ->where('expired_at', '>', now());
+                  ->where('expired_at', '>', now()->subMinutes(60)); // Tetap muncul sampai 1 jam setelah QR expired
             })
             ->with(['qrSessions' => function($q) use ($today) {
                 $q->where('tanggal', $today)
-                  ->where('expired_at', '>', now())
+                  ->where('expired_at', '>', now()->subMinutes(60))
                   ->orderBy('created_at', 'desc');
             }])
             ->orderBy('jam_mulai')
@@ -46,16 +47,14 @@ class QrController extends Controller
 
     public function jadwalSemua(Request $request)
     {
-        $jadwals = Jadwal::where('user_id', $request->user()->id)
-            ->orderByRaw("CASE hari WHEN 'Senin' THEN 1 WHEN 'Selasa' THEN 2 WHEN 'Rabu' THEN 3 WHEN 'Kamis' THEN 4 WHEN 'Jumat' THEN 5 WHEN 'Sabtu' THEN 6 ELSE 7 END")
-            ->orderBy('jam_mulai')
+        // Ambil daftar unik Mapel & Kelas yang diampu
+        $jadwals = \App\Models\Jadwal::where('user_id', $request->user()->id)
+            ->select('mata_pelajaran', 'kelas')
+            ->distinct()
+            ->orderBy('kelas')
             ->get();
 
-        $hariIni = ucfirst(strtolower(Carbon::now()->locale('id')->isoFormat('dddd')));
-        $jamMap = Jadwal::jamMap();
-        $nowTime = Carbon::now('Asia/Jakarta')->format('H:i');
-
-        return view('guru.jadwal.semua', compact('jadwals', 'jamMap', 'nowTime', 'hariIni'));
+        return view('guru.jadwal.semua', compact('jadwals'));
     }
 
     public function autoGenerate(Request $request)
@@ -327,26 +326,39 @@ class QrController extends Controller
             'ringkasan_materi' => 'nullable|string',
         ]);
 
-        // Don't overwrite with empty if we already have content, unless it's a manual save (not AJAX)
+        // Ambil materi dari request
         $materi = $request->ringkasan_materi;
-        if ($request->ajax() && is_null($materi)) {
-            $materi = '';
+
+        // Proteksi: Jika materi yang dikirim kosong (misal saat klik STOP), 
+        // tapi di database sudah ada isinya, maka JANGAN timpa dengan kosong.
+        $existingJurnal = \App\Models\JurnalMengajar::where('qr_session_id', $qrSession->id)->first();
+        if ((is_null($materi) || $materi === '') && $existingJurnal && !empty($existingJurnal->ringkasan_materi)) {
+            $materi = $existingJurnal->ringkasan_materi;
         }
 
-        $jurnal = \App\Models\JurnalMengajar::updateOrCreate(
-            [
-                'user_id' => $request->user()->id,
-                'tanggal' => $qrSession->tanggal,
-                'mata_pelajaran' => $qrSession->jadwal->mata_pelajaran,
-                'kelas' => $qrSession->jadwal->kelas,
-            ],
-            [
-                'qr_session_id' => $qrSession->id,
-                'jam_mulai' => $qrSession->jadwal->jam_mulai,
-                'jam_selesai' => $qrSession->jadwal->jam_selesai,
-                'semester' => $qrSession->jadwal->semester ?? '-',
-                'ringkasan_materi' => $materi,
-            ]
+        // Gunakan Database Transaction untuk keamanan data
+        $jurnal = \Illuminate\Support\Facades\DB::transaction(function () use ($qrSession, $request, $materi) {
+            return \App\Models\JurnalMengajar::updateOrCreate(
+                ['qr_session_id' => $qrSession->id], // Kunci unik utama
+                [
+                    'user_id' => $request->user()->id,
+                    'tanggal' => $qrSession->tanggal,
+                    'mata_pelajaran' => $qrSession->jadwal->mata_pelajaran,
+                    'kelas' => $qrSession->jadwal->kelas,
+                    'jam_mulai' => $qrSession->jadwal->jam_mulai,
+                    'jam_selesai' => $qrSession->jadwal->jam_selesai,
+                    'semester' => $qrSession->jadwal->semester ?? '-',
+                    'ringkasan_materi' => $materi,
+                ]
+            );
+        });
+
+        // LOG UNTUK DEBUG: Catat setiap kali proses simpan terjadi
+        \Illuminate\Support\Facades\Storage::append('debug_jurnal.txt', 
+            "[" . now()->format('H:i:s') . "] Jurnal ID: " . $jurnal->id . 
+            " | Sesi ID: " . $qrSession->id . 
+            " | Mapel: " . $qrSession->jadwal->mata_pelajaran . 
+            " | Jam: " . $qrSession->jadwal->jam_mulai . "-" . $qrSession->jadwal->jam_selesai
         );
 
         // Sync attendance to jurnal_presensis for printing compatibility
@@ -371,7 +383,7 @@ class QrController extends Controller
             abort(403);
         }
 
-        $qrSession->update(['expired_at' => Carbon::now()->subSecond()]);
+        $qrSession->update(['expired_at' => Carbon::now()->subHours(24)]);
 
         return redirect()->route('jadwal.hari.ini')
             ->with('success', 'Kelas telah diakhiri.');

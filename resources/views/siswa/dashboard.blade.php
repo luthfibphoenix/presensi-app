@@ -263,9 +263,7 @@
 </style>
 @push('scripts')
 <script>
-    setInterval(() => {
-        window.location.reload();
-    }, 5000);
+    // Auto-refresh dihapus sesuai permintaan
 </script>
 @endpush
 @endsection
