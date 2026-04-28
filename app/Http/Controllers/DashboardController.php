@@ -32,23 +32,24 @@ class DashboardController extends Controller
             
             // Statistik Hari Ini (Izin & Sakit diambil dari tabel Izin agar real-time dan unik per siswa)
             $stats = [
-                'hadir' => \App\Models\Presensi::where('tanggal', $today)->whereIn('status', ['Hadir', 'Terlambat'])->distinct('siswa_id')->count(),
+                'hadir' => \App\Models\Presensi::where('tanggal', $today)->whereIn('status', ['Hadir', 'Terlambat'])->distinct()->count('siswa_id'),
                 'izin' => \App\Models\Izin::where('tanggal', $today)->where('tipe', 'Izin')->where('status', 'Disetujui')->count(),
                 'sakit' => \App\Models\Izin::where('tanggal', $today)->where('tipe', 'Sakit')->where('status', 'Disetujui')->count(),
-                'alfa' => \App\Models\Presensi::where('tanggal', $today)->where('status', 'Alfa')->distinct('siswa_id')->count(),
+                'alfa' => \App\Models\Presensi::where('tanggal', $today)->where('status', 'Alfa')->distinct()->count('siswa_id'),
             ];
 
             // Siswa Tidak Hadir Hari Ini (Ambil dari Izin yang disetujui + Alfa di presensi)
-            $todayPermits = \App\Models\Izin::with('siswa')
+            $todayPermits = \App\Models\Izin::with('siswa.kelas')
                 ->where('tanggal', $today)
                 ->where('status', 'Disetujui')
                 ->get()
+                ->filter(function($i) { return $i->siswa != null; })
                 ->map(function($i) {
                     return (object)[
                         'siswa' => $i->siswa,
                         'status' => $i->tipe,
                         'keterangan' => $i->alasan,
-                        'created_at' => $i->created_at,
+                        'created_at' => $i->tanggal,
                         'jadwal' => (object)[
                             'mata_pelajaran' => 'Izin Harian',
                             'jam_mulai' => '-',
@@ -57,10 +58,11 @@ class DashboardController extends Controller
                     ];
                 });
 
-            $alfaPresensi = \App\Models\Presensi::with(['siswa', 'jadwal'])
+            $alfaPresensi = \App\Models\Presensi::with(['siswa.kelas', 'jadwal'])
                 ->where('tanggal', $today)
                 ->where('status', 'Alfa')
-                ->get();
+                ->get()
+                ->filter(function($p) { return $p->siswa != null; });
 
             $absentStudents = $todayPermits->concat($alfaPresensi)->sortByDesc('created_at')->take(10);
 

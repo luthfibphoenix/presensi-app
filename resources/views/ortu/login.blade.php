@@ -63,8 +63,11 @@
                         <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-teal-500 transition-colors">
                             <i class="fa-solid fa-lock"></i>
                         </div>
-                        <input type="password" name="password" placeholder="Default: ortu123" 
-                            class="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border border-slate-100 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 transition-all text-base font-bold placeholder:text-slate-300 placeholder:font-medium outline-none" required>
+                        <input type="password" id="password" name="password" placeholder="Default: ortu123" 
+                            class="w-full pl-12 pr-12 py-4 rounded-2xl bg-white border border-slate-100 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 transition-all text-base font-bold placeholder:text-slate-300 placeholder:font-medium outline-none" required>
+                        <button type="button" onclick="togglePassword('password', 'eye-icon')" class="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-400 hover:text-teal-500 transition-colors focus:outline-none">
+                            <i id="eye-icon" class="fa-solid fa-eye text-sm"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -97,5 +100,21 @@
             &copy; 2026 SmartPresensi SMKN 7 Purworejo
         </p>
     </div>
+
+    <script>
+        function togglePassword(inputId, iconId) {
+            const passwordInput = document.getElementById(inputId);
+            const eyeIcon = document.getElementById(iconId);
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+    </script>
 </body>
 </html>

@@ -11,56 +11,10 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         :root {
-            --safe-area-inset-top: env(safe-area-inset-top);
-            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+            --safe-area-inset-top: env(safe-area-inset-top, 0px);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
         }
 
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        
-        /* Ultra Smooth Liquid Page Transitions */
-        @keyframes liquidFadeIn {
-            0% { opacity: 0; transform: translateY(20px) scale(0.98); filter: blur(10px); }
-            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-        }
-        .animate-page-content {
-            animation: liquidFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        /* Top Progress Bar Animation */
-        #page-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(to right, #3b82f6, #06b6d4);
-            z-index: 9999;
-            transform: translateX(-100%);
-            transition: transform 0.4s ease;
-        }
-        .loading #page-loader {
-            transform: translateX(-20%);
-            transition: transform 10s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .loaded #page-loader {
-            transform: translateX(0);
-            transition: transform 0.3s ease;
-        }
-
-        [x-cloak] { display: none !important; }
-        
-        /* Smooth Scrolling */
-        html {
-            scroll-behavior: smooth;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
         @media (max-width: 768px) {
             main { 
                 -webkit-overflow-scrolling: touch; 
@@ -71,8 +25,36 @@
                 height: calc(4rem + var(--safe-area-inset-top)) !important;
             }
             .mobile-nav {
-                padding-bottom: var(--safe-area-inset-bottom) !important;
+                padding-bottom: env(safe-area-inset-bottom) !important;
             }
+        }
+
+        /* Sembunyikan scrollbar di semua browser */
+        * {
+            scrollbar-width: none;        /* Firefox */
+            -ms-overflow-style: none;     /* IE & Edge */
+        }
+        *::-webkit-scrollbar {
+            display: none;                /* Chrome, Safari, Opera */
+        }
+
+        /* Page transition */
+        body {
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        body.page-leaving {
+            animation: fadeOut 0.2s ease-in forwards;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to   { opacity: 0; transform: translateY(-8px); }
         }
     </style>
 </head>
@@ -83,116 +65,155 @@
       }"
       x-init="$watch('activeRole', value => localStorage.setItem('activeRole', value))">
     
-    <!-- Top Progress Bar -->
-    <div id="page-loader"></div>
-
-    <div class="h-screen bg-gray-50 flex overflow-hidden">
+    <!-- Top Progress Loader -->
+    <div id="page-loader" class="fixed top-0 left-0 z-[9999] h-[2px] bg-{{ $aksen ?? 'blue' }}-600 w-0 transition-all duration-300 ease-out"></div>
+    
+    <script>
+        window.addEventListener('beforeunload', () => {
+            document.body.classList.add('page-leaving');
+            const loader = document.getElementById('page-loader');
+            loader.style.width = '100%';
+        });
         
-        <!-- Sidebar -->
-        @php
-            $currentRole = auth('siswa')->check() ? 'siswa' : session('login_role', 'guru');
-        @endphp
-        <x-sidebar :role="$currentRole" />
+        document.addEventListener('DOMContentLoaded', () => {
+            const loader = document.getElementById('page-loader');
+            loader.style.width = '100%';
+            setTimeout(() => {
+                loader.style.opacity = '0';
+            }, 300);
+        });
+    </script>
 
-        <!-- Sidebar Overlay (Mobile) -->
-        <div x-show="sidebarOpen" 
-             @click="sidebarOpen = false" 
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-black/50 z-[55] lg:hidden" 
-             x-cloak></div>
+    @php
+        $loginRole = auth('siswa')->check() ? 'siswa' : (auth('orangtua')->check() ? 'orangtua' : session('login_role', 'guru'));
+        $user = auth()->user();
+        
+        // Unified Color System
+        $roleConfig = [
+            'piket' => ['color' => 'green', 'pill' => 'green'],
+            'guru' => ['color' => 'blue', 'pill' => 'blue'],
+            'siswa' => ['color' => 'teal', 'pill' => 'teal'],
+            'orangtua' => ['color' => 'cyan', 'pill' => 'cyan'],
+            'tu' => ['color' => 'violet', 'pill' => 'violet'],
+            'admin' => ['color' => 'purple', 'pill' => 'purple'],
+        ];
 
-        <!-- Main Content Wrapper -->
-        <div class="flex-1 lg:ml-72 flex flex-col h-screen relative overflow-hidden">
-            <!-- Fixed Top Navbar -->
-            <header class="h-16 bg-white shadow-sm border-b border-gray-100 flex items-center justify-between px-8 flex-shrink-0 z-10">
-                <div class="flex items-center gap-4">
-                    @if(!auth('siswa')->check())
-                    <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700 transition">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                    @endif
-                    <h2 class="text-lg font-bold text-gray-800 tracking-tight">@yield('title', 'Dashboard')</h2>
-                </div>
+        $config = $roleConfig[$loginRole] ?? $roleConfig['guru'];
+        $aksen = $config['color'];
+        
+        $initials = collect(explode(' ', $user->fullname ?? $user->nama))->map(fn($n) => strtoupper(substr($n, 0, 1)))->take(2)->join('');
+    @endphp
 
-                <div class="flex items-center gap-4 relative" id="userMenuContainer">
-                    <button id="userMenuBtn" class="flex items-center gap-4 focus:outline-none group">
-                        @php
-                            $loginRole = auth('siswa')->check() ? 'siswa' : session('login_role', 'guru');
-                            $user = auth()->user();
+    <!-- Sidebar -->
+    <x-sidebar :role="$loginRole" />
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div x-show="sidebarOpen" 
+         @click="sidebarOpen = false" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-black/50 z-[55] lg:hidden" 
+         x-cloak></div>
+
+    <div class="w-full lg:pl-72 min-h-screen bg-gray-50 flex flex-col h-[100dvh] relative overflow-hidden">
+            <!-- Modern Seamless Sticky Header -->
+            <header class="sticky top-0 z-[60] bg-white/95 backdrop-blur-md transition-all duration-300"
+                    style="padding-top: var(--safe-area-inset-top); height: calc(5.5rem + var(--safe-area-inset-top));">
+                <div class="h-full flex items-center justify-between px-6 md:px-10">
+                    <div class="flex items-center gap-4">
+                        <button @click="sidebarOpen = true" class="lg:hidden w-11 h-11 flex items-center justify-center rounded-2xl bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-all active:scale-90 shadow-sm border border-gray-100">
+                            <i class="fas fa-bars-staggered text-lg"></i>
+                        </button>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-black text-{{ $aksen }}-600 uppercase tracking-[0.2em] leading-none mb-1.5 opacity-80">SMKN 7 Purworejo</span>
+                            <h2 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight leading-none">@yield('title', 'Dashboard')</h2>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 relative" id="userMenuContainer">
+                        <!-- Notification Bell -->
+                        <button class="hidden md:flex w-11 h-11 items-center justify-center rounded-2xl bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-900 transition-all relative border border-gray-100">
+                            <i class="fas fa-bell"></i>
+                            <span class="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                        </button>
+
+                        <button id="userMenuBtn" class="flex items-center gap-3 p-1 rounded-2xl hover:bg-gray-50 transition-all group focus:outline-none">
+                            <div class="w-12 h-12 rounded-2xl overflow-hidden bg-{{ $aksen }}-100 flex items-center justify-center text-sm font-bold text-{{ $aksen }}-700 shadow-sm border-2 border-white ring-1 ring-{{ $aksen }}-100/50 transition-transform group-hover:scale-105">
+                                @if(isset($user->photo_url) && $user->photo_url)
+                                    @php
+                                        $photo = $user->photo_url;
+                                        if (str_contains($photo, 'drive.google.com')) {
+                                            if (preg_match('/[-\w]{25,}/', $photo, $matches)) {
+                                                $photo = "https://lh3.googleusercontent.com/d/" . $matches[0];
+                                            }
+                                        }
+                                    @endphp
+                                    <img src="{{ $photo }}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='{{ $initials }}';">
+                                @else
+                                    {{ $initials }}
+                                @endif
+                            </div>
+                            <div class="text-left hidden md:block">
+                                <p class="text-sm font-black text-gray-900 leading-none mb-1.5">{{ explode(',', $user->fullname ?? $user->nama)[0] }}</p>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Online</p>
+                                </div>
+                            </div>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="userDropdown" class="hidden absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden py-1 animate-fade-in-up">
+                            <div class="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
+                                <p class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Pengguna</p>
+                                <p class="text-sm font-bold text-gray-800 truncate">{{ $user->fullname ?? $user->nama }}</p>
+                            </div>
+                            <a href="{{ auth('siswa')->check() ? route('siswa.profil') : route('profil') }}" class="flex items-center gap-3 px-5 py-3.5 text-sm text-gray-700 hover:bg-{{ $aksen }}-50 hover:text-{{ $aksen }}-700 transition">
+                                <i class="fas fa-user-circle opacity-40"></i> Profil Saya
+                            </a>
                             
-                            // Ambil posisi spesifik dari database, jika tidak ada baru gunakan role generic
-                            $displayRole = $user->position ?? match($loginRole) {
-                                'siswa' => 'Siswa',
-                                'piket' => 'Guru Piket',
-                                'admin' => 'Administrator',
-                                'bk' => 'Guru BK',
-                                'tu' => 'Tata Usaha',
-                                default => 'Guru'
-                            };
-                            
-                            $userPhoto = $user->photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->fullname ?? $user->nama) . '&background=f3f4f6&color=6b7280&bold=true';
-                        @endphp
-                        <div class="text-right hidden md:block">
-                            <p class="text-sm font-bold text-gray-900 leading-none mb-1 group-hover:text-blue-600 transition">{{ $user->fullname ?? $user->nama }}</p>
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ $displayRole }}</p>
-                        </div>
-                        <img src="{{ $userPhoto }}" 
-                             alt="User" 
-                             class="w-10 h-10 rounded-full border-2 border-gray-100 object-cover shadow-sm group-hover:border-blue-200 transition">
-                    </button>
+                            @if($loginRole === 'guru' || $loginRole === 'piket')
+                            @php
+                                $activeSess = null;
+                                if(auth('web')->check()){
+                                    $activeSess = \App\Models\QrSession::where('guru_id', auth('web')->id())
+                                        ->where('tanggal', now()->toDateString())
+                                        ->where('expired_at', '>', now())
+                                        ->first();
+                                }
+                            @endphp
+                            @if($activeSess)
+                            <div class="border-t border-gray-50 py-1">
+                                <form action="{{ route('dashboard.end_session') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="session_id" value="{{ $activeSess->id }}">
+                                    <button type="submit" class="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-red-600 hover:bg-red-50 transition text-left font-bold">
+                                        <i class="fas fa-power-off"></i> Akhiri Kelas
+                                    </button>
+                                </form>
+                            </div>
+                            @endif
+                            @endif
 
-                    <!-- Dropdown Menu -->
-                    <div id="userDropdown" class="hidden absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden py-1 animate-fade-in-up">
-                        <div class="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
-                            <p class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Pengguna</p>
-                            <p class="text-sm font-bold text-gray-800 truncate">{{ auth()->user()->fullname ?? auth()->user()->nama }}</p>
-                        </div>
-                        <a href="{{ auth('siswa')->check() ? route('siswa.profil') : route('profil') }}" class="flex items-center gap-3 px-5 py-3.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition">
-                            <i class="fas fa-user-circle opacity-40"></i> Profil Saya
-                        </a>
-
-                        @php
-                            $user = auth()->user();
-                            $activeSess = null;
-                            if ($user && auth('web')->check()) {
-                                $activeSess = \App\Models\QrSession::where('guru_id', $user->id)
-                                    ->where('tanggal', now()->toDateString())
-                                    ->where('expired_at', '>', now())
-                                    ->first();
-                            }
-                        @endphp
-
-                        @if($activeSess)
-                        <div class="border-t border-gray-50 py-1">
-                            <form action="{{ route('dashboard.end_session') }}" method="POST" onsubmit="return confirm('Akhiri sesi kelas sekarang? Siswa yang belum absen akan otomatis dicatat Alfa.')">
-                                @csrf
-                                <input type="hidden" name="session_id" value="{{ $activeSess->id }}">
-                                <button type="submit" class="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-red-600 hover:bg-red-50 transition text-left font-bold">
-                                    <i class="fas fa-power-off"></i> Akhiri Kelas
-                                </button>
-                            </form>
-                        </div>
-                        @endif
-
-                        <div class="border-t border-gray-50 py-1">
-                            <form action="{{ route('logout') }}" method="POST">
-                                @csrf
-                                <button type="submit" class="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-gray-400 hover:bg-gray-50 transition text-left font-semibold">
-                                    <i class="fas fa-sign-out-alt"></i> Logout
-                                </button>
-                            </form>
+                            <div class="border-t border-gray-50 py-1">
+                                <form action="{{ route('logout') }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-gray-400 hover:bg-gray-50 transition text-left font-semibold">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </header>
 
             <!-- Content Body -->
-            <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-100 no-scrollbar">
+            <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-100 no-scrollbar pb-32 md:pb-6">
                 <div class="max-w-7xl mx-auto h-full flex flex-col">
                     @if (session('success') && !request()->routeIs('siswa.dashboard'))
                         <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-3 mb-4 rounded-xl shadow-sm animate-page-content flex-shrink-0">
@@ -208,125 +229,103 @@
                 </div>
             </main>
         </div>
-    </div>
     
     <!-- Mobile Bottom Navigation -->
     @auth
-    @php
-        $userPos = strtolower(auth()->user()->position ?? '');
-        $isTU = str_contains($userPos, 'tata usaha') || str_contains($userPos, 'tu');
-    @endphp
-
-    <div class="lg:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-xl border-t border-gray-100 flex justify-around shadow-[0_-8px_30px_rgb(0,0,0,0.04)] z-50 mobile-nav">
-        @if(auth('siswa')->check())
-            {{-- Siswa Menu --}}
-            <a href="{{ route('siswa.dashboard') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('siswa.dashboard') ? 'text-emerald-600' : 'text-gray-500' }}">
-                <i class="fas fa-home text-lg mb-1"></i>
-                <span class="text-[10px] font-medium">Home</span>
-            </a>
-            <a href="{{ route('siswa.riwayat') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('siswa.riwayat') ? 'text-emerald-600' : 'text-gray-500' }}">
-                <i class="fas fa-history text-lg mb-1"></i>
-                <span class="text-[10px] font-medium">Riwayat</span>
-            </a>
-            <a href="{{ route('presensi.scan') }}" class="flex flex-col items-center justify-center w-full py-3 relative group {{ request()->routeIs('presensi.scan') ? 'text-emerald-600' : 'text-gray-400' }}">
-                <div class="absolute -top-7 bg-emerald-500 text-white rounded-full w-16 h-16 shadow-[0_10px_25px_rgba(16,185,129,0.4)] border-4 border-white flex items-center justify-center transition-all group-active:scale-90 z-20">
-                    <i class="fas fa-qrcode text-2xl"></i>
-                </div>
-                <span class="text-[9px] font-black uppercase tracking-[0.1em] mt-7">Scan</span>
-            </a>
-            <a href="{{ route('izin.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('izin.index') ? 'text-emerald-600' : 'text-gray-500' }}">
-                <i class="fas fa-envelope text-lg mb-1"></i>
-                <span class="text-[10px] font-medium">Izin</span>
-            </a>
-            <a href="{{ route('siswa.profil') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('siswa.profil') ? 'text-emerald-600' : 'text-gray-500' }}">
-                <i class="fas fa-user-circle text-lg mb-1"></i>
-                <span class="text-[10px] font-medium">Profil</span>
-            </a>
-        @elseif($isTU)
-            {{-- TU Menu (No Sidebar Trigger on Mobile) --}}
-            <a href="{{ route('dashboard') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('dashboard') ? 'text-indigo-600' : 'text-gray-500' }}">
-                <i class="fas fa-th-large text-lg mb-1"></i>
-                <span class="text-[10px] font-medium">Beranda</span>
-            </a>
-            <a href="{{ route('tu.surat_dinas') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('tu.surat_dinas') ? 'text-indigo-600' : 'text-gray-500' }}">
-                <i class="fas fa-plane-departure text-lg mb-1"></i>
-                <span class="text-[10px] font-medium">SPD</span>
-            </a>
-            <a href="{{ route('laporan.rekap_harian') }}" class="flex flex-col items-center justify-center w-full py-3 relative group {{ request()->routeIs('laporan.rekap_harian') ? 'text-indigo-600' : 'text-gray-400' }}">
-                <div class="absolute -top-7 bg-indigo-600 text-white rounded-full w-16 h-16 shadow-[0_10px_25px_rgba(79,70,229,0.4)] border-4 border-white flex items-center justify-center transition-all group-active:scale-90 z-20">
-                    <i class="fas fa-calendar-check text-2xl"></i>
-                </div>
-                <span class="text-[9px] font-black uppercase tracking-[0.1em] mt-7">Rekap</span>
-            </a>
-            <a href="{{ route('siswa.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('siswa.index') ? 'text-indigo-600' : 'text-gray-500' }}">
-                <i class="fas fa-users text-lg mb-1"></i>
-                <span class="text-[10px] font-medium">Siswa</span>
-            </a>
-            <a href="{{ route('profil') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('profil') ? 'text-indigo-600' : 'text-gray-500' }}">
-                <i class="fas fa-user-circle text-lg mb-1"></i>
-                <span class="text-[10px] font-medium">Profil</span>
-            </a>
-        @else
-            {{-- Guru / Admin Menu --}}
-            @php
-                $loginRole = session('login_role', 'guru');
-                $btnColor = 'blue';
-                if ($loginRole === 'piket') $btnColor = 'orange';
-                elseif ($loginRole === 'admin') $btnColor = 'purple';
-                elseif (str_contains(strtolower(auth()->user()->position ?? ''), 'kepala sekolah')) $btnColor = 'zinc';
-            @endphp
-            <a href="{{ route('dashboard') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('dashboard') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
-                <i class="fas fa-th-large text-lg mb-1"></i>
-                <span class="text-[10px] font-medium">Beranda</span>
-            </a>
-
-            @if($loginRole === 'piket')
-                <a href="{{ route('izin.guru') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('izin.guru') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
-                    <i class="fas fa-file-signature text-lg mb-1"></i>
-                    <span class="text-[10px] font-medium">Izin</span>
-                </a>
-            @elseif($loginRole === 'admin' || $btnColor === 'zinc')
-                <a href="{{ route('laporan.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('laporan.index') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
-                    <i class="fas fa-chart-line text-lg mb-1"></i>
-                    <span class="text-[10px] font-medium">Laporan</span>
-                </a>
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 shadow-[0_-1px_12px_rgba(0,0,0,0.06)]"
+         style="padding-bottom:env(safe-area-inset-bottom)">
+        <div class="flex items-stretch h-16">
+            @if($loginRole === 'siswa')
+                {{-- Siswa: Home | Scan | Riwayat | Profil --}}
+                @foreach([
+                    ['label' => 'Home', 'route' => 'siswa.dashboard', 'icon' => 'fas fa-home'],
+                    ['label' => 'Scan', 'route' => 'presensi.scan', 'icon' => 'fas fa-qrcode'],
+                    ['label' => 'Riwayat', 'route' => 'siswa.riwayat', 'icon' => 'fas fa-history'],
+                    ['label' => 'Profil', 'route' => 'siswa.profil', 'icon' => 'fas fa-user-circle'],
+                ] as $item)
+                    <a href="{{ route($item['route']) }}" 
+                       class="flex flex-col items-center justify-center flex-1 pt-1 transition-colors duration-200">
+                        <span class="w-8 h-1 rounded-full mb-1 {{ request()->routeIs($item['route']) ? 'bg-'.$aksen.'-500' : 'bg-transparent' }}"></span>
+                        <i class="{{ $item['icon'] }} text-[20px] {{ request()->routeIs($item['route']) ? 'text-'.$aksen.'-600' : 'text-gray-400' }}"></i>
+                        <span class="text-[11px] mt-0.5 {{ request()->routeIs($item['route']) ? 'font-semibold text-'.$aksen.'-600' : 'font-normal text-gray-400' }}">
+                            {{ $item['label'] }}
+                        </span>
+                    </a>
+                @endforeach
+            @elseif($loginRole === 'piket')
+                {{-- Piket: Beranda | Izin | Status | Laporan | Profil --}}
+                @foreach([
+                    ['label' => 'Beranda', 'route' => 'dashboard', 'icon' => 'fas fa-th-large'],
+                    ['label' => 'Izin', 'route' => 'izin.guru', 'icon' => 'fas fa-file-signature'],
+                    ['label' => 'Status', 'route' => 'guru.qr.status.index', 'icon' => 'fas fa-clipboard-check'],
+                    ['label' => 'Laporan', 'route' => 'laporan.index', 'icon' => 'fas fa-chart-pie'],
+                    ['label' => 'Profil', 'route' => 'profil', 'icon' => 'fas fa-user-circle'],
+                ] as $item)
+                    <a href="{{ route($item['route']) }}" 
+                       class="flex flex-col items-center justify-center flex-1 pt-1 transition-colors duration-200">
+                        <span class="w-8 h-1 rounded-full mb-1 {{ request()->routeIs($item['route']) ? 'bg-'.$aksen.'-500' : 'bg-transparent' }}"></span>
+                        <i class="{{ $item['icon'] }} text-[20px] {{ request()->routeIs($item['route']) ? 'text-'.$aksen.'-600' : 'text-gray-400' }}"></i>
+                        <span class="text-[11px] mt-0.5 {{ request()->routeIs($item['route']) ? 'font-semibold text-'.$aksen.'-600' : 'font-normal text-gray-400' }}">
+                            {{ $item['label'] }}
+                        </span>
+                    </a>
+                @endforeach
+            @elseif($loginRole === 'tu')
+                {{-- TU: Beranda | SPD | Rekap | Siswa | Profil --}}
+                @foreach([
+                    ['label' => 'Beranda', 'route' => 'dashboard', 'icon' => 'fas fa-th-large'],
+                    ['label' => 'SPD', 'route' => 'tu.surat_dinas', 'icon' => 'fas fa-plane-departure'],
+                    ['label' => 'Rekap', 'route' => 'laporan.rekap_harian', 'icon' => 'fas fa-calendar-check'],
+                    ['label' => 'Siswa', 'route' => 'siswa.index', 'icon' => 'fas fa-users'],
+                    ['label' => 'Profil', 'route' => 'profil', 'icon' => 'fas fa-user-circle'],
+                ] as $item)
+                    <a href="{{ route($item['route']) }}" 
+                       class="flex flex-col items-center justify-center flex-1 pt-1 transition-colors duration-200">
+                        <span class="w-8 h-1 rounded-full mb-1 {{ request()->routeIs($item['route']) ? 'bg-'.$aksen.'-500' : 'bg-transparent' }}"></span>
+                        <i class="{{ $item['icon'] }} text-[20px] {{ request()->routeIs($item['route']) ? 'text-'.$aksen.'-600' : 'text-gray-400' }}"></i>
+                        <span class="text-[11px] mt-0.5 {{ request()->routeIs($item['route']) ? 'font-semibold text-'.$aksen.'-600' : 'font-normal text-gray-400' }}">
+                            {{ $item['label'] }}
+                        </span>
+                    </a>
+                @endforeach
+            @elseif($loginRole === 'orangtua')
+                {{-- Ortu: Beranda | Histori | Izin | Profil --}}
+                @foreach([
+                    ['label' => 'Beranda', 'route' => 'ortu.dashboard', 'icon' => 'fas fa-house-chimney-window'],
+                    ['label' => 'Histori', 'route' => 'ortu.kehadiran', 'icon' => 'fas fa-clock-rotate-left'],
+                    ['label' => 'Izin', 'route' => 'ortu.izin', 'icon' => 'fas fa-envelope-open-text'],
+                    ['label' => 'Profil', 'route' => 'ortu.profil', 'icon' => 'fas fa-user-circle'],
+                ] as $item)
+                    <a href="{{ route($item['route']) }}" 
+                       class="flex flex-col items-center justify-center flex-1 pt-1 transition-colors duration-200">
+                        <span class="w-8 h-1 rounded-full mb-1 {{ request()->routeIs($item['route']) ? 'bg-'.$aksen.'-500' : 'bg-transparent' }}"></span>
+                        <i class="{{ $item['icon'] }} text-[20px] {{ request()->routeIs($item['route']) ? 'text-'.$aksen.'-600' : 'text-gray-400' }}"></i>
+                        <span class="text-[11px] mt-0.5 {{ request()->routeIs($item['route']) ? 'font-semibold text-'.$aksen.'-600' : 'font-normal text-gray-400' }}">
+                            {{ $item['label'] }}
+                        </span>
+                    </a>
+                @endforeach
             @else
-                <a href="{{ route('guru.jurnal.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('guru.jurnal.index') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
-                    <i class="fas fa-book text-lg mb-1"></i>
-                    <span class="text-[10px] font-medium">Jurnal</span>
-                </a>
+                {{-- Guru / Admin: Beranda | Jurnal | Status | Jadwal | Profil --}}
+                @foreach([
+                    ['label' => 'Beranda', 'route' => 'dashboard', 'icon' => 'fas fa-th-large'],
+                    ['label' => 'Jurnal', 'route' => 'guru.jurnal.index', 'icon' => 'fas fa-book'],
+                    ['label' => 'Status', 'route' => 'guru.qr.status.index', 'icon' => 'fas fa-clipboard-check'],
+                    ['label' => 'Jadwal', 'route' => 'jadwal.hari.ini', 'icon' => 'fas fa-calendar-day'],
+                    ['label' => 'Profil', 'route' => 'profil', 'icon' => 'fas fa-user-circle'],
+                ] as $item)
+                    <a href="{{ route($item['route']) }}" 
+                       class="flex flex-col items-center justify-center flex-1 pt-1 transition-colors duration-200">
+                        <span class="w-8 h-1 rounded-full mb-1 {{ request()->routeIs($item['route']) ? 'bg-'.$aksen.'-500' : 'bg-transparent' }}"></span>
+                        <i class="{{ $item['icon'] }} text-[20px] {{ request()->routeIs($item['route']) ? 'text-'.$aksen.'-600' : 'text-gray-400' }}"></i>
+                        <span class="text-[11px] mt-0.5 {{ request()->routeIs($item['route']) ? 'font-semibold text-'.$aksen.'-600' : 'font-normal text-gray-400' }}">
+                            {{ $item['label'] }}
+                        </span>
+                    </a>
+                @endforeach
             @endif
-
-            <a href="{{ route('guru.qr.status.index') }}" class="flex flex-col items-center justify-center w-full py-3 relative group {{ request()->routeIs('guru.qr.status.index') ? 'text-'.$btnColor.'-600' : 'text-gray-400' }}">
-                <div class="absolute -top-7 bg-{{ $btnColor }}-600 text-white rounded-full w-16 h-16 shadow-[0_10px_25px_rgba(0,0,0,0.1)] border-4 border-white flex items-center justify-center transition-all group-active:scale-90 z-20">
-                    <i class="fas fa-clipboard-check text-2xl"></i>
-                </div>
-                <span class="text-[9px] font-black uppercase tracking-[0.1em] mt-7">Status</span>
-            </a>
-
-            @if($loginRole === 'piket')
-                <a href="{{ route('laporan.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('laporan.index') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
-                    <i class="fas fa-chart-pie text-lg mb-1"></i>
-                    <span class="text-[10px] font-medium">Laporan</span>
-                </a>
-            @elseif($loginRole === 'admin' || $btnColor === 'zinc')
-                <a href="{{ route('siswa.index') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('siswa.index') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
-                    <i class="fas fa-users text-lg mb-1"></i>
-                    <span class="text-[10px] font-medium">Siswa</span>
-                </a>
-            @else
-                <a href="{{ route('jadwal.hari.ini') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('jadwal.hari.ini') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
-                    <i class="fas fa-calendar-day text-lg mb-1"></i>
-                    <span class="text-[10px] font-medium">Jadwal</span>
-                </a>
-            @endif
-
-            <a href="{{ route('profil') }}" class="flex flex-col items-center justify-center w-full py-3 {{ request()->routeIs('profil') ? 'text-'.$btnColor.'-600' : 'text-gray-500' }}">
-                <i class="fas fa-user-circle text-lg mb-1"></i>
-                <span class="text-[10px] font-medium">Profil</span>
-            </a>
-        @endif
-    </div>
+        </div>
+    </nav>
 
 
     @endauth
@@ -368,7 +367,7 @@
             // Sidebar Scroll Persistence
             const sidebarScroll = document.getElementById('main-sidebar-scroll');
             if (sidebarScroll) {
-                const role = '{{ $currentRole }}';
+                const role = '{{ $loginRole }}';
                 const scrollKey = 'sidebar-scroll-' + role;
                 
                 // Restore
@@ -414,6 +413,32 @@
                 document.onkeydown = resetTimer;
                 document.addEventListener('scroll', resetTimer, true);
             @endif
+
+            // Page Transition & Loader
+            const loader = document.getElementById('page-loader');
+            document.querySelectorAll('a[href]').forEach(link => {
+                if (
+                    link.hostname !== location.hostname || 
+                    link.getAttribute('href').startsWith('#') ||
+                    link.getAttribute('href').startsWith('javascript:') ||
+                    link.target === '_blank' ||
+                    link.hasAttribute('download')
+                ) return;
+
+                link.addEventListener('click', function(e) {
+                    const href = this.href;
+                    if (href === location.href + '#' || href === location.href) return;
+                    
+                    e.preventDefault();
+                    if (loader) loader.style.width = '70%';
+                    document.body.classList.add('page-leaving');
+                    setTimeout(() => { window.location.href = href; }, 150);
+                });
+            });
+
+            window.addEventListener('beforeunload', () => {
+                if (loader) loader.style.width = '100%';
+            });
         });
     </script>
     @stack('modals')

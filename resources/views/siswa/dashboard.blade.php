@@ -1,5 +1,10 @@
 @extends('layout.app')
 
+@php
+    $aksen = 'teal-600';
+@endphp
+
+
 @section('title', 'Dashboard Siswa')
 
 @section('content')
@@ -67,18 +72,22 @@
     }
 }">
     {{-- Welcome Banner --}}
-    <div class="bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-500 rounded-[2rem] shadow-xl p-6 md:p-10 text-white relative overflow-hidden">
-        <div class="relative z-10">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest mb-4 border border-white/30">
-                <i class="fas fa-school text-[8px]"></i>
-                 {{ $siswa->kelas->nama_kelas ?? 'N/A' }}
-            </div>
-            <h1 class="text-2xl md:text-3xl font-black mb-2 leading-tight tracking-tight">Halo, {{ explode(' ', $siswa->nama)[0] }}! 👋</h1>
-            <p class="text-emerald-50 text-[11px] leading-relaxed opacity-90 font-bold">Jangan lupa untuk selalu melakukan scan QR saat pelajaran dimulai tepat waktu ya!</p>
+    {{-- Hero Card --}}
+    <div class="mx-0 mt-0 rounded-2xl p-5 text-white shadow-lg"
+         style="background: linear-gradient(135deg, #134e4a, #0d9488)">
+        <span class="text-[10px] font-bold bg-white/20 backdrop-blur-md rounded-full px-3 py-1 uppercase tracking-wider">
+            STUDENT PORTAL
+        </span>
+        <h1 class="text-xl font-bold mt-3">Halo, {{ explode(' ', $siswa->nama)[0] }}! 👋</h1>
+        <p class="text-sm opacity-90 mt-1">Jangan lupa scan QR saat pelajaran dimulai.</p>
+        <div class="flex gap-3 mt-4">
+            <a href="{{ route('presensi.scan') }}" class="bg-white text-teal-700 text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm active:scale-95 transition-transform">
+                <i class="fas fa-qrcode"></i> Scan QR
+            </a>
+            <a href="{{ route('siswa.riwayat') }}" class="bg-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 backdrop-blur-sm active:scale-95 transition-transform">
+                <i class="fas fa-history"></i> Riwayat
+            </a>
         </div>
-        <!-- Decorative subtle pattern -->
-        <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-        <div class="absolute -top-10 -left-10 w-40 h-40 bg-emerald-400/20 rounded-full blur-3xl"></div>
     </div>
 
     {{-- 1. Card Status Hari Ini (Top) --}}
@@ -184,28 +193,53 @@
 
     {{-- 4. Stat Cards & Progress Bar --}}
     <div class="space-y-4">
-        <div class="grid grid-cols-2 gap-3">
-            <div class="bg-emerald-600 rounded-3xl p-4 shadow-lg shadow-emerald-100 text-white flex flex-col justify-between h-28 relative overflow-hidden">
-                <i class="fas fa-user-check absolute -right-2 -bottom-2 text-5xl opacity-10"></i>
-                <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Hadir</p>
-                <h4 class="text-3xl font-black">{{ $totalHadir }}</h4>
-            </div>
-            <div class="bg-amber-500 rounded-3xl p-4 shadow-lg shadow-amber-100 text-white flex flex-col justify-between h-28 relative overflow-hidden">
-                <i class="fas fa-clock absolute -right-2 -bottom-2 text-5xl opacity-10"></i>
-                <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Terlambat</p>
-                <h4 class="text-3xl font-black">{{ $totalTerlambat }}</h4>
-            </div>
-            <div class="bg-red-600 rounded-3xl p-4 shadow-lg shadow-red-100 text-white flex flex-col justify-between h-28 relative overflow-hidden">
-                <i class="fas fa-user-times absolute -right-2 -bottom-2 text-5xl opacity-10"></i>
-                <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Alfa</p>
-                <h4 class="text-3xl font-black">{{ $totalAlfa }}</h4>
-            </div>
-            <div class="bg-blue-600 rounded-3xl p-4 shadow-lg shadow-blue-100 text-white flex flex-col justify-between h-28 relative overflow-hidden">
-                <i class="fas fa-envelope absolute -right-2 -bottom-2 text-5xl opacity-10"></i>
-                <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Izin/Sakit</p>
-                <h4 class="text-3xl font-black">{{ $totalIzinSakit }}</h4>
+    {{-- Stat Cards --}}
+    <div class="grid grid-cols-2 gap-3 mt-2">
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+                    <i class="fas fa-user-check text-teal-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Hadir</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $totalHadir }}</p>
+                </div>
             </div>
         </div>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+                    <i class="fas fa-clock text-teal-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Late</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $totalTerlambat }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+                    <i class="fas fa-user-times text-teal-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Alfa</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $totalAlfa }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+                    <i class="fas fa-envelope text-teal-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Izin</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $totalIzinSakit }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
         <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
             <div class="flex items-center justify-between mb-3">

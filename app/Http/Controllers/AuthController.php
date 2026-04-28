@@ -33,42 +33,33 @@ class AuthController extends Controller
         $inputPassword = $request->password;
 
         // 1. CEK TABEL USERS (Administrator, Guru, Staff)
-        $user = \App\Models\User::where(function($q) use ($inputIdentifier) {
+        $users = \App\Models\User::where(function($q) use ($inputIdentifier) {
             $q->whereRaw('LOWER(TRIM(username)) = ?', [strtolower($inputIdentifier)])
             ->orWhereRaw('TRIM(nip) = ?', [$inputIdentifier]);
-        })->first();
+        })->get();
 
-        if ($user) {
-            $role = null;
-            $authenticated = false;
-
-            // Logika Khusus: Password-based Role Selection ([Username]222 atau [Username]333)
-            $passGuru = $inputIdentifier . '222';
-            $passPiket = $inputIdentifier . '333';
-
-            if (strtolower($inputPassword) === strtolower($passGuru)) {
-                $authenticated = true;
-                $role = (str_contains(strtolower($user->position ?? ''), 'tu') || str_contains(strtolower($user->position ?? ''), 'tata usaha') || str_contains(strtolower($user->fullname ?? ''), 'sudar')) ? 'tu' : 'guru';
-            } elseif (strtolower($inputPassword) === strtolower($passPiket)) {
-                $authenticated = true;
-                $role = 'piket';
-            } elseif (Hash::check($inputPassword, $user->password)) {
-                // Password asli dari database
-                $authenticated = true;
-                
+        foreach ($users as $user) {
+            // 1. Cek Password Utama
+            if (Hash::check($inputPassword, $user->password)) {
                 // Tentukan role default dari position untuk session
                 $pos = strtolower($user->position ?? '');
                 $role = 'guru';
-                if (str_contains($pos, 'piket')) $role = 'piket';
+                if (str_contains($pos, 'piket') && !str_contains($pos, 'guru')) $role = 'piket';
                 if (str_contains($pos, 'administrator')) $role = 'admin';
                 if (str_contains($pos, 'bk')) $role = 'bk';
                 if (str_contains($pos, 'tu') || str_contains($pos, 'tata usaha') || str_contains(strtolower($user->fullname ?? ''), 'sudar')) $role = 'tu';
-            }
 
-            if ($authenticated) {
                 Auth::guard('web')->login($user, $request->filled('remember'));
                 $request->session()->regenerate();
                 session(['login_role' => $role]);
+                return redirect()->intended(route('dashboard'));
+            }
+
+            // 2. Cek Password Piket (Khusus jika kolom password_piket diisi)
+            if (!empty($user->password_piket) && Hash::check($inputPassword, $user->password_piket)) {
+                Auth::guard('web')->login($user, $request->filled('remember'));
+                $request->session()->regenerate();
+                session(['login_role' => 'piket']); // Masuk sebagai mode piket
                 return redirect()->intended(route('dashboard'));
             }
         }
@@ -100,13 +91,8 @@ class AuthController extends Controller
                 if ($firstnameInput === $studentFirstname) {
                     $ortus = \App\Models\Orangtua::where('siswa_id', $siswaByFormat->id)->get();
                     foreach ($ortus as $o) {
-                        $hubungan = strtolower($o->hubungan);
-                        $isAyahBypass = ($inputPassword === 'ayah123' && str_contains($hubungan, 'ayah'));
-                        $isIbuBypass = ($inputPassword === 'ibu123' && str_contains($hubungan, 'ibu'));
-                        $isGeneralBypass = ($inputPassword === 'ortu123');
-
-                        // Coba cocokkan password (dengan master bypass)
-                        if ($isAyahBypass || $isIbuBypass || $isGeneralBypass || Hash::check($inputPassword, $o->password)) {
+                        // Coba cocokkan password 
+                        if (Hash::check($inputPassword, $o->password)) {
                             Auth::guard('orangtua')->login($o, $request->filled('remember'));
                             $request->session()->regenerate();
                             return redirect()->route('ortu.dashboard');

@@ -37,7 +37,7 @@
         <form action="{{ route('login.post') }}" method="POST" class="text-left space-y-6">
             @csrf
             <div>
-                <label class="block text-sm font-bold text-slate-700 mb-2 ml-1">Username / NIP / NIS</label>
+                <label class="block text-sm font-bold text-slate-700 mb-2 ml-1">Username</label>
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 pl-5 flex items-center text-blue-500">
                         <i class="fas fa-user text-sm"></i>
@@ -55,7 +55,10 @@
                     <span class="absolute inset-y-0 left-0 pl-5 flex items-center text-blue-500">
                         <i class="fas fa-lock text-sm"></i>
                     </span>
-                    <input type="password" name="password" placeholder="Masukkan password" class="w-full pl-12 pr-6 py-4 rounded-full border border-slate-200 bg-slate-50/50 input-focus transition-all text-sm font-medium text-slate-700" required>
+                    <input type="password" id="password" name="password" placeholder="Masukkan password" class="w-full pl-12 pr-12 py-4 rounded-full border border-slate-200 bg-slate-50/50 input-focus transition-all text-sm font-medium text-slate-700" required>
+                    <button type="button" onclick="togglePassword('password', 'eye-icon')" class="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-400 hover:text-blue-500 transition-colors focus:outline-none">
+                        <i id="eye-icon" class="fas fa-eye text-sm"></i>
+                    </button>
                 </div>
             </div>
 
@@ -71,5 +74,21 @@
             SMK Negeri 7 Purworejo &copy; 2026
         </p>
     </div>
+
+    <script>
+        function togglePassword(inputId, iconId) {
+            const passwordInput = document.getElementById(inputId);
+            const eyeIcon = document.getElementById(iconId);
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+    </script>
 </body>
 </html>

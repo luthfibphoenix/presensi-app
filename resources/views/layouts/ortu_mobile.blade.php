@@ -45,6 +45,25 @@
             z-index: -1;
         }
 
+        /* Page transition */
+        body {
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        body.page-leaving {
+            animation: fadeOut 0.2s ease-in forwards;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to   { opacity: 0; transform: translateY(-8px); }
+        }
+
         .card-neo {
             background: white;
             border: 1px solid rgba(13, 148, 136, 0.05);
@@ -60,55 +79,40 @@
             to { transform: translateY(0); opacity: 1; }
         }
         .animate-slide-up { animation: slideInUp 0.4s ease-out forwards; }
+
+        /* Active Mobile Nav Effect */
+        .mobile-nav-item.active {
+            transform: translateY(-8px);
+        }
+        .mobile-nav-item.active i {
+            transform: scale(1.25);
+            filter: drop-shadow(0 4px 10px rgba(13, 148, 136, 0.3));
+        }
+        .mobile-nav-item.active span {
+            transform: scale(1.1);
+            font-weight: 800;
+        }
+        
+        .mobile-nav-container {
+            padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+        }
     </style>
 </head>
 <body class="antialiased text-slate-800 select-none" x-data="{ userMenuOpen: false }">
+    <!-- Top Progress Loader -->
+    <div id="page-loader" class="fixed top-0 left-0 z-[9999] h-[2px] bg-cyan-600 w-0 transition-all duration-300 ease-out"></div>
     
     <!-- Top Navbar -->
-    <header class="fixed top-0 left-0 right-0 z-[60] glass-header border-b border-slate-100 safe-top">
-        <div class="max-w-[1200px] mx-auto px-5 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gradient-to-br from-teal-500 to-teal-700 rounded-xl flex items-center justify-center text-white shadow-lg shadow-teal-200 rotate-3 transition-transform hover:rotate-0">
-                    <i class="fa-solid fa-graduation-cap text-base"></i>
-                </div>
-                <div>
-                    <span class="text-slate-900 font-black text-sm tracking-tight uppercase block leading-none">Smart<span class="text-teal-600">Presensi</span></span>
-                    <span class="text-slate-400 font-black text-[7px] uppercase tracking-[0.2em] mt-1.5 block">Portal Orang Tua</span>
-                </div>
-            </div>
-
-            <!-- Desktop Navigation -->
-            @php
-                $isHome = request()->routeIs('ortu.dashboard');
-                $isHistory = request()->routeIs('ortu.kehadiran');
-                $isIzin = request()->routeIs('ortu.izin');
-                $isProfile = request()->routeIs('ortu.profil');
-            @endphp
-            <nav class="hidden md:flex items-center gap-10">
-                <a href="{{ route('ortu.dashboard') }}" class="text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:text-teal-600 relative group {{ $isHome ? 'text-teal-600' : 'text-slate-400' }}">
-                    Beranda
-                    <div class="absolute -bottom-2 left-0 h-0.5 bg-teal-600 rounded-full transition-all duration-300 {{ $isHome ? 'w-full' : 'w-0 group-hover:w-full' }}"></div>
-                </a>
-                <a href="{{ route('ortu.kehadiran') }}" class="text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:text-teal-600 relative group {{ $isHistory ? 'text-teal-600' : 'text-slate-400' }}">
-                    Histori
-                    <div class="absolute -bottom-2 left-0 h-0.5 bg-teal-600 rounded-full transition-all duration-300 {{ $isHistory ? 'w-full' : 'w-0 group-hover:w-full' }}"></div>
-                </a>
-                <a href="{{ route('ortu.izin') }}" class="text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:text-teal-600 relative group {{ $isIzin ? 'text-teal-600' : 'text-slate-400' }}">
-                    Izin
-                    <div class="absolute -bottom-2 left-0 h-0.5 bg-teal-600 rounded-full transition-all duration-300 {{ $isIzin ? 'w-full' : 'w-0 group-hover:w-full' }}"></div>
-                </a>
-                <a href="{{ route('ortu.profil') }}" class="text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:text-teal-600 relative group {{ $isProfile ? 'text-teal-600' : 'text-slate-400' }}">
-                    Profil
-                    <div class="absolute -bottom-2 left-0 h-0.5 bg-teal-600 rounded-full transition-all duration-300 {{ $isProfile ? 'w-full' : 'w-0 group-hover:w-full' }}"></div>
-                </a>
-            </nav>
-
-            <!-- Profile Shortcut -->
-            <button @click="userMenuOpen = !userMenuOpen" class="relative group">
-                <div class="w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden ring-2 ring-teal-50 group-active:scale-95 transition-all">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode($siswa->nama) }}&background=0d9488&color=fff&bold=true" alt="User" class="w-full h-full object-cover">
-                </div>
+    <header class="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-50 safe-top">
+        <div class="flex items-center gap-3">
+            <button @click="userMenuOpen = !userMenuOpen" class="p-1">
+                <i class="fas fa-bars text-gray-500"></i>
             </button>
+            <h1 class="text-base font-semibold text-gray-800">Portal Orang Tua</h1>
+        </div>
+        <!-- Avatar atau inisial -->
+        <div class="w-9 h-9 rounded-full overflow-hidden bg-cyan-100 flex items-center justify-center text-sm font-semibold text-cyan-700">
+            {{ collect(explode(' ', $siswa->nama))->map(fn($n) => strtoupper(substr($n, 0, 1)))->take(2)->join('') }}
         </div>
     </header>
 
@@ -147,60 +151,66 @@
     </div>
 
     <!-- Main Content Area -->
-    <div class="pt-20 min-h-[100dvh] pb-32">
-        <!-- Decoration Background -->
-        <div class="fixed top-0 left-0 right-0 h-64 bg-teal-600 -z-10 rounded-b-[3rem] shadow-2xl shadow-teal-100/50"></div>
-        
+    <div class="pt-16 min-h-[100dvh] pb-24 bg-gray-50">
         <main class="max-w-[1200px] mx-auto">
             @yield('content')
         </main>
     </div>
 
-    <!-- Floating Mobile Bottom Navigation -->
-    <div class="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/90 backdrop-blur-2xl border-t border-slate-100 safe-bottom shadow-[0_-10px_30px_-5px_rgba(0,0,0,0.08)]">
-        <nav class="max-w-md mx-auto px-4 h-16 flex items-center justify-between relative">
-            @php
-                $isHome = request()->routeIs('ortu.dashboard');
-                $isHistory = request()->routeIs('ortu.kehadiran');
-                $isIzin = request()->routeIs('ortu.izin');
-                $isProfile = request()->routeIs('ortu.profil');
-                
-                // Kalkulasi posisi pill indicator (4 kolom = 25% per kolom)
-                $pillPos = $isHome ? 'left-[8.5%]' : ($isHistory ? 'left-[33.5%]' : ($isIzin ? 'left-[58.5%]' : 'left-[83.5%]'));
-            @endphp
+    <!-- Mobile Bottom Navigation -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 shadow-[0_-1px_12px_rgba(0,0,0,0.06)]"
+         style="padding-bottom:env(safe-area-inset-bottom)">
+        <div class="flex items-stretch h-16">
+            @foreach([
+                ['label' => 'Beranda', 'route' => 'ortu.dashboard', 'icon' => 'fas fa-house-chimney-window'],
+                ['label' => 'Histori', 'route' => 'ortu.kehadiran', 'icon' => 'fas fa-clock-rotate-left'],
+                ['label' => 'Izin', 'route' => 'ortu.izin', 'icon' => 'fas fa-envelope-open-text'],
+                ['label' => 'Profil', 'route' => 'ortu.profil', 'icon' => 'fas fa-user-circle'],
+            ] as $item)
+                <a href="{{ route($item['route']) }}" 
+                   class="flex flex-col items-center justify-center flex-1 pt-1 transition-colors duration-200">
+                    <span class="w-8 h-1 rounded-full mb-1 {{ request()->routeIs($item['route']) ? 'bg-cyan-500' : 'bg-transparent' }}"></span>
+                    <i class="{{ $item['icon'] }} text-[20px] {{ request()->routeIs($item['route']) ? 'text-cyan-600' : 'text-gray-400' }}"></i>
+                    <span class="text-[11px] mt-0.5 {{ request()->routeIs($item['route']) ? 'font-semibold text-cyan-600' : 'font-normal text-gray-400' }}">
+                        {{ $item['label'] }}
+                    </span>
+                </a>
+            @endforeach
+        </div>
+    </nav>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loader = document.getElementById('page-loader');
             
-            <!-- Floating Indicator Pill -->
-            <div class="absolute h-1 w-6 bg-teal-500 rounded-full top-0 transition-all duration-500 ease-out {{ $pillPos }}"></div>
+            document.querySelectorAll('a[href]').forEach(link => {
+                if (
+                    link.hostname !== location.hostname || 
+                    link.getAttribute('href').startsWith('#') ||
+                    link.getAttribute('href').startsWith('javascript:') ||
+                    link.target === '_blank' ||
+                    link.hasAttribute('download')
+                ) return;
 
-            <!-- Beranda -->
-            <a href="{{ route('ortu.dashboard') }}" class="flex flex-col items-center gap-1.5 flex-1 py-2 transition-all {{ $isHome ? 'text-teal-600 scale-110' : 'text-slate-400 opacity-60' }}">
-                <div class="relative">
-                    <i class="fa-solid fa-house-chimney-window text-lg"></i>
-                    @if($isHome) <div class="absolute -top-1 -right-1 w-1.5 h-1.5 bg-teal-500 rounded-full animate-pulse"></div> @endif
-                </div>
-                <span class="text-[7px] font-black uppercase tracking-widest">Beranda</span>
-            </a>
+                link.addEventListener('click', function(e) {
+                    const href = this.href;
+                    if (href === location.href + '#' || href === location.href) return;
+                    
+                    e.preventDefault();
+                    if (loader) loader.style.width = '70%';
+                    document.body.classList.add('page-leaving');
+                    setTimeout(() => { window.location.href = href; }, 150);
+                });
+            });
 
-            <!-- Histori -->
-            <a href="{{ route('ortu.kehadiran') }}" class="flex flex-col items-center gap-1.5 flex-1 py-2 transition-all {{ $isHistory ? 'text-teal-600 scale-110' : 'text-slate-400 opacity-60' }}">
-                <i class="fa-solid fa-clock-rotate-left text-lg"></i>
-                <span class="text-[7px] font-black uppercase tracking-widest">Histori</span>
-            </a>
-
-            <!-- Izin -->
-            <a href="{{ route('ortu.izin') }}" class="flex flex-col items-center gap-1.5 flex-1 py-2 transition-all {{ $isIzin ? 'text-teal-600 scale-110' : 'text-slate-400 opacity-60' }}">
-                <i class="fa-solid fa-envelope-open-text text-lg"></i>
-                <span class="text-[7px] font-black uppercase tracking-widest">Izin</span>
-            </a>
-
-            <!-- Profil -->
-            <a href="{{ route('ortu.profil') }}" class="flex flex-col items-center gap-1.5 flex-1 py-2 transition-all {{ $isProfile ? 'text-teal-600 scale-110' : 'text-slate-400 opacity-60' }}">
-                <i class="fa-solid fa-circle-user text-lg"></i>
-                <span class="text-[7px] font-black uppercase tracking-widest">Profil</span>
-            </a>
-        </nav>
-    </div>
-
+            window.addEventListener('beforeunload', () => {
+                if (loader) {
+                    loader.style.width = '100%';
+                    document.body.classList.add('page-leaving');
+                }
+            });
+        });
+    </script>
     @stack('scripts')
 </body>
 </html>

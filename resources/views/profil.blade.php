@@ -9,13 +9,15 @@
     $pos = strtolower($user->position ?? '');
     
     $theme = 'blue';
-    if (auth('siswa')->check() || str_contains($pos, 'siswa')) {
-        $theme = 'emerald';
-    } elseif (str_contains($pos, 'kepala sekolah')) {
-        $theme = 'zinc';
-    } elseif (str_contains($pos, 'piket')) {
-        $theme = 'orange';
-    } elseif (str_contains($pos, 'admin') || str_contains($pos, 'administrator')) {
+    $role = session('login_role', 'guru');
+    
+    if ($role === 'siswa') {
+        $theme = 'teal';
+    } elseif ($role === 'piket') {
+        $theme = 'green';
+    } elseif ($role === 'tu') {
+        $theme = 'violet';
+    } elseif ($role === 'admin' || str_contains($pos, 'administrator')) {
         $theme = 'purple';
     }
 
@@ -28,11 +30,12 @@
         {{-- Elegant Gradient Banner --}}
         @php
             $gradients = [
-                'blue' => 'from-blue-700 via-blue-600 to-indigo-600',
-                'orange' => 'from-orange-600 via-orange-500 to-amber-600',
-                'zinc' => 'from-zinc-800 via-zinc-700 to-slate-800',
-                'emerald' => 'from-emerald-700 via-emerald-600 to-teal-600',
+                'blue'   => 'from-blue-700 via-blue-600 to-indigo-600',
+                'green'  => 'from-green-700 via-green-600 to-emerald-600',
+                'teal'   => 'from-teal-700 via-teal-600 to-emerald-600',
+                'violet' => 'from-violet-700 via-violet-600 to-purple-600',
                 'purple' => 'from-purple-700 via-purple-600 to-fuchsia-600',
+                'cyan'   => 'from-cyan-700 via-cyan-600 to-blue-600',
             ];
             $currentGradient = $gradients[$theme] ?? $gradients['blue'];
         @endphp
@@ -94,7 +97,7 @@
     </div>
 
     {{-- Security / Password Section --}}
-    <div class="bg-white rounded-3xl shadow-xl shadow-blue-900/5 overflow-hidden border border-gray-100">
+    <div class="bg-white rounded-3xl shadow-xl shadow-{{ $theme }}-900/5 overflow-hidden border border-gray-100">
         <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
             <div>
                 <h2 class="text-xl font-black text-gray-900 flex items-center gap-3">
@@ -115,14 +118,15 @@
                 <div class="space-y-1.5">
                     <label class="text-sm font-bold text-gray-700 ml-1">Password Saat Ini</label>
                     <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-blue-600 text-gray-400">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-{{ $theme }}-600 text-gray-400">
                             <i class="fas fa-key"></i>
                         </div>
                         <input :type="showCurrent ? 'text' : 'password'" 
                                name="current_password" 
                                placeholder="Masukkan password lama..."
                                required 
-                               class="w-full pl-11 pr-12 py-3.5 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:bg-white focus:border-{{ $theme }}-500 focus:ring-4 focus:ring-{{ $theme }}-500/10 transition-all outline-none text-gray-800 font-medium placeholder:text-gray-400 placeholder:font-normal">
+                               class="w-full pl-11 pr-12 py-3.5 bg-gray-100 border-2 border-gray-200 rounded-2xl cursor-not-allowed transition-all outline-none text-gray-400 font-medium placeholder:text-gray-400 placeholder:font-normal"
+                               disabled>
                         <button type="button" 
                                 @click="showCurrent = !showCurrent"
                                 class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-{{ $theme }}-600 transition-colors">
@@ -136,7 +140,7 @@
                     <div class="space-y-1.5">
                         <label class="text-sm font-bold text-gray-700 ml-1">Password Baru</label>
                         <div class="relative group">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-{{ $theme }}-600">
                                 <i class="fas fa-lock"></i>
                             </div>
                             <input :type="showNew ? 'text' : 'password'" 
@@ -144,10 +148,11 @@
                                    placeholder="Min. 3 karakter"
                                    required 
                                    minlength="3" 
-                                   class="w-full pl-11 pr-12 py-3.5 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-gray-800 font-medium placeholder:text-gray-400">
+                                   class="w-full pl-11 pr-12 py-3.5 bg-gray-100 border-2 border-gray-200 rounded-2xl cursor-not-allowed transition-all outline-none text-gray-400 font-medium placeholder:text-gray-400"
+                                   disabled>
                             <button type="button" 
                                     @click="showNew = !showNew"
-                                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-blue-600">
+                                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-{{ $theme }}-600">
                                 <i class="fas" :class="showNew ? 'fa-eye-slash' : 'fa-eye'"></i>
                             </button>
                         </div>
@@ -157,7 +162,7 @@
                     <div class="space-y-1.5">
                         <label class="text-sm font-bold text-gray-700 ml-1">Konfirmasi Password</label>
                         <div class="relative group">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-{{ $theme }}-600">
                                 <i class="fas fa-check-double"></i>
                             </div>
                             <input :type="showConf ? 'text' : 'password'" 
@@ -165,10 +170,11 @@
                                    placeholder="Ulangi password..."
                                    required 
                                    minlength="3" 
-                                   class="w-full pl-11 pr-12 py-3.5 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-gray-800 font-medium placeholder:text-gray-400">
+                                   class="w-full pl-11 pr-12 py-3.5 bg-gray-100 border-2 border-gray-200 rounded-2xl cursor-not-allowed transition-all outline-none text-gray-400 font-medium placeholder:text-gray-400"
+                                   disabled>
                             <button type="button" 
                                     @click="showConf = !showConf"
-                                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-blue-600">
+                                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-{{ $theme }}-600">
                                 <i class="fas" :class="showConf ? 'fa-eye-slash' : 'fa-eye'"></i>
                             </button>
                         </div>
@@ -176,9 +182,9 @@
                 </div>
 
                 <div class="flex justify-center md:justify-end pt-4">
-                    <button type="submit" class="group relative w-full md:w-auto bg-{{ $theme }}-700 text-white px-10 py-4 rounded-2xl font-black text-lg shadow-xl shadow-{{ $theme }}-200 hover:bg-{{ $theme }}-800 hover:shadow-{{ $theme }}-300 hover:-translate-y-1 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3">
-                        <i class="fas fa-save text-{{ $theme }}-200 group-hover:rotate-12 transition-transform"></i>
-                        Simpan Perubahan
+                    <button type="button" class="group relative w-full md:w-auto bg-gray-300 text-gray-500 px-10 py-4 rounded-2xl font-black text-lg cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-3" disabled title="Fitur ini dinonaktifkan sementara">
+                        <i class="fas fa-lock text-gray-400"></i>
+                        Fitur Dinonaktifkan
                     </button>
                 </div>
             </form>

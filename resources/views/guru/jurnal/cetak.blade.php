@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Jurnal Mengajar - {{ auth()->user()->fullname }}</title>
     <style>
-        @page { size: landscape; margin: 15mm; }
+        @page { size: 297mm 210mm; margin: 20mm 25mm; }
         body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; }
         .header { text-align: center; margin-bottom: 20px; border-bottom: 3px solid #000; padding-bottom: 10px; }
         .header h1, .header h2, .header h3 { margin: 0; padding: 2px; }

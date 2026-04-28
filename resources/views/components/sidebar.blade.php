@@ -15,23 +15,23 @@
     
     // Gunakan $role dari session untuk menentukan warna
     if ($role === 'siswa') {
-        $bgSidebar = 'bg-emerald-900';
-        $bgActive = 'bg-emerald-700/50';
+        $bgSidebar = 'bg-teal-900';
+        $bgActive = 'bg-teal-700/50';
     } elseif ($role === 'admin' || str_contains($pos, 'administrator')) {
         $bgSidebar = 'bg-purple-900';
         $bgActive = 'bg-purple-700/50';
     } elseif ($role === 'piket') {
-        $bgSidebar = 'bg-orange-700';
-        $bgActive = 'bg-orange-600/50';
+        $bgSidebar = 'bg-green-900';
+        $bgActive = 'bg-green-700/50';
     } elseif ($role === 'bk') {
         $bgSidebar = 'bg-zinc-950';
         $bgActive = 'bg-zinc-800/50';
     } elseif ($role === 'tu') {
-        $bgSidebar = 'bg-blue-900';
-        $bgActive = 'bg-blue-700/50';
+        $bgSidebar = 'bg-violet-900';
+        $bgActive = 'bg-violet-700/50';
     } else {
-        $bgSidebar = 'bg-blue-900'; // Biru Royal yang vibrant sesuai gambar
-        $bgActive = 'bg-blue-600/50';
+        $bgSidebar = 'bg-blue-900'; 
+        $bgActive = 'bg-blue-700/50';
     }
 
     $fallbackUrl = 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=fff&color=333&bold=true&size=128';
@@ -136,7 +136,6 @@
             'LAYANAN SISWA' => [
                 ['label' => 'Scan QR Absen', 'route' => 'presensi.scan', 'icon' => 'fas fa-qrcode'],
                 ['label' => 'Riwayat Kehadiran', 'route' => 'siswa.riwayat', 'icon' => 'fas fa-history'],
-                ['label' => 'Pengajuan Izin', 'route' => 'izin.index', 'icon' => 'fas fa-file-signature'],
             ]
         ];
     } elseif ($role === 'kepala_sekolah') {
@@ -207,10 +206,10 @@
             <h3 class="text-white font-bold text-center text-sm leading-tight mb-2">{{ $name }}</h3>
             @if($role === 'piket')
                 <div class="flex flex-col items-center gap-1.5">
-                    <span class="px-3 py-1 bg-white text-orange-700 text-[10px] font-black uppercase rounded-full tracking-widest shadow-lg">
+                    <span class="px-3 py-1 bg-white text-green-700 text-[10px] font-black uppercase rounded-full tracking-widest shadow-lg">
                         Mode Piket Aktif
                     </span>
-                    <span class="text-[10px] font-bold text-orange-100 uppercase tracking-tighter">
+                    <span class="text-[10px] font-bold text-green-100 uppercase tracking-tighter">
                         {{ $displayPosition }}
                     </span>
                 </div>

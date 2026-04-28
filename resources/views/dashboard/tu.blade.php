@@ -1,78 +1,84 @@
 @extends('layout.app')
 
+@php
+    $aksen = 'violet-600';
+@endphp
+
+
 @section('title', 'Dashboard Tata Usaha')
 
 @section('content')
+@php
+    $totalSiswa = \App\Models\Siswa::count();
+    $totalGuru = \App\Models\User::count();
+    $kelasAktif = \App\Models\Kelas::count();
+@endphp
+
 <div class="h-full flex flex-col gap-4 md:gap-6 overflow-y-auto no-scrollbar pb-24 md:pb-10">
     {{-- Welcome Banner --}}
-    <div class="bg-gradient-to-br from-indigo-900 via-slate-900 to-black rounded-3xl shadow-lg p-6 md:p-8 text-white relative overflow-hidden border border-slate-700 flex-shrink-0">
-        <div class="relative z-10">
-            <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[9px] font-black uppercase tracking-widest mb-4 border border-white/20">
-                <i class="fas fa-briefcase text-[8px]"></i>
-                Administrative Portal
-            </div>
-            <h1 class="text-2xl md:text-3xl font-black mb-2 leading-tight tracking-tight">Halo, {{ auth()->user()->fullname }}! 👋</h1>
-            <p class="text-indigo-100 mb-6 max-w-xl text-[10px] md:text-xs leading-relaxed opacity-80 font-bold uppercase tracking-wide">Kelola administrasi persuratan dan database sekolah dengan mudah.</p>
-            
-            <div class="flex gap-3">
-                <a href="{{ route('tu.surat_dinas') }}" class="bg-white text-indigo-900 font-black py-2.5 px-6 rounded-xl shadow-md flex items-center justify-center gap-2 text-xs">
-                    <i class="fas fa-plane-departure"></i>
-                    Surat Dinas
-                </a>
-                <a href="{{ route('siswa.index') }}" class="bg-indigo-600 text-white border border-indigo-400 font-black py-2.5 px-6 rounded-xl flex items-center justify-center gap-2 text-xs">
-                    <i class="fas fa-users"></i>
-                    Database Siswa
-                </a>
-            </div>
+    {{-- Hero Card --}}
+    <div class="mx-0 mt-0 rounded-2xl p-5 text-white shadow-lg"
+         style="background: linear-gradient(135deg, #4c1d95, #7c3aed)">
+        <span class="text-[10px] font-bold bg-white/20 backdrop-blur-md rounded-full px-3 py-1 uppercase tracking-wider">
+            ADMINISTRATIVE PORTAL
+        </span>
+        <h1 class="text-xl font-bold mt-3">Halo, {{ auth()->user()->fullname ?? auth()->user()->nama }}! 👋</h1>
+        <p class="text-sm opacity-90 mt-1">Kelola administrasi sekolah dengan mudah.</p>
+        <div class="flex gap-3 mt-4">
+            <a href="{{ route('tu.surat_dinas') }}" class="bg-white text-violet-700 text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm active:scale-95 transition-transform">
+                <i class="fas fa-plane-departure"></i> Surat Dinas
+            </a>
+            <a href="{{ route('siswa.index') }}" class="bg-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 backdrop-blur-sm active:scale-95 transition-transform">
+                <i class="fas fa-users"></i> Data Siswa
+            </a>
         </div>
-        <div class="absolute -bottom-10 -right-10 w-60 h-60 bg-indigo-500/10 rounded-full blur-[80px]"></div>
     </div>
 
     {{-- Stats Grid (Administrative Focus) --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 flex-shrink-0">
-        @php
-            $totalSiswa = \App\Models\Siswa::count();
-            $totalGuru = \App\Models\User::count();
-            $suratHariIni = 0; // Placeholder for future SPD tracking
-            $kelasAktif = \App\Models\Kelas::count();
-        @endphp
-        <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 flex-shrink-0">
-                <i class="fas fa-user-graduate"></i>
-            </div>
-            <div>
-                <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Total Siswa</p>
-                <h3 class="text-lg font-black text-gray-800 leading-none">{{ $totalSiswa }}</h3>
+    {{-- Stat Cards --}}
+    <div class="grid grid-cols-2 gap-3">
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
+                    <i class="fas fa-user-graduate text-violet-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Siswa</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $totalSiswa }}</p>
+                </div>
             </div>
         </div>
-
-        <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100 flex-shrink-0">
-                <i class="fas fa-chalkboard-teacher"></i>
-            </div>
-            <div>
-                <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Pegawai/Guru</p>
-                <h3 class="text-lg font-black text-gray-800 leading-none">{{ $totalGuru }}</h3>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100 flex-shrink-0">
-                <i class="fas fa-school"></i>
-            </div>
-            <div>
-                <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Total Kelas</p>
-                <h3 class="text-lg font-black text-gray-800 leading-none">{{ $kelasAktif }}</h3>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
+                    <i class="fas fa-chalkboard-teacher text-violet-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Pegawai</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $totalGuru }}</p>
+                </div>
             </div>
         </div>
-
-        <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 flex-shrink-0">
-                <i class="fas fa-file-contract"></i>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
+                    <i class="fas fa-school text-violet-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Kelas</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $kelasAktif }}</p>
+                </div>
             </div>
-            <div>
-                <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Surat Dinas</p>
-                <h3 class="text-lg font-black text-gray-800 leading-none">Aktif</h3>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
+                    <i class="fas fa-file-contract text-violet-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">SPD</p>
+                    <p class="text-xl font-bold text-gray-800">Aktif</p>
+                </div>
             </div>
         </div>
     </div>

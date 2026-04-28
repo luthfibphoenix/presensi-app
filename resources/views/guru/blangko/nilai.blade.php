@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <title>Blangko Nilai - {{ $kelas }} - {{ $mapel }}</title>
     <style>
-        @page { size: portrait; margin: 20mm; }
-        body { font-family: Arial, sans-serif; font-size: 11pt; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h3 { margin: 0; font-size: 14pt; }
-        .info-table { width: 100%; margin-bottom: 15px; }
-        .info-table td { padding: 2px 5px; vertical-align: top; }
+        @page { size: 297mm 210mm; margin: 20mm 25mm; }
+        body { font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.2; }
+        .header { text-align: center; margin-bottom: 10px; }
+        .header h3 { margin: 0; font-size: 12pt; }
+        .info-table { width: 100%; margin-bottom: 5px; }
+        .info-table td { padding: 1px 5px; vertical-align: top; font-size: 9pt; }
         table.data-table { width: 100%; border-collapse: collapse; }
-        table.data-table th, table.data-table td { border: 1px solid #000; padding: 6px; }
+        table.data-table th, table.data-table td { border: 1px solid #000; padding: 2px 4px; font-size: 8pt; }
         table.data-table th { text-align: center; background-color: #f0f0f0; }
         .center { text-align: center; }
         @media print { button.print-btn { display: none; } }
@@ -44,7 +44,7 @@
                 <th rowspan="2" width="8%">Rata-rata</th>
             </tr>
             <tr>
-                <th width="8%" style="height: 30px;">1</th>
+                <th width="8%" style="height: 20px;">1</th>
                 <th width="8%">2</th>
                 <th width="8%">3</th>
                 <th width="8%">4</th>

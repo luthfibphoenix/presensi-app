@@ -4,20 +4,24 @@
 @section('content')
 <div class="px-5 space-y-6">
     <!-- Header Profil Anak -->
-    <div class="card-neo p-6 rounded-[2.5rem] flex flex-col items-center gap-4 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
-        
-        <div class="w-20 h-20 bg-teal-100 rounded-3xl flex items-center justify-center text-teal-600 text-3xl shadow-inner relative z-10">
-            <i class="fas fa-user-graduate"></i>
-        </div>
-        
-        <div class="text-center relative z-10">
-            <p class="text-[9px] font-black text-teal-500 uppercase tracking-[0.2em] mb-1">Informasi Siswa</p>
-            <h3 class="text-xl font-black text-slate-800 leading-tight">{{ $siswa->nama }}</h3>
-            <div class="flex items-center justify-center gap-2 mt-2">
-                <span class="px-3 py-1 bg-slate-100 rounded-full text-[10px] font-bold text-slate-500">Kelas {{ $siswa->kelas->nama_kelas }}</span>
-                <span class="px-3 py-1 bg-slate-100 rounded-full text-[10px] font-bold text-slate-500">NIS: {{ $siswa->nis }}</span>
-            </div>
+    @php
+        $aksen = 'cyan-600';
+    @endphp
+    {{-- Hero Card --}}
+    <div class="mx-0 mt-0 rounded-2xl p-5 text-white shadow-lg"
+         style="background: linear-gradient(135deg, #0e7490, #06b6d4)">
+        <span class="text-[10px] font-bold bg-white/20 backdrop-blur-md rounded-full px-3 py-1 uppercase tracking-wider">
+            PORTAL ORANG TUA
+        </span>
+        <h1 class="text-xl font-bold mt-3">Halo, Orang Tua {{ explode(' ', $siswa->nama)[0] }}! 👋</h1>
+        <p class="text-sm opacity-90 mt-1">Pantau kehadiran putra/putri Anda.</p>
+        <div class="flex gap-3 mt-4">
+            <a href="{{ route('ortu.kehadiran') }}" class="bg-white text-cyan-700 text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm active:scale-95 transition-transform">
+                <i class="fas fa-clock-rotate-left"></i> Histori
+            </a>
+            <a href="{{ route('ortu.izin') }}" class="bg-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 backdrop-blur-sm active:scale-95 transition-transform">
+                <i class="fas fa-envelope-open-text"></i> Izin
+            </a>
         </div>
     </div>
 
@@ -81,44 +85,53 @@
     <!-- Grid Rekapitulasi -->
     <div class="space-y-4">
         <h3 class="text-[10px] font-black text-white uppercase tracking-widest px-2 italic">Statistik {{ now()->translatedFormat('F') }}</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="card-neo p-5 rounded-[2rem] flex items-center gap-4">
-                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-check"></i>
+    {{-- Stat Cards --}}
+    <div class="grid grid-cols-2 gap-3 mt-2">
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center">
+                    <i class="fas fa-check text-cyan-600"></i>
                 </div>
                 <div>
-                    <p class="text-xl font-black text-slate-800 leading-none">{{ $rekap['hadir'] }}</p>
-                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Hadir</p>
-                </div>
-            </div>
-            <div class="card-neo p-5 rounded-[2rem] flex items-center gap-4">
-                <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-bolt"></i>
-                </div>
-                <div>
-                    <p class="text-xl font-black text-slate-800 leading-none">{{ $rekap['terlambat'] }}</p>
-                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Telat</p>
-                </div>
-            </div>
-            <div class="card-neo p-5 rounded-[2rem] flex items-center gap-4">
-                <div class="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-xmark"></i>
-                </div>
-                <div>
-                    <p class="text-xl font-black text-slate-800 leading-none">{{ $rekap['alfa'] }}</p>
-                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Alfa</p>
-                </div>
-            </div>
-            <div class="card-neo p-5 rounded-[2rem] flex items-center gap-4">
-                <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-envelope"></i>
-                </div>
-                <div>
-                    <p class="text-xl font-black text-slate-800 leading-none">{{ $rekap['izin'] }}</p>
-                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Izin</p>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Hadir</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $rekap['hadir'] }}</p>
                 </div>
             </div>
         </div>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center">
+                    <i class="fas fa-bolt text-cyan-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Telat</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $rekap['terlambat'] }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center">
+                    <i class="fas fa-xmark text-cyan-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Alfa</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $rekap['alfa'] }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center">
+                    <i class="fas fa-envelope text-cyan-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Izin</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $rekap['izin'] }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 </div>
 @endsection

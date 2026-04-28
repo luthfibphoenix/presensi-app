@@ -1,5 +1,10 @@
 @extends('layout.app')
 
+@php
+    $aksen = 'blue-600';
+@endphp
+
+
 @section('title', 'Dashboard Guru')
 
 @section('content')
@@ -140,70 +145,71 @@
     </div>
     @endif
     
-    {{-- Welcome Banner --}}
-    <div class="bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 rounded-3xl shadow-lg p-6 md:p-8 text-white relative overflow-hidden border border-blue-700 flex-shrink-0">
-        <div class="relative z-10">
-            <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[9px] font-black uppercase tracking-widest mb-4 border border-white/20">
-                <i class="fas fa-chalkboard-teacher text-[8px]"></i>
-                Teacher Portal
-            </div>
-            <h1 class="text-2xl md:text-3xl font-black mb-2 leading-tight tracking-tight">Halo, {{ auth()->user()->fullname }}! 📚</h1>
-            <p class="text-blue-100 mb-6 max-w-xl text-[10px] md:text-xs leading-relaxed opacity-80 font-bold uppercase tracking-wide">Kelola kelas dan presensi siswa dengan satu sentuhan.</p>
-            
-            <div class="flex gap-3">
-                <button @click="generateQR()" :disabled="loading" class="bg-white text-blue-900 font-black py-2.5 px-6 rounded-xl shadow-md flex items-center justify-center gap-2 text-xs disabled:opacity-70">
-                    <i class="fas fa-qrcode" x-show="!loading"></i>
-                    <i class="fas fa-spinner fa-spin" x-show="loading"></i>
-                    Presensi
-                </button>
-                <a href="{{ route('jadwal.semua') }}" class="bg-blue-600 text-white border border-blue-400 font-black py-2.5 px-6 rounded-xl flex items-center justify-center gap-2 text-xs">
-                    <i class="fas fa-calendar-alt"></i>
-                    Jadwal
-                </a>
-            </div>
+    {{-- Hero Card --}}
+    <div class="mx-0 mt-0 rounded-2xl p-5 text-white shadow-lg"
+         style="background: linear-gradient(135deg, #1e3a8a, #3b82f6)">
+        <span class="text-[10px] font-bold bg-white/20 backdrop-blur-md rounded-full px-3 py-1 uppercase tracking-wider">
+            TEACHER PORTAL
+        </span>
+        <h1 class="text-xl font-bold mt-3">Halo, {{ auth()->user()->fullname ?? auth()->user()->nama }}! 👋</h1>
+        <p class="text-sm opacity-90 mt-1">Kelola kelas dan presensi dengan satu sentuhan.</p>
+        <div class="flex gap-3 mt-4">
+            <button @click="generateQR()" :disabled="loading" class="bg-white text-blue-700 text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm active:scale-95 transition-transform disabled:opacity-70">
+                <i class="fas fa-qrcode" x-show="!loading"></i>
+                <i class="fas fa-spinner fa-spin" x-show="loading"></i>
+                Presensi
+            </button>
+            <a href="{{ route('jadwal.hari.ini') }}" class="bg-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 backdrop-blur-sm active:scale-95 transition-transform">
+                <i class="fas fa-calendar-alt"></i> Jadwal
+            </a>
         </div>
-        <div class="absolute -bottom-10 -right-10 w-60 h-60 bg-blue-500/10 rounded-full blur-[80px]"></div>
     </div>
 
     {{-- Stats Grid --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 flex-shrink-0">
-        <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 flex-shrink-0">
-                <i class="fas fa-users"></i>
-            </div>
-            <div>
-                <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Siswa</p>
-                <h3 class="text-lg font-black text-gray-800 leading-none">{{ $totalSiswa }}</h3>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center border border-emerald-100 flex-shrink-0">
-                <i class="fas fa-user-check"></i>
-            </div>
-            <div>
-                <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Hadir</p>
-                <h3 class="text-lg font-black text-gray-800 leading-none">{{ $hadirHariIni }}</h3>
+    {{-- Stat Cards --}}
+    <div class="grid grid-cols-2 gap-3">
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                    <i class="fas fa-users text-blue-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Siswa</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $totalSiswa }}</p>
+                </div>
             </div>
         </div>
-
-        <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-500 flex items-center justify-center border border-purple-100 flex-shrink-0">
-                <i class="fas fa-chart-pie"></i>
-            </div>
-            <div>
-                <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Persen</p>
-                <h3 class="text-lg font-black text-gray-800 leading-none">{{ $persentase }}%</h3>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                    <i class="fas fa-user-check text-blue-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Hadir</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $hadirHariIni }}</p>
+                </div>
             </div>
         </div>
-
-        <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center border border-orange-100 flex-shrink-0">
-                <i class="fas fa-chalkboard"></i>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                    <i class="fas fa-chart-pie text-blue-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Persen</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $persentase }}%</p>
+                </div>
             </div>
-            <div>
-                <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Jadwal</p>
-                <h3 class="text-lg font-black text-gray-800 leading-none">{{ $kelasAktif }}</h3>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                    <i class="fas fa-chalkboard text-blue-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Jadwal</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $kelasAktif }}</p>
+                </div>
             </div>
         </div>
     </div>

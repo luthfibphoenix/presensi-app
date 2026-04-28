@@ -4,20 +4,16 @@
     <meta charset="UTF-8">
     <title>Cover Administrasi - {{ $kelas }} - {{ $mapel }}</title>
     <style>
-        @page { size: portrait; margin: 0; }
+        @page { size: 297mm 210mm; margin: 20mm 25mm; }
         body { 
             font-family: 'Times New Roman', Times, serif; 
             margin: 0; 
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
         }
         .cover-page {
-            width: 210mm;
-            height: 297mm;
-            padding: 20mm;
+            width: 247mm;
+            height: 170mm;
+            padding: 10mm;
             box-sizing: border-box;
             border: 10px double #000;
             text-align: center;

@@ -35,7 +35,7 @@ class BlangkoController extends Controller
         
         $siswas = \App\Models\Siswa::whereHas('kelas', function($q) use ($kelas) {
             $q->where('nama_kelas', $kelas);
-        })->get();
+        })->orderBy('nama', 'asc')->get();
         
         return view('guru.blangko.presensi', compact('kelas', 'mapel', 'semester', 'siswas'));
     }
@@ -48,7 +48,7 @@ class BlangkoController extends Controller
         
         $siswas = \App\Models\Siswa::whereHas('kelas', function($q) use ($kelas) {
             $q->where('nama_kelas', $kelas);
-        })->get();
+        })->orderBy('nama', 'asc')->get();
         
         return view('guru.blangko.nilai', compact('kelas', 'mapel', 'semester', 'siswas'));
     }
