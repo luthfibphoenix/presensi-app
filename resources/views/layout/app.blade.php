@@ -135,12 +135,6 @@
                     </div>
 
                     <div class="flex items-center gap-4 relative" id="userMenuContainer">
-                        <!-- Notification Bell -->
-                        <button class="hidden md:flex w-11 h-11 items-center justify-center rounded-2xl bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-900 transition-all relative border border-gray-100">
-                            <i class="fas fa-bell"></i>
-                            <span class="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-                        </button>
-
                         <button id="userMenuBtn" class="flex items-center gap-3 p-1 rounded-2xl hover:bg-gray-50 transition-all group focus:outline-none">
                             <div class="w-12 h-12 rounded-2xl overflow-hidden bg-{{ $aksen }}-100 flex items-center justify-center text-sm font-bold text-{{ $aksen }}-700 shadow-sm border-2 border-white ring-1 ring-{{ $aksen }}-100/50 transition-transform group-hover:scale-105">
                                 @if(isset($user->photo_url) && $user->photo_url)
