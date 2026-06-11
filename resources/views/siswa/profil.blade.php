@@ -154,7 +154,7 @@
                 <div class="flex justify-center md:justify-end pt-4">
                     <button type="button" class="group relative w-full md:w-auto bg-gray-300 text-gray-500 px-10 py-4 rounded-2xl font-black text-lg cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-3" disabled title="Fitur ini dinonaktifkan sementara">
                         <i class="fas fa-lock text-gray-400"></i>
-                        Fitur Dinonaktifkan
+                        Tombol sedang dalam perbaikan
                     </button>
                 </div>
             </form>
