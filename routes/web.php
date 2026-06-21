@@ -175,8 +175,6 @@ Route::middleware(['auth:siswa', 'siswa.autologout'])->group(function () {
     Route::get('/siswa/scan',           [\App\Http\Controllers\QrController::class, 'scanner'])->name('presensi.scan');
     Route::get('/siswa/scan/{token}',   [\App\Http\Controllers\QrController::class, 'scan'])->name('siswa.scan');
     Route::get('/siswa/riwayat',        [PresensiController::class, 'riwayatSiswa'])->name('siswa.riwayat');
-    Route::get('/siswa/izin',           [IzinController::class, 'indexSiswa'])->name('izin.index');
-    Route::post('/siswa/izin',          [IzinController::class, 'storeSiswa'])->name('izin.store');
     Route::get('/siswa/profil', function () {
         return view('siswa.profil');
     })->name('siswa.profil');

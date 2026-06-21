@@ -15,23 +15,23 @@
     
     // Gunakan $role dari session untuk menentukan warna
     if ($role === 'siswa') {
-        $bgSidebar = 'bg-teal-900';
-        $bgActive = 'bg-teal-700/50';
+        $bgSidebar = 'bg-[#062421]';
+        $bgActive = 'bg-[#0f443e]';
     } elseif ($role === 'admin' || str_contains($pos, 'administrator')) {
-        $bgSidebar = 'bg-purple-900';
-        $bgActive = 'bg-purple-700/50';
+        $bgSidebar = 'bg-[#1b092b]';
+        $bgActive = 'bg-[#3b1c55]';
     } elseif ($role === 'piket') {
-        $bgSidebar = 'bg-green-900';
-        $bgActive = 'bg-green-700/50';
+        $bgSidebar = 'bg-[#0B301E]'; // matching screenshot
+        $bgActive = 'bg-[#185237]';  // matching screenshot
     } elseif ($role === 'bk') {
-        $bgSidebar = 'bg-zinc-950';
-        $bgActive = 'bg-zinc-800/50';
+        $bgSidebar = 'bg-[#09090b]';
+        $bgActive = 'bg-[#27272a]';
     } elseif ($role === 'tu') {
-        $bgSidebar = 'bg-violet-900';
-        $bgActive = 'bg-violet-700/50';
+        $bgSidebar = 'bg-[#1c0c30]';
+        $bgActive = 'bg-[#371e5c]';
     } else {
-        $bgSidebar = 'bg-blue-900'; 
-        $bgActive = 'bg-blue-700/50';
+        $bgSidebar = 'bg-[#0b1e30]'; 
+        $bgActive = 'bg-[#1a3857]';
     }
 
     $fallbackUrl = 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=fff&color=333&bold=true&size=128';
@@ -176,82 +176,67 @@
                 $user->is_wali ? ['label' => 'Siswa Wali', 'route' => 'siswa.index', 'icon' => 'fas fa-users'] : null,
             ]),
         ];
-
-
     }
 @endphp
 
 <aside id="main-sidebar" 
        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-       class="fixed top-0 left-0 w-72 {{ $bgSidebar }} text-white flex flex-col transition-transform duration-300 z-[60] h-screen overflow-hidden -translate-x-full lg:translate-x-0 {{ auth('siswa')->check() ? 'hidden lg:flex' : 'flex' }}">
+       class="fixed top-0 left-0 w-64 h-screen {{ $bgSidebar }} text-white flex flex-col transition-transform duration-300 z-[60] overflow-hidden -translate-x-full lg:translate-x-0 {{ auth('siswa')->check() ? 'hidden lg:flex' : 'flex' }}">
     
     <div class="flex-shrink-0">
         <!-- Logo Section -->
-        <div class="h-16 flex items-center justify-between px-8 border-b border-white/10">
+        <div class="h-20 flex items-center justify-between px-6 border-b border-white/5">
             <div class="flex items-center gap-3">
-                <img src="{{ asset('images/logo-kanan.png') }}" alt="Logo SMKN7" class="w-9 h-9 rounded-full object-contain bg-white p-0.5 flex-shrink-0">
+                <img src="{{ asset('images/logo-kanan.png') }}" alt="Logo SMKN7" class="w-8 h-8 rounded-full object-contain bg-white p-0.5 flex-shrink-0">
                 <div class="leading-tight">
-                    <span class="text-white font-black text-sm tracking-tight uppercase block">SMK Negeri 7</span>
-                    <span class="text-white/60 font-bold text-[10px] uppercase tracking-widest block">Purworejo</span>
+                    <span class="text-white font-black text-xs tracking-tight uppercase block">SMK Negeri 7</span>
+                    <span class="text-white/60 font-bold text-[9px] uppercase tracking-widest block">Purworejo</span>
                 </div>
             </div>
             <button @click="sidebarOpen = false" class="lg:hidden text-white/50 hover:text-white transition">
-                <i class="fas fa-times text-xl"></i>
+                <i class="fas fa-times text-lg"></i>
             </button>
-        </div>
-
-        <!-- User Profile Section -->
-        <div class="px-8 py-10 flex flex-col items-center border-b border-white/10">
-            <img src="{{ $photoUrl }}" alt="Profile" class="w-20 h-20 rounded-full object-cover border-4 border-white/20 mb-4">
-            <h3 class="text-white font-bold text-center text-sm leading-tight mb-2">{{ $name }}</h3>
-            @if($role === 'piket')
-                <div class="flex flex-col items-center gap-1.5">
-                    <span class="px-3 py-1 bg-white text-green-700 text-[10px] font-black uppercase rounded-full tracking-widest shadow-lg">
-                        Mode Piket Aktif
-                    </span>
-                    <span class="text-[10px] font-bold text-green-100 uppercase tracking-tighter">
-                        {{ $displayPosition }}
-                    </span>
-                </div>
-            @elseif(str_contains(strtolower($user->position ?? ''), 'super administrator'))
-                <div class="flex flex-col items-center gap-1.5">
-                    <span class="px-3 py-1 bg-red-600 text-white text-[10px] font-black uppercase rounded-full tracking-widest shadow-lg">
-                        Super Administrator
-                    </span>
-                </div>
-            @elseif(str_contains(strtolower($user->position ?? ''), 'kepala sekolah'))
-                <div class="flex flex-col items-center gap-1.5">
-                    <span class="px-3 py-1 bg-amber-500 text-white text-[10px] font-black uppercase rounded-full tracking-widest shadow-lg">
-                        Kepala Sekolah
-                    </span>
-                </div>
-            @else
-                <span class="text-[10px] font-bold text-white/50 uppercase tracking-widest">{{ $displayPosition }}</span>
-            @endif
         </div>
     </div>
 
     <!-- Navigation Menu -->
     <div id="main-sidebar-scroll" class="flex-1 overflow-y-auto no-scrollbar py-6">
         @foreach($menus as $section => $items)
-            <div class="mb-8 px-8">
-                <p class="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-4">{{ $section }}</p>
+            <div class="mb-6 px-6">
+                <p class="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">{{ $section }}</p>
                 <div class="space-y-1">
                     @foreach($items as $item)
                         @php
                             $isActive = request()->routeIs($item['route']);
                         @endphp
                         <a href="{{ route($item['route']) }}" 
-                           class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group {{ $isActive ? $bgActive . ' text-white shadow-lg' : 'text-white/60 hover:text-white hover:bg-white/5' }}">
-                            <i class="{{ $item['icon'] }} text-lg transition-transform duration-300 group-hover:scale-110 {{ $isActive ? 'text-white' : 'text-white/40' }}"></i>
-                            <span class="text-sm font-bold tracking-wide">{{ $item['label'] }}</span>
+                           class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 group {{ $isActive ? $bgActive . ' text-white shadow-md' : 'text-white/50 hover:text-white hover:bg-white/5' }}">
+                            <i class="{{ $item['icon'] }} text-sm transition-transform duration-300 group-hover:scale-110 {{ $isActive ? 'text-white' : 'text-white/30' }}"></i>
+                            <span class="text-xs font-bold tracking-wide">{{ $item['label'] }}</span>
                             @if($isActive)
-                                <div class="ml-auto w-1.5 h-1.5 bg-white rounded-full"></div>
+                                <div class="ml-auto w-1 h-1 bg-white rounded-full"></div>
                             @endif
                         </a>
                     @endforeach
                 </div>
             </div>
         @endforeach
+    </div>
+
+    <!-- User Profile Bottom Widget -->
+    <div class="mt-auto border-t border-white/5 p-4 bg-black/10 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-3 min-w-0">
+            <img src="{{ $photoUrl }}" alt="Profile" class="w-9 h-9 rounded-full object-cover border border-white/10 shrink-0">
+            <div class="leading-tight min-w-0">
+                <h4 class="text-xs font-black text-white truncate">{{ $name }}</h4>
+                <p class="text-[9px] font-bold text-white/50 uppercase tracking-widest truncate">{{ $displayPosition }}</p>
+            </div>
+        </div>
+        <form action="{{ route('logout') }}" method="POST" class="shrink-0 flex">
+            @csrf
+            <button type="submit" class="text-white/40 hover:text-rose-400 p-2 rounded-lg transition-colors" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </form>
     </div>
 </aside>

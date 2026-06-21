@@ -8,8 +8,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
         :root {
             --safe-area-inset-top: env(safe-area-inset-top, 0px);
             --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
@@ -119,24 +123,30 @@
          class="fixed inset-0 bg-black/50 z-[55] lg:hidden" 
          x-cloak></div>
 
-    <div class="w-full lg:pl-72 min-h-screen bg-gray-50 flex flex-col h-[100dvh] relative overflow-hidden">
+    <div class="w-full lg:pl-64 min-h-screen bg-[#f8fafc] flex flex-col h-[100dvh] relative overflow-hidden">
             <!-- Modern Seamless Sticky Header -->
-            <header class="sticky top-0 z-[60] bg-white/95 backdrop-blur-md transition-all duration-300"
-                    style="padding-top: var(--safe-area-inset-top); height: calc(5.5rem + var(--safe-area-inset-top));">
-                <div class="h-full flex items-center justify-between px-6 md:px-10">
+            <header class="sticky top-0 z-[60] bg-white border-b border-gray-100 transition-all duration-300"
+                    style="padding-top: var(--safe-area-inset-top); height: calc(5rem + var(--safe-area-inset-top));">
+                <div class="h-full flex items-center justify-between px-6 md:px-8">
                     <div class="flex items-center gap-4">
-                        <button @click="sidebarOpen = true" class="lg:hidden w-11 h-11 flex items-center justify-center rounded-2xl bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-all active:scale-90 shadow-sm border border-gray-100">
+                        <button @click="sidebarOpen = true" class="lg:hidden w-11 h-11 flex items-center justify-center rounded-2xl bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-all active:scale-95 shadow-sm border border-gray-100">
                             <i class="fas fa-bars-staggered text-lg"></i>
                         </button>
                         <div class="flex flex-col">
-                            <span class="text-[10px] font-black text-{{ $aksen }}-600 uppercase tracking-[0.2em] leading-none mb-1.5 opacity-80">SMKN 7 Purworejo</span>
-                            <h2 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight leading-none">@yield('title', 'Dashboard')</h2>
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-1 opacity-80">SMKN 7 PURWOREJO</span>
+                            <h2 class="text-lg md:text-xl font-black text-gray-900 tracking-tight leading-none">@yield('title', 'Dashboard')</h2>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-4 relative" id="userMenuContainer">
+                        <!-- Notification Badge (matching screenshot) -->
+                        <button class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all relative">
+                            <i class="far fa-bell text-base"></i>
+                            <span class="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full"></span>
+                        </button>
+
                         <button id="userMenuBtn" class="flex items-center gap-3 p-1 rounded-2xl hover:bg-gray-50 transition-all group focus:outline-none">
-                            <div class="w-12 h-12 rounded-2xl overflow-hidden bg-{{ $aksen }}-100 flex items-center justify-center text-sm font-bold text-{{ $aksen }}-700 shadow-sm border-2 border-white ring-1 ring-{{ $aksen }}-100/50 transition-transform group-hover:scale-105">
+                            <div class="w-10 h-10 rounded-full overflow-hidden bg-{{ $aksen }}-100 flex items-center justify-center text-xs font-bold text-{{ $aksen }}-700 shadow-sm border-2 border-white ring-1 ring-{{ $aksen }}-100/50 transition-transform group-hover:scale-105">
                                 @if(isset($user->photo_url) && $user->photo_url)
                                     @php
                                         $photo = $user->photo_url;
@@ -152,10 +162,10 @@
                                 @endif
                             </div>
                             <div class="text-left hidden md:block">
-                                <p class="text-sm font-black text-gray-900 leading-none mb-1.5">{{ explode(',', $user->fullname ?? $user->nama)[0] }}</p>
-                                <div class="flex items-center gap-1.5">
+                                <p class="text-xs font-black text-gray-900 leading-none mb-1">{{ explode(',', $user->fullname ?? $user->nama)[0] }}</p>
+                                <div class="flex items-center gap-1">
                                     <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Online</p>
+                                    <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none">Online</p>
                                 </div>
                             </div>
                         </button>
@@ -207,7 +217,7 @@
             </header>
 
             <!-- Content Body -->
-            <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-100 no-scrollbar pb-32 md:pb-6">
+            <main class="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8fafc] no-scrollbar pb-32 md:pb-8">
                 <div class="max-w-7xl mx-auto h-full flex flex-col">
                     @if (session('success') && !request()->routeIs('siswa.dashboard'))
                         <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-3 mb-4 rounded-xl shadow-sm animate-page-content flex-shrink-0">

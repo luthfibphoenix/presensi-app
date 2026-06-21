@@ -4,7 +4,6 @@
     $aksen = 'teal-600';
 @endphp
 
-
 @section('title', 'Dashboard Siswa')
 
 @section('content')
@@ -57,11 +56,38 @@
     $persentaseKehadiran = $totalPertemuan > 0 ? round((($totalHadir + $totalTerlambat) / $totalPertemuan) * 100) : 0;
     
     $progressBarColor = 'bg-red-500';
-    if($persentaseKehadiran >= 80) $progressBarColor = 'bg-emerald-500';
-    elseif($persentaseKehadiran >= 60) $progressBarColor = 'bg-yellow-500';
+    if($persentaseKehadiran >= 80) $progressBarColor = 'bg-gradient-to-r from-emerald-500 to-teal-500';
+    elseif($persentaseKehadiran >= 60) $progressBarColor = 'bg-gradient-to-r from-amber-500 to-orange-500';
 @endphp
 
-<div class="pb-24 space-y-5" x-data="{ 
+{{-- Custom Style Block for Modern Effects --}}
+<style>
+    .glass-card-premium {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    .neon-glow-teal {
+        box-shadow: 0 0 20px rgba(13, 148, 136, 0.15);
+    }
+    .mesh-gradient-student {
+        background: radial-gradient(at 0% 0%, rgba(20, 184, 166, 0.15) 0px, transparent 50%),
+                    radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+                    #f8fafc;
+    }
+    .timeline-line::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 20px;
+        width: 2px;
+        background: #e2e8f0;
+    }
+</style>
+
+<div class="pb-24 space-y-6 mesh-gradient-student min-h-screen -m-6 md:-m-8 p-6 md:p-8" x-data="{ 
     showSuccess: {{ session('success') ? 'true' : 'false' }},
     showError: {{ session('error') ? 'true' : 'false' }},
     showInfo: {{ session('info') ? 'true' : 'false' }},
@@ -71,193 +97,278 @@
         }
     }
 }">
-    {{-- Welcome Banner --}}
-    {{-- Hero Card --}}
-    <div class="mx-0 mt-0 rounded-2xl p-5 text-white shadow-lg"
-         style="background: linear-gradient(135deg, #134e4a, #0d9488)">
-        <span class="text-[10px] font-bold bg-white/20 backdrop-blur-md rounded-full px-3 py-1 uppercase tracking-wider">
-            STUDENT PORTAL
-        </span>
-        <h1 class="text-xl font-bold mt-3">Halo, {{ explode(' ', $siswa->nama)[0] }}! 👋</h1>
-        <p class="text-sm opacity-90 mt-1">Jangan lupa scan QR saat pelajaran dimulai.</p>
-        <div class="flex gap-3 mt-4">
-            <a href="{{ route('presensi.scan') }}" class="bg-white text-teal-700 text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm active:scale-95 transition-transform">
-                <i class="fas fa-qrcode"></i> Scan QR
-            </a>
-            <a href="{{ route('siswa.riwayat') }}" class="bg-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 backdrop-blur-sm active:scale-95 transition-transform">
-                <i class="fas fa-history"></i> Riwayat
-            </a>
-        </div>
-    </div>
+    {{-- Welcome Card (Sleek Student ID Card style) --}}
+    <div class="relative overflow-hidden rounded-[2.5rem] p-6 text-white shadow-2xl transition-all duration-300 hover:shadow-teal-900/10"
+         style="background: linear-gradient(135deg, #0f172a, #0f766e);">
+        <!-- Decorative glowing orb -->
+        <div class="absolute -right-16 -top-16 w-48 h-48 bg-teal-400 rounded-full blur-3xl opacity-25"></div>
+        <div class="absolute -left-16 -bottom-16 w-48 h-48 bg-indigo-500 rounded-full blur-3xl opacity-15"></div>
 
-    {{-- 1. Card Status Hari Ini (Top) --}}
-    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 flex items-center justify-between overflow-hidden relative">
-        <div class="flex items-center gap-4 relative z-10">
-            <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl {{ $presensiHariIni ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100' }} border-2 shadow-inner">
-                <i class="fas {{ $presensiHariIni ? 'fa-check-double' : 'fa-times' }}"></i>
-            </div>
-            <div>
-                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Status Kehadiran</p>
-                <h3 class="text-lg font-black {{ $presensiHariIni ? 'text-emerald-700' : 'text-red-700' }}">
-                    {{ $presensiHariIni ? 'Sudah Absen' : 'Belum Absen' }}
-                </h3>
-            </div>
-        </div>
-        <div class="text-right relative z-10">
-            <span class="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{{ now()->translatedFormat('l') }}</span>
-            <p class="text-xs font-black text-gray-800">{{ now()->translatedFormat('d M Y') }}</p>
-        </div>
-        <div class="absolute -right-6 -bottom-6 w-24 h-24 {{ $presensiHariIni ? 'bg-emerald-50' : 'bg-red-50' }} rounded-full opacity-40 blur-2xl"></div>
-    </div>
-
-    {{-- 2. Card Mapel Sekarang --}}
-    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 relative overflow-hidden">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                Pelajaran Saat Ini
-            </h3>
-            <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-lg border border-blue-100 uppercase">Live</span>
-        </div>
-
-        @if($mapelSekarang)
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div class="space-y-4">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[9px] font-black uppercase tracking-widest text-teal-200">
+                    <span class="w-1.5 h-1.5 bg-teal-400 rounded-full animate-ping"></span>
+                    Student Profile
+                </span>
                 <div>
-                    <h2 class="text-xl font-black text-gray-900 leading-tight mb-1">{{ $mapelSekarang->mata_pelajaran }}</h2>
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Bersama {{ $mapelSekarang->user->fullname ?? 'Guru Pengampu' }}</p>
+                    <h1 class="text-2xl font-black tracking-tight">Halo, {{ explode(' ', $siswa->nama)[0] }}! 👋</h1>
+                    <p class="text-xs text-teal-100/80 font-medium mt-1">SMK Negeri 7 Purworejo &bull; Kelas {{ $siswa->kelas->nama_kelas }}</p>
                 </div>
-                
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-gray-50 rounded-2xl p-3 border border-gray-100">
-                        <p class="text-[8px] font-black text-gray-400 uppercase mb-1">Mulai</p>
-                        <p class="text-sm font-black text-gray-800">{{ $mapelSekarang->waktu_mulai }}</p>
-                    </div>
-                    <div class="bg-amber-50 rounded-2xl p-3 border border-amber-100">
-                        <p class="text-[8px] font-black text-amber-500 uppercase mb-1">Batas Scan</p>
-                        <p class="text-sm font-black text-amber-700">{{ $mapelSekarang->batas_scan }}</p>
-                    </div>
+                <div class="inline-block bg-white/5 border border-white/10 rounded-xl px-3.5 py-1.5 text-[11px] font-mono tracking-wider text-teal-200">
+                    NIS: {{ $siswa->nis }}
                 </div>
             </div>
-        @else
-            <div class="py-4 text-center">
-                <i class="fas fa-coffee text-2xl text-gray-200 mb-2"></i>
-                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest italic">Tidak ada pelajaran saat ini</p>
+
+            <!-- Avatar & Actions -->
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col gap-2.5 w-full min-w-[160px]">
+                    <a href="{{ route('presensi.scan') }}" class="px-5 py-3.5 bg-white text-slate-900 text-xs font-black rounded-2xl flex items-center justify-center gap-2 shadow-lg transition-all hover:scale-105 active:scale-95">
+                        <i class="fas fa-qrcode text-teal-600"></i> SCAN PRESENSI
+                    </a>
+                    <a href="{{ route('siswa.riwayat') }}" class="px-4 py-3 bg-white/10 border border-white/20 text-white text-[11px] font-black rounded-2xl flex items-center justify-center gap-1.5 backdrop-blur-sm transition-all hover:bg-white/25 active:scale-95">
+                        <i class="fas fa-history text-teal-300"></i> RIWAYAT PRESENSI
+                    </a>
+                </div>
             </div>
-        @endif
+        </div>
     </div>
 
-    {{-- 3. List Mapel Hari Ini --}}
-    <div class="space-y-3">
-        <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1 flex items-center gap-2">
-            <i class="fas fa-calendar-day text-emerald-500"></i>
-            Jadwal Hari Ini
-        </h3>
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 divide-y divide-gray-50 overflow-hidden">
-            @forelse($jadwals as $j)
-                @php
-                    $isNow = $mapelSekarang && $mapelSekarang->id === $j->id;
-                    $statusAbsen = $presensis->get($j->id);
-                @endphp
-                <div class="p-4 flex items-center gap-4 {{ $isNow ? 'bg-emerald-50/50' : '' }}">
-                    <div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-xs font-black {{ $isNow ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-50 text-gray-400' }} border {{ $isNow ? 'border-emerald-200' : 'border-gray-100' }}">
-                        JP {{ $j->jam_mulai }}
+    {{-- Main Grid Section --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {{-- Column Left/Middle (Status, Live Class & Jadwal) --}}
+        <div class="lg:col-span-2 space-y-6">
+            
+            {{-- Status & Current Class Row --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {{-- Status Kehadiran Hari Ini --}}
+                <div class="glass-card-premium rounded-[2rem] p-5 shadow-sm flex items-center justify-between relative overflow-hidden group">
+                    <div class="flex items-center gap-4 relative z-10">
+                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl border transition-transform duration-300 group-hover:scale-105 {{ $presensiHariIni ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200' }}">
+                            <i class="fas {{ $presensiHariIni ? 'fa-circle-check' : 'fa-triangle-exclamation' }}"></i>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Status Hari Ini</p>
+                            <h3 class="text-base font-black tracking-tight {{ $presensiHariIni ? 'text-emerald-700' : 'text-rose-700' }}">
+                                {{ $presensiHariIni ? 'Sudah Presensi' : 'Belum Presensi' }}
+                            </h3>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">{{ now()->translatedFormat('l, d F') }}</p>
+                        </div>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="text-sm font-black text-gray-800 truncate">{{ $j->mata_pelajaran }}</h4>
-                        <p class="text-[9px] font-bold text-gray-400 uppercase truncate">{{ $j->user->fullname ?? 'Guru Pengampu' }}</p>
+                    <!-- Indicator dots -->
+                    <div class="absolute right-4 top-4 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full {{ $presensiHariIni ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500 animate-pulse' }}"></span>
                     </div>
-                    <div class="text-right flex-shrink-0">
-                        @if($statusAbsen)
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase {{ $statusAbsen->status === 'Hadir' ? 'bg-emerald-100 text-emerald-600' : ($statusAbsen->status === 'Terlambat' ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600') }}">
-                                <i class="fas {{ $statusAbsen->status === 'Hadir' ? 'fa-check' : ($statusAbsen->status === 'Terlambat' ? 'fa-clock' : 'fa-times') }}"></i>
-                                {{ $statusAbsen->status }}
-                            </span>
-                        @elseif($isNow)
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 text-[8px] font-black uppercase animate-pulse">
-                                Sedang Berlangsung
-                            </span>
-                        @else
-                            <span class="text-[9px] font-bold text-gray-300 uppercase tracking-tighter">
-                                {{ jamPelajaranToWaktu($j->jam_mulai) }}
-                            </span>
+                </div>
+
+                {{-- Pelajaran Saat Ini (Live Card) --}}
+                <div class="glass-card-premium rounded-[2rem] p-5 shadow-sm relative overflow-hidden group">
+                    <div class="flex items-center justify-between mb-3.5">
+                        <h3 class="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
+                            Pelajaran Aktif
+                        </h3>
+                        @if($mapelSekarang)
+                            <span class="text-[8px] font-black text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">Live</span>
                         @endif
                     </div>
+
+                    @if($mapelSekarang)
+                        <div class="space-y-3">
+                            <div>
+                                <h2 class="text-base font-black text-slate-800 tracking-tight line-clamp-1">{{ $mapelSekarang->mata_pelajaran }}</h2>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase mt-0.5 line-clamp-1">{{ $mapelSekarang->user->fullname ?? 'Guru Pengampu' }}</p>
+                            </div>
+                            
+                            <div class="flex items-center gap-2 text-xs">
+                                <span class="bg-slate-100 text-slate-600 font-bold px-2.5 py-1 rounded-xl flex items-center gap-1">
+                                    <i class="far fa-clock text-[10px]"></i> {{ $mapelSekarang->waktu_mulai }}
+                                </span>
+                                <span class="bg-amber-50 text-amber-700 border border-amber-200 font-bold px-2.5 py-1 rounded-xl flex items-center gap-1">
+                                    <i class="fas fa-stopwatch text-[10px]"></i> Batas: {{ $mapelSekarang->batas_scan }}
+                                </span>
+                            </div>
+                        </div>
+                    @else
+                        <div class="py-3 flex flex-col items-center justify-center text-center opacity-70">
+                            <div class="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 mb-2">
+                                <i class="fas fa-mug-hot text-sm"></i>
+                            </div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Jam Istirahat / Kosong</p>
+                        </div>
+                    @endif
                 </div>
-            @empty
-                <div class="p-8 text-center">
-                    <p class="text-xs font-bold text-gray-400 uppercase italic">Tidak ada jadwal hari ini</p>
+
+            </div>
+
+            {{-- Timeline Jadwal Hari Ini --}}
+            <div class="glass-card-premium rounded-[2.5rem] p-6 shadow-sm space-y-4">
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                    <i class="fas fa-list-check text-teal-600"></i>
+                    Agenda Pembelajaran Hari Ini
+                </h3>
+
+                <div class="relative {{ $jadwals->isNotEmpty() ? 'timeline-line' : '' }} space-y-6">
+                    @forelse($jadwals as $j)
+                        @php
+                            $isNow = $mapelSekarang && $mapelSekarang->id === $j->id;
+                            $statusAbsen = $presensis->get($j->id);
+                        @endphp
+                        
+                        <div class="relative pl-10 flex items-center justify-between group">
+                            <!-- Timeline node indicator -->
+                            <div class="absolute left-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center z-10 border-2 transition-all duration-300
+                                 {{ $statusAbsen ? ($statusAbsen->status === 'Hadir' ? 'bg-emerald-50 border-emerald-500 text-emerald-600 shadow-sm' : ($statusAbsen->status === 'Terlambat' ? 'bg-amber-50 border-amber-500 text-amber-600 shadow-sm' : 'bg-rose-50 border-rose-500 text-rose-600 shadow-sm')) 
+                                    : ($isNow ? 'bg-blue-50 border-blue-500 text-blue-600 animate-pulse shadow' : 'bg-white border-slate-200 text-slate-400') }}">
+                                <i class="fas text-xs {{ $statusAbsen ? ($statusAbsen->status === 'Hadir' ? 'fa-check' : ($statusAbsen->status === 'Terlambat' ? 'fa-clock' : 'fa-xmark')) 
+                                    : ($isNow ? 'fa-circle-dot' : 'fa-lock') }}"></i>
+                            </div>
+
+                            <div class="flex-1 bg-white/50 border border-slate-100 hover:border-teal-200 hover:bg-white rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all duration-300">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[9px] font-mono font-black text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded uppercase">JP {{ $j->jam_mulai }}</span>
+                                        <h4 class="text-sm font-black text-slate-800 tracking-tight">{{ $j->mata_pelajaran }}</h4>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase mt-1 leading-none">{{ $j->user->fullname ?? 'Guru Pengampu' }}</p>
+                                </div>
+
+                                <div class="flex items-center gap-2 justify-between md:justify-end">
+                                    <span class="text-[10px] font-mono text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded-xl">
+                                        {{ jamPelajaranToWaktu($j->jam_mulai) }}
+                                    </span>
+                                    @if($statusAbsen)
+                                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-wider border
+                                            {{ $statusAbsen->status === 'Hadir' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : ($statusAbsen->status === 'Terlambat' ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-rose-50 text-rose-700 border-rose-100') }}">
+                                            {{ $statusAbsen->status }}
+                                        </span>
+                                    @elseif($isNow)
+                                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-100 text-[9px] font-black uppercase tracking-wider animate-pulse">
+                                            Sedang Belajar
+                                        </span>
+                                    @else
+                                        <span class="text-[9px] font-black text-slate-300 uppercase tracking-widest">Belum Mulai</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="py-12 text-center text-slate-400">
+                            <i class="fas fa-calendar-times text-3xl mb-3 opacity-30"></i>
+                            <p class="text-xs font-black uppercase tracking-widest">Tidak ada jadwal pelajaran hari ini</p>
+                        </div>
+                    @endforelse
                 </div>
-            @endforelse
+            </div>
+
         </div>
+
+        {{-- Column Right (Stats, Attendance Percentage Card) --}}
+        <div class="space-y-6">
+            
+            {{-- Attendance Circular/Bar Percentage Card --}}
+            <div class="glass-card-premium rounded-[2.5rem] p-6 shadow-sm space-y-5">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Statistik Kehadiran</h4>
+                    <span class="text-xs font-black text-slate-700">Akumulasi Semester</span>
+                </div>
+                
+                {{-- Dynamic Ring Info --}}
+                <div class="flex flex-col items-center justify-center py-4 relative">
+                    <div class="relative flex items-center justify-center">
+                        {{-- Circular Progress SVG --}}
+                        <svg class="w-36 h-36 transform -rotate-90">
+                            <circle class="text-slate-100" stroke-width="10" stroke="currentColor" fill="transparent" r="58" cx="72" cy="72" />
+                            @php
+                                $offset = 364.4 - (364.4 * $persentaseKehadiran) / 100;
+                            @endphp
+                            <circle class="text-teal-500 transition-all duration-1000 ease-out" stroke-width="10" stroke-dasharray="364.4" stroke-dashoffset="{{ $offset }}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="58" cx="72" cy="72" />
+                        </svg>
+                        <div class="absolute flex flex-col items-center justify-center">
+                            <span class="text-3xl font-black text-slate-800 tracking-tighter">{{ $persentaseKehadiran }}%</span>
+                            <span class="text-[8px] font-black text-slate-400 uppercase tracking-wider mt-0.5">Kehadiran</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Horizontal Glow Bar --}}
+                <div class="space-y-2">
+                    <div class="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/50">
+                        <div class="h-full {{ $progressBarColor }} rounded-full transition-all duration-1000 shadow-md" style="width: {{ $persentaseKehadiran }}%"></div>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] font-bold text-slate-400">
+                        <span>Target Kelulusan: 80%</span>
+                        <span class="text-teal-600 font-extrabold">{{ $persentaseKehadiran >= 80 ? 'Aman' : 'Tingkatkan' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Detailed Stats Grid --}}
+            <div class="grid grid-cols-2 gap-4">
+                
+                <!-- Hadir Card -->
+                <div class="glass-card-premium rounded-3xl p-4 shadow-sm border border-slate-100 transition-all hover:-translate-y-1">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center text-sm shadow-sm">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div>
+                            <p class="text-[9px] text-slate-400 uppercase tracking-wide font-black">Hadir</p>
+                            <p class="text-lg font-black text-slate-800">{{ $totalHadir }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terlambat Card -->
+                <div class="glass-card-premium rounded-3xl p-4 shadow-sm border border-slate-100 transition-all hover:-translate-y-1">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center text-sm shadow-sm">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div>
+                            <p class="text-[9px] text-slate-400 uppercase tracking-wide font-black">Terlambat</p>
+                            <p class="text-lg font-black text-slate-800">{{ $totalTerlambat }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alfa Card -->
+                <div class="glass-card-premium rounded-3xl p-4 shadow-sm border border-slate-100 transition-all hover:-translate-y-1">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center text-sm shadow-sm">
+                            <i class="fas fa-user-xmark"></i>
+                        </div>
+                        <div>
+                            <p class="text-[9px] text-slate-400 uppercase tracking-wide font-black">Alfa</p>
+                            <p class="text-lg font-black text-slate-800">{{ $totalAlfa }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Izin Card -->
+                <div class="glass-card-premium rounded-3xl p-4 shadow-sm border border-slate-100 transition-all hover:-translate-y-1">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center text-sm shadow-sm">
+                            <i class="fas fa-file-lines"></i>
+                        </div>
+                        <div>
+                            <p class="text-[9px] text-slate-400 uppercase tracking-wide font-black">Izin/Sakit</p>
+                            <p class="text-lg font-black text-slate-800">{{ $totalIzinSakit }}</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
-
-    {{-- 4. Stat Cards & Progress Bar --}}
-    <div class="space-y-4">
-    {{-- Stat Cards --}}
-    <div class="grid grid-cols-2 gap-3 mt-2">
-        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
-                    <i class="fas fa-user-check text-teal-600"></i>
-                </div>
-                <div>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Hadir</p>
-                    <p class="text-xl font-bold text-gray-800">{{ $totalHadir }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
-                    <i class="fas fa-clock text-teal-600"></i>
-                </div>
-                <div>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Late</p>
-                    <p class="text-xl font-bold text-gray-800">{{ $totalTerlambat }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
-                    <i class="fas fa-user-times text-teal-600"></i>
-                </div>
-                <div>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Alfa</p>
-                    <p class="text-xl font-bold text-gray-800">{{ $totalAlfa }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
-                    <i class="fas fa-envelope text-teal-600"></i>
-                </div>
-                <div>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-wide font-bold">Izin</p>
-                    <p class="text-xl font-bold text-gray-800">{{ $totalIzinSakit }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-        <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
-            <div class="flex items-center justify-between mb-3">
-                <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Persentase Kehadiran</h4>
-                <span class="text-xs font-black text-gray-800">{{ $persentaseKehadiran }}%</span>
-            </div>
-            <div class="h-3 w-full bg-gray-100 rounded-full overflow-hidden p-0.5 border border-gray-50">
-                <div class="h-full {{ $progressBarColor }} rounded-full transition-all duration-1000 shadow-sm" style="width: {{ $persentaseKehadiran }}%"></div>
-            </div>
-        </div>
-    </div>
-
-
 
     {{-- Feedback Modals --}}
     <template x-if="showSuccess">
         <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
-            <div class="bg-white rounded-[2.5rem] p-8 max-w-xs w-full text-center shadow-2xl border-4 border-emerald-500">
+            <div class="bg-white rounded-[2.5rem] p-8 max-w-xs w-full text-center shadow-2xl border-4 border-emerald-500 animate-fade-in">
                 <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
                     <i class="fas fa-check-circle"></i>
                 </div>
@@ -269,7 +380,7 @@
 
     <template x-if="showError">
         <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
-            <div class="bg-white rounded-[2.5rem] p-8 max-w-xs w-full text-center shadow-2xl border-4 border-red-500">
+            <div class="bg-white rounded-[2.5rem] p-8 max-w-xs w-full text-center shadow-2xl border-4 border-red-500 animate-fade-in">
                 <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
                     <i class="fas fa-times-circle"></i>
                 </div>
@@ -281,7 +392,7 @@
 
     <template x-if="showInfo">
         <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
-            <div class="bg-white rounded-[2.5rem] p-8 max-w-xs w-full text-center shadow-2xl border-4 border-blue-500">
+            <div class="bg-white rounded-[2.5rem] p-8 max-w-xs w-full text-center shadow-2xl border-4 border-blue-500 animate-fade-in">
                 <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
                     <i class="fas fa-info-circle"></i>
                 </div>
@@ -301,3 +412,4 @@
 </script>
 @endpush
 @endsection
+
