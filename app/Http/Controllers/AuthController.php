@@ -32,6 +32,58 @@ class AuthController extends Controller
         $inputIdentifier = trim($request->username);
         $inputPassword = $request->password;
 
+        // Cek keberadaan akun di database (Users, Siswa, atau Orangtua)
+        $userExistsInDb = false;
+
+        // 1. Cek di tabel Users
+        $hasUser = \App\Models\User::where(function($q) use ($inputIdentifier) {
+            $q->whereRaw('LOWER(TRIM(username)) = ?', [strtolower($inputIdentifier)])
+              ->orWhereRaw('TRIM(nip) = ?', [$inputIdentifier]);
+        })->exists();
+
+        if ($hasUser) {
+            $userExistsInDb = true;
+        } else {
+            // 2. Cek di tabel Siswa
+            $hasSiswa = \App\Models\Siswa::where('username', $inputIdentifier)
+                ->orWhere('nis', $inputIdentifier)
+                ->exists();
+            
+            if ($hasSiswa) {
+                $userExistsInDb = true;
+            } else {
+                // 3. Cek di tabel Orangtua
+                $hasOrtu = false;
+                if (str_contains($inputIdentifier, '.')) {
+                    $parts = explode('.', $inputIdentifier);
+                    $firstnameInput = strtolower(trim($parts[0]));
+                    $nisInput = trim($parts[1] ?? '');
+                    
+                    $siswaByFormat = \App\Models\Siswa::where('nis', $nisInput)->first();
+                    if ($siswaByFormat) {
+                        $studentFirstname = strtolower(explode(' ', trim($siswaByFormat->nama))[0]);
+                        if ($firstnameInput === $studentFirstname) {
+                            $hasOrtu = \App\Models\Orangtua::where('siswa_id', $siswaByFormat->id)->exists();
+                        }
+                    }
+                }
+                
+                if (!$hasOrtu) {
+                    $hasOrtu = \App\Models\Orangtua::where('username', $inputIdentifier)->exists();
+                }
+
+                if ($hasOrtu) {
+                    $userExistsInDb = true;
+                }
+            }
+        }
+
+        if (!$userExistsInDb) {
+            return back()->withErrors([
+                'username' => 'Akun tidak ditemukan.',
+            ])->onlyInput('username');
+        }
+
         // 1. CEK TABEL USERS (Administrator, Guru, Staff)
         $users = \App\Models\User::where(function($q) use ($inputIdentifier) {
             $q->whereRaw('LOWER(TRIM(username)) = ?', [strtolower($inputIdentifier)])
@@ -111,7 +163,7 @@ class AuthController extends Controller
         }
 
         return back()->withErrors([
-            'username' => 'Username atau password yang Anda masukkan salah.',
+            'username' => 'Password yang Anda masukkan salah.',
         ])->onlyInput('username');
     }
 

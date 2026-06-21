@@ -13,7 +13,6 @@ class OrangtuaAuthController extends Controller
     }
 
     public function login(Request $request)
-    
     {
         $request->validate([
             'username' => ['required'],
@@ -23,8 +22,28 @@ class OrangtuaAuthController extends Controller
         $identifier = $request->username;
         $password = $request->password;
 
-        // 1. Coba cari berdasarkan NIS Siswa dulu
+        // Cek keberadaan akun di database
+        $ortuExists = false;
+        
         $siswa = \App\Models\Siswa::where('nis', $identifier)->first();
+        if ($siswa) {
+            $hasOrtu = \App\Models\Orangtua::where('siswa_id', $siswa->id)->exists();
+            if ($hasOrtu) {
+                $ortuExists = true;
+            }
+        }
+
+        if (!$ortuExists) {
+            $ortuExists = \App\Models\Orangtua::where('username', $identifier)->exists();
+        }
+
+        if (!$ortuExists) {
+            return back()->withErrors([
+                'username' => 'Akun tidak ditemukan.',
+            ])->onlyInput('username');
+        }
+
+        // 1. Coba cari berdasarkan NIS Siswa dulu
         if ($siswa) {
             // Ambil semua akun orang tua yang terhubung dengan siswa ini (bisa Ayah, Ibu, dll)
             $ortus = \App\Models\Orangtua::where('siswa_id', $siswa->id)->get();
@@ -45,7 +64,7 @@ class OrangtuaAuthController extends Controller
         }
 
         return back()->withErrors([
-            'username' => 'NIS Siswa / Username atau password salah.',
+            'username' => 'Password yang Anda masukkan salah.',
         ])->onlyInput('username');
     }
 
