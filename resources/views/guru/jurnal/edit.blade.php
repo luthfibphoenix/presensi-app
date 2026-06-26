@@ -5,18 +5,8 @@
 @section('content')
 <div class="bg-white p-6 rounded-lg shadow-sm" x-data="{
     selectedKelas: '{{ $jurnal->kelas }}',
-    siswas: {{ json_encode($siswas) }},
-    existingPresensi: {{ json_encode($jurnal->presensi->pluck('status', 'nama_siswa')) }},
-    presensiData: {},
-    init() {
-        this.siswas.forEach(s => {
-            if(this.existingPresensi[s.nama]) {
-                this.presensiData[s.nama] = this.existingPresensi[s.nama];
-            } else {
-                this.presensiData[s.nama] = 'Hadir';
-            }
-        });
-    },
+    siswas: {!! json_encode($siswas) !!},
+    existingPresensi: {!! json_encode($jurnal->presensi->pluck('status', 'nama_siswa')) !!},
     get filteredSiswas() {
         return this.siswas.filter(s => s.kelas && s.kelas.nama_kelas === this.selectedKelas);
     }
@@ -25,6 +15,19 @@
         <h2 class="text-xl font-bold text-gray-800">Edit Jurnal Mengajar & Presensi</h2>
         <a href="{{ route('guru.jurnal.index') }}" class="text-blue-600 hover:text-blue-800 text-sm"><i class="fas fa-arrow-left"></i> Kembali</a>
     </div>
+
+    @if ($errors->any())
+        <div class="mb-6 p-4 bg-rose-50 border-l-4 border-rose-500 text-rose-700 rounded-2xl shadow-sm text-sm">
+            <div class="flex items-center gap-2 font-black mb-2 uppercase tracking-wider text-[10px]">
+                <i class="fas fa-exclamation-triangle"></i> Terjadi Kesalahan Validasi
+            </div>
+            <ul class="list-disc list-inside space-y-1 font-bold">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     <form action="{{ route('guru.jurnal.update', $jurnal->id) }}" method="POST">
         @csrf
@@ -98,19 +101,19 @@
                                     <td class="py-2 px-3 text-center">
                                         <div class="flex justify-center gap-4">
                                             <label class="inline-flex items-center">
-                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Hadir" x-model="presensiData[siswa.nama]" class="text-green-600 focus:ring-green-500">
+                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Hadir" :checked="existingPresensi[siswa.nama] === 'Hadir' || !existingPresensi[siswa.nama]" class="text-green-600 focus:ring-green-500">
                                                 <span class="ml-1 text-green-700">H</span>
                                             </label>
                                             <label class="inline-flex items-center">
-                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Sakit" x-model="presensiData[siswa.nama]" class="text-blue-600 focus:ring-blue-500">
+                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Sakit" :checked="existingPresensi[siswa.nama] === 'Sakit'" class="text-blue-600 focus:ring-blue-500">
                                                 <span class="ml-1 text-blue-700">S</span>
                                             </label>
                                             <label class="inline-flex items-center">
-                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Izin" x-model="presensiData[siswa.nama]" class="text-yellow-600 focus:ring-yellow-500">
+                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Izin" :checked="existingPresensi[siswa.nama] === 'Izin'" class="text-yellow-600 focus:ring-yellow-500">
                                                 <span class="ml-1 text-yellow-700">I</span>
                                             </label>
                                             <label class="inline-flex items-center">
-                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Alfa" x-model="presensiData[siswa.nama]" class="text-red-600 focus:ring-red-500">
+                                                <input type="radio" :name="'presensi[' + siswa.nama + ']'" value="Alfa" :checked="existingPresensi[siswa.nama] === 'Alfa'" class="text-red-600 focus:ring-red-500">
                                                 <span class="ml-1 text-red-700">A</span>
                                             </label>
                                         </div>

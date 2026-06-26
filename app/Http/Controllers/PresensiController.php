@@ -65,7 +65,27 @@ class PresensiController extends Controller
     public function riwayatSiswa(Request $request)
     {
         $siswa = $request->user('siswa');
-        $riwayats = Presensi::where('siswa_id', $siswa->id)->with('jadwal')->paginate(10);
-        return view('siswa.riwayat', compact('riwayats'));
+        
+        // Ambil nama kelas siswa
+        $kelasNama = $siswa->kelas->nama_kelas ?? '';
+        
+        // Ambil daftar mata pelajaran unik untuk kelas siswa ini dari Jadwal
+        $listMapel = Jadwal::where('kelas', $kelasNama)
+            ->whereNotNull('mata_pelajaran')
+            ->distinct()
+            ->pluck('mata_pelajaran');
+
+        $query = Presensi::where('siswa_id', $siswa->id)->with('jadwal');
+
+        // Filter berdasarkan mata pelajaran jika dipilih
+        if ($request->filled('mapel')) {
+            $query->whereHas('jadwal', function ($q) use ($request) {
+                $q->where('mata_pelajaran', $request->mapel);
+            });
+        }
+
+        $riwayats = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate(10)->withQueryString();
+
+        return view('siswa.riwayat', compact('riwayats', 'listMapel'));
     }
 }

@@ -6,7 +6,7 @@
 <div class="h-full flex flex-col gap-6 overflow-y-auto no-scrollbar pb-24 md:pb-10" x-data="{
     searchGuru: '',
     selectedGuruId: null,
-    gurus: {{ json_encode($gurus) }},
+    gurus: {!! json_encode($gurus) !!},
     provinces: [],
     regencies: [],
     districts: [],

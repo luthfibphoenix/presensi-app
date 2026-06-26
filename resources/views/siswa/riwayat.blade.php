@@ -12,6 +12,33 @@
         </div>
     </div>
 
+    <!-- Filter Section -->
+    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+        <form action="{{ route('siswa.riwayat') }}" method="GET" class="flex flex-col sm:flex-row items-end gap-4">
+            <div class="flex-1 w-full">
+                <label for="mapel" class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Filter Mata Pelajaran</label>
+                <div class="relative">
+                    <select name="mapel" id="mapel" onchange="this.form.submit()" class="w-full bg-gray-50 border border-gray-100 text-gray-800 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 p-3.5 pr-10 appearance-none font-bold">
+                        <option value="">Semua Mata Pelajaran</option>
+                        @foreach($listMapel as $mapel)
+                            <option value="{{ $mapel }}" {{ request('mapel') === $mapel ? 'selected' : '' }}>
+                                {{ $mapel }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </div>
+                </div>
+            </div>
+            @if(request('mapel'))
+                <a href="{{ route('siswa.riwayat') }}" class="w-full sm:w-auto px-6 py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-black uppercase tracking-widest rounded-xl transition-colors text-center">
+                    Reset
+                </a>
+            @endif
+        </form>
+    </div>
+
     <!-- Table Section -->
     <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
     <!-- Table Section (Desktop) / Card List (Mobile) -->

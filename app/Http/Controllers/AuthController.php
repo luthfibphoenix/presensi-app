@@ -32,12 +32,22 @@ class AuthController extends Controller
         $inputIdentifier = trim($request->username);
         $inputPassword = $request->password;
 
+        // Validasi agar username guru wajib menggunakan huruf kapital yang sesuai dengan database
+        if (!is_numeric($inputIdentifier)) {
+            $teacherAccount = \App\Models\User::whereRaw('LOWER(TRIM(username)) = ?', [strtolower($inputIdentifier)])->first();
+            if ($teacherAccount && $teacherAccount->username !== $inputIdentifier) {
+                return back()->withErrors([
+                    'username' => 'Username guru harus menggunakan huruf kapital yang sesuai (Contoh: ' . $teacherAccount->username . ').',
+                ])->onlyInput('username');
+            }
+        }
+
         // Cek keberadaan akun di database (Users, Siswa, atau Orangtua)
         $userExistsInDb = false;
 
-        // 1. Cek di tabel Users
+        // 1. Cek di tabel Users (Case-Sensitive Match agar sesuai input persis)
         $hasUser = \App\Models\User::where(function($q) use ($inputIdentifier) {
-            $q->whereRaw('LOWER(TRIM(username)) = ?', [strtolower($inputIdentifier)])
+            $q->whereRaw('TRIM(username) = ?', [$inputIdentifier])
               ->orWhereRaw('TRIM(nip) = ?', [$inputIdentifier]);
         })->exists();
 
@@ -84,9 +94,9 @@ class AuthController extends Controller
             ])->onlyInput('username');
         }
 
-        // 1. CEK TABEL USERS (Administrator, Guru, Staff)
+        // 1. CEK TABEL USERS (Case-Sensitive Match agar sesuai input persis)
         $users = \App\Models\User::where(function($q) use ($inputIdentifier) {
-            $q->whereRaw('LOWER(TRIM(username)) = ?', [strtolower($inputIdentifier)])
+            $q->whereRaw('TRIM(username) = ?', [$inputIdentifier])
             ->orWhereRaw('TRIM(nip) = ?', [$inputIdentifier]);
         })->get();
 

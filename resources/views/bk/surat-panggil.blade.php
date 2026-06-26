@@ -6,7 +6,7 @@
 <div class="h-full flex flex-col gap-6 overflow-y-auto no-scrollbar pb-24 md:pb-10" x-data="{
     searchSiswa: '',
     selectedSiswaId: null,
-    siswas: {{ json_encode($siswas) }},
+    siswas: {!! json_encode($siswas) !!},
     get filteredSiswas() {
         if (this.searchSiswa === '') return this.siswas;
         const q = this.searchSiswa.toLowerCase();

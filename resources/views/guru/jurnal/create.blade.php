@@ -5,7 +5,7 @@
 @section('content')
 <div class="bg-white p-6 rounded-lg shadow-sm" x-data="{
     selectedKelas: '',
-    siswas: {{ json_encode($siswas) }},
+    siswas: {!! json_encode($siswas) !!},
     get filteredSiswas() {
         return this.siswas.filter(s => s.kelas && s.kelas.nama_kelas === this.selectedKelas);
     }
