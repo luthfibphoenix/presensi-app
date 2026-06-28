@@ -296,7 +296,15 @@
                 </div>
                 
                 <div class="space-y-4">
-                    @forelse($jadwalHariIni as $jadwal)
+                    @php
+                        $today = now()->toDateString();
+                        $jadwalDenganSesi = $jadwalHariIni->filter(function($j) use ($today) {
+                            return \App\Models\QrSession::where('jadwal_id', $j->id)
+                                ->where('tanggal', $today)
+                                ->exists();
+                        });
+                    @endphp
+                    @forelse($jadwalDenganSesi as $jadwal)
                         @php
                             $waktuMulaiStr = jamPelajaranToWaktu($jadwal->jam_mulai);
                             $waktuSelesaiStr = jamPelajaranToWaktu($jadwal->jam_selesai);
@@ -357,7 +365,7 @@
                     @empty
                         <div class="flex flex-col items-center justify-center text-slate-300 p-8 border border-slate-100 rounded-3xl bg-slate-50/30">
                             <i class="fas fa-mug-hot text-2xl mb-2 opacity-30"></i>
-                            <p class="font-black uppercase tracking-widest text-[9px] opacity-50">Tidak ada jadwal hari ini</p>
+                            <p class="font-black uppercase tracking-widest text-[9px] opacity-50">Belum ada sesi kelas yang dimulai hari ini</p>
                         </div>
                     @endforelse
                 </div>
