@@ -105,15 +105,12 @@
     <!-- Top Navbar -->
     <header class="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-50 safe-top">
         <div class="flex items-center gap-3">
-            <button @click="userMenuOpen = !userMenuOpen" class="p-1">
-                <i class="fas fa-bars text-gray-500"></i>
-            </button>
             <h1 class="text-base font-semibold text-gray-800">Portal Orang Tua</h1>
         </div>
         <!-- Avatar atau inisial -->
-        <div class="w-9 h-9 rounded-full overflow-hidden bg-cyan-100 flex items-center justify-center text-sm font-semibold text-cyan-700">
+        <button @click="userMenuOpen = !userMenuOpen" class="w-9 h-9 rounded-full overflow-hidden bg-cyan-100 flex items-center justify-center text-sm font-semibold text-cyan-700 hover:scale-105 active:scale-95 transition-all">
             {{ collect(explode(' ', $siswa->nama))->map(fn($n) => strtoupper(substr($n, 0, 1)))->take(2)->join('') }}
-        </div>
+        </button>
     </header>
 
     <!-- User Modal Overlay (Mobile Friendly) -->
@@ -142,7 +139,7 @@
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="flex items-center justify-center gap-3 w-full bg-rose-50 hover:bg-rose-100 text-rose-500 font-bold py-4 rounded-2xl transition-all">
-                            <i class="fas fa-sign-out-alt"></i> Keluar Aplikasi
+                            <i class="fas fa-sign-out-alt"></i> Logout
                         </button>
                     </form>
                 </div>
