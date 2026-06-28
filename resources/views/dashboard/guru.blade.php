@@ -15,7 +15,13 @@
     ];
     $hariIni = $hariMap[date('l')];
     $jadwalHariIni = \App\Models\Jadwal::where('user_id', $user->id)->where('hari', $hariIni)->orderBy('jam_mulai', 'asc')->get();
-    $kelasAktif = $jadwalHariIni->count();
+    $today = date('Y-m-d');
+    $kelasAktif = \App\Models\Jadwal::where('user_id', $user->id)
+        ->where('hari', $hariIni)
+        ->whereHas('qrSessions', function($q) use ($today) {
+            $q->where('tanggal', $today);
+        })
+        ->count();
 
     $taughtJadwalIds = \App\Models\Jadwal::where('user_id', $user->id)->pluck('id');
 
