@@ -85,15 +85,33 @@
         window.addEventListener('beforeunload', () => {
             document.body.classList.add('page-leaving');
             const loader = document.getElementById('page-loader');
-            loader.style.width = '100%';
+            if (loader) loader.style.width = '100%';
         });
         
         document.addEventListener('DOMContentLoaded', () => {
             const loader = document.getElementById('page-loader');
-            loader.style.width = '100%';
-            setTimeout(() => {
-                loader.style.opacity = '0';
-            }, 300);
+            if (loader) {
+                loader.style.width = '100%';
+                setTimeout(() => {
+                    loader.style.opacity = '0';
+                }, 300);
+            }
+        });
+
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                document.body.classList.remove('page-leaving');
+                document.body.classList.remove('loading');
+                document.body.classList.add('loaded');
+                const loader = document.getElementById('page-loader');
+                if (loader) {
+                    loader.style.width = '0%';
+                    loader.style.opacity = '1';
+                    setTimeout(() => {
+                        loader.style.opacity = '0';
+                    }, 300);
+                }
+            }
         });
     </script>
 

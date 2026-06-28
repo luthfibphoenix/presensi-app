@@ -209,6 +209,19 @@
                     document.body.classList.add('page-leaving');
                 }
             });
+
+            window.addEventListener('pageshow', (event) => {
+                if (event.persisted) {
+                    document.body.classList.remove('page-leaving');
+                    if (loader) {
+                        loader.style.width = '0%';
+                        loader.style.opacity = '1';
+                        setTimeout(() => {
+                            loader.style.opacity = '0';
+                        }, 300);
+                    }
+                }
+            });
         });
     </script>
     @stack('scripts')
