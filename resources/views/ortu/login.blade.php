@@ -33,8 +33,8 @@
 <body class="bg-gradient-mesh min-h-[100dvh] flex flex-col items-center justify-center p-6">
     <div class="max-w-[420px] w-full space-y-8 my-auto">
         <div class="text-center animate-fade-in">
-            <div class="w-20 h-20 bg-gradient-to-br from-teal-500 to-teal-700 rounded-[2.5rem] flex items-center justify-center text-white mx-auto mb-6 shadow-2xl shadow-teal-200 rotate-3 transition-transform hover:rotate-0">
-                <i class="fa-solid fa-graduation-cap text-3xl"></i>
+            <div class="w-20 h-20 bg-white rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-slate-100 p-2 border border-slate-100 rotate-3 transition-transform hover:rotate-0">
+                <img src="{{ asset('images/logo-kanan.png') }}" alt="Logo SMKN7" class="w-full h-full object-contain">
             </div>
             <h1 class="text-3xl font-black text-slate-900 tracking-tight leading-none">Smart<span class="text-teal-600">Presensi</span></h1>
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-3">Portal Orang Tua</p>

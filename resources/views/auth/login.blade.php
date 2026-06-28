@@ -20,10 +20,10 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-6 bg-slate-100 md:overflow-hidden">
     <div class="max-w-md w-full bg-white p-10 rounded-[3rem] shadow-2xl shadow-slate-200 border border-white">
-        <!-- Fingerprint Icon -->
+        <!-- SMKN 7 Logo -->
         <div class="mb-6 flex justify-center">
-            <div class="w-20 h-20 bg-indigo-500 rounded-3xl flex items-center justify-center text-white text-4xl shadow-lg shadow-indigo-100">
-                <i class="fas fa-fingerprint"></i>
+            <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-lg shadow-slate-100 p-2 border border-slate-100">
+                <img src="{{ asset('images/logo-kanan.png') }}" alt="Logo SMKN7" class="w-full h-full object-contain">
             </div>
         </div>
 
