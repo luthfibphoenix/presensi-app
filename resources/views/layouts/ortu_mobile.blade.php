@@ -222,6 +222,34 @@
                     }
                 }
             });
+
+            // Ortu Auto-Logout (5 Minutes Inactivity)
+            let inactivityTimer;
+            const logoutTime = 5 * 60 * 1000; // 5 minutes
+
+            function resetTimer() {
+                clearTimeout(inactivityTimer);
+                inactivityTimer = setTimeout(() => {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('logout') }}';
+                    const csrf = document.createElement('input');
+                    csrf.type = 'hidden';
+                    csrf.name = '_token';
+                    csrf.value = '{{ csrf_token() }}';
+                    form.appendChild(csrf);
+                    document.body.appendChild(form);
+                    form.submit();
+                }, logoutTime);
+            }
+
+            window.onload = resetTimer;
+            document.onmousemove = resetTimer;
+            document.onmousedown = resetTimer;
+            document.ontouchstart = resetTimer;
+            document.onclick = resetTimer;
+            document.onkeydown = resetTimer;
+            document.addEventListener('scroll', resetTimer, true);
         });
     </script>
     @stack('scripts')

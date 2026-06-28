@@ -415,8 +415,8 @@
                 });
             }
 
-            // Student Auto-Logout (5 Minutes Inactivity)
-            @if(auth('siswa')->check())
+            // Auto-Logout (5 Minutes Inactivity) for all roles
+            @auth
                 let inactivityTimer;
                 const logoutTime = 5 * 60 * 1000; // 5 minutes
 
@@ -443,7 +443,7 @@
                 document.onclick = resetTimer;
                 document.onkeydown = resetTimer;
                 document.addEventListener('scroll', resetTimer, true);
-            @endif
+            @endauth
 
             // Page Transition & Loader
             const loader = document.getElementById('page-loader');

@@ -288,11 +288,11 @@ class QrController extends Controller
         $newToken = Str::uuid()->toString();
         $qrSession->update([
             'token'      => $newToken,
-            'expired_at' => Carbon::now()->addSeconds(15), // Token hanya berlaku 15 detik
+            'expired_at' => Carbon::now()->addSeconds(30), // Token hanya berlaku 30 detik
         ]);
 
         return redirect()->route('guru.mulai.kelas', $sessionId)
-            ->with('success', 'QR Code berhasil diperbarui. Berlaku 15 detik.');
+            ->with('success', 'QR Code berhasil diperbarui. Berlaku 30 detik.');
     }
 
     public function tokenRefreshJson(Request $request, $sessionId)
