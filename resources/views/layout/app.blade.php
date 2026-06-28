@@ -11,6 +11,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
+        html, body {
+            height: 100dvh;
+            overflow: hidden;
+        }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif !important;
         }
@@ -27,7 +31,7 @@
             main { 
                 -webkit-overflow-scrolling: touch; 
                 padding-top: calc(5.5rem + var(--safe-area-inset-top)) !important;
-                padding-bottom: calc(5rem + var(--safe-area-inset-bottom)) !important;
+                padding-bottom: calc(8rem + var(--safe-area-inset-bottom)) !important;
             }
             header {
                 padding-top: var(--safe-area-inset-top) !important;
@@ -128,7 +132,7 @@
          class="fixed inset-0 bg-black/50 z-[55] lg:hidden" 
          x-cloak></div>
 
-    <div class="w-full lg:pl-64 min-h-screen bg-[#f8fafc] flex flex-col h-[100dvh] relative overflow-hidden">
+    <div class="w-full lg:pl-64 bg-[#f8fafc] flex flex-col h-[100dvh] relative overflow-hidden">
             <!-- Modern Seamless Fixed Header -->
             <header class="fixed top-0 left-0 lg:left-64 right-0 z-[60] bg-white border-b border-gray-100 transition-all duration-300"
                     style="padding-top: var(--safe-area-inset-top); height: calc(5rem + var(--safe-area-inset-top));">
