@@ -107,45 +107,44 @@
         <div class="flex items-center gap-3">
             <h1 class="text-base font-semibold text-gray-800">Portal Orang Tua</h1>
         </div>
-        <!-- Avatar atau inisial -->
-        <button @click="userMenuOpen = !userMenuOpen" class="w-9 h-9 rounded-full overflow-hidden bg-cyan-100 flex items-center justify-center text-sm font-semibold text-cyan-700 hover:scale-105 active:scale-95 transition-all">
-            {{ collect(explode(' ', $siswa->nama))->map(fn($n) => strtoupper(substr($n, 0, 1)))->take(2)->join('') }}
-        </button>
-    </header>
+        
+        <!-- User Menu Container (matching layout/app.blade.php) -->
+        <div class="relative" id="userMenuContainer">
+            <!-- Avatar atau inisial -->
+            <button @click="userMenuOpen = !userMenuOpen" class="w-9 h-9 rounded-full overflow-hidden bg-cyan-100 flex items-center justify-center text-sm font-semibold text-cyan-700 hover:scale-105 active:scale-95 transition-all focus:outline-none">
+                {{ collect(explode(' ', $siswa->nama))->map(fn($n) => strtoupper(substr($n, 0, 1)))->take(2)->join('') }}
+            </button>
 
-    <!-- User Modal Overlay (Mobile Friendly) -->
-    <div x-show="userMenuOpen" x-cloak 
-         class="fixed inset-0 z-[100] flex items-end justify-center p-4 sm:items-center">
-        <div x-show="userMenuOpen" @click="userMenuOpen = false" 
-             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
-
-        <div x-show="userMenuOpen" 
-             x-transition:enter="ease-out duration-300" x-transition:enter-start="translate-y-full sm:translate-y-0 sm:scale-95" x-transition:enter-end="translate-y-0 sm:scale-100"
-             x-transition:leave="ease-in duration-200" x-transition:leave-start="translate-y-0 sm:scale-100" x-transition:leave-end="translate-y-full sm:translate-y-0 sm:scale-95"
-             class="relative w-full max-w-sm bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-slide-up">
-            <div class="p-8 text-center">
-                <div class="w-20 h-20 mx-auto rounded-[2rem] border-4 border-teal-50 overflow-hidden mb-4 shadow-xl">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode($siswa->nama) }}&background=0d9488&color=fff&bold=true" class="w-full h-full">
+            <!-- Dropdown Menu (matching layout/app.blade.php) -->
+            <div x-show="userMenuOpen" 
+                 @click.outside="userMenuOpen = false"
+                 x-transition:enter="transition ease-out duration-100"
+                 x-transition:enter-start="transform opacity-0 scale-95"
+                 x-transition:enter-end="transform opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-75"
+                 x-transition:leave-start="transform opacity-100 scale-100"
+                 x-transition:leave-end="transform opacity-0 scale-95"
+                 class="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden py-1 text-left"
+                 x-cloak>
+                <div class="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
+                    <p class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Pengguna</p>
+                    <p class="text-sm font-bold text-gray-800 truncate">Orang Tua {{ $siswa->nama }}</p>
                 </div>
-                <h3 class="text-lg font-black text-slate-900 leading-tight">Orang Tua {{ $siswa->nama }}</h3>
-                <p class="text-[10px] font-bold text-teal-500 uppercase tracking-widest mt-1">Wali Murid Resmi</p>
+                <a href="{{ route('ortu.profil') }}" class="flex items-center gap-3 px-5 py-3.5 text-sm text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 transition">
+                    <i class="fas fa-user-circle opacity-40"></i> Profil Saya
+                </a>
                 
-                <div class="grid grid-cols-1 gap-3 mt-8">
-                    <a href="{{ route('ortu.profil') }}" class="flex items-center justify-center gap-3 w-full bg-slate-50 hover:bg-teal-50 text-slate-700 hover:text-teal-600 font-bold py-4 rounded-2xl transition-all">
-                        <i class="fas fa-user-gear"></i> Pengaturan Profil
-                    </a>
+                <div class="border-t border-gray-50 py-1">
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
-                        <button type="submit" class="flex items-center justify-center gap-3 w-full bg-rose-50 hover:bg-rose-100 text-rose-500 font-bold py-4 rounded-2xl transition-all">
+                        <button type="submit" class="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-red-600 hover:bg-red-50 transition text-left font-bold">
                             <i class="fas fa-sign-out-alt"></i> Logout
                         </button>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
+    </header>
 
     <!-- Main Content Area -->
     <div class="pt-16 min-h-[100dvh] pb-24 bg-gray-50">
