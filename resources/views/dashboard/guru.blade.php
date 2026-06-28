@@ -306,15 +306,31 @@
                             
                             $now = \Carbon\Carbon::now('Asia/Jakarta');
                             
-                            if ($now->greaterThan($waktuSelesai)) {
-                                $statusBadge = 'Selesai';
-                                $badgeStyle = 'bg-slate-100 text-slate-500 border-slate-200';
-                            } elseif ($now->between($waktuMulai, $waktuSelesai)) {
-                                $statusBadge = 'Sedang Berlangsung';
-                                $badgeStyle = 'bg-emerald-50 text-emerald-700 border-emerald-100 animate-pulse font-black';
+                            // Cek apakah ada sesi presensi hari ini di database
+                            $session = \App\Models\QrSession::where('jadwal_id', $jadwal->id)
+                                ->where('tanggal', now()->toDateString())
+                                ->first();
+                                
+                            if ($session) {
+                                $isExpired = \Carbon\Carbon::parse($session->expired_at)->isPast();
+                                if (!$isExpired) {
+                                    $statusBadge = 'Sedang Berlangsung';
+                                    $badgeStyle = 'bg-emerald-50 text-emerald-700 border-emerald-100 animate-pulse font-black';
+                                } else {
+                                    $statusBadge = 'Selesai';
+                                    $badgeStyle = 'bg-slate-100 text-slate-500 border-slate-200';
+                                }
                             } else {
-                                $statusBadge = 'Akan Datang';
-                                $badgeStyle = 'bg-slate-50 text-slate-400 border-slate-200 font-bold';
+                                if ($now->greaterThan($waktuSelesai)) {
+                                    $statusBadge = 'Belum Dimulai';
+                                    $badgeStyle = 'bg-rose-50 text-rose-600 border-rose-100 font-bold';
+                                } elseif ($now->between($waktuMulai, $waktuSelesai)) {
+                                    $statusBadge = 'Siap Dimulai';
+                                    $badgeStyle = 'bg-blue-50 text-blue-600 border-blue-100 font-black animate-pulse';
+                                } else {
+                                    $statusBadge = 'Akan Datang';
+                                    $badgeStyle = 'bg-slate-50 text-slate-400 border-slate-200 font-bold';
+                                }
                             }
                         @endphp
                         <div class="p-4 rounded-[1.5rem] border border-slate-100 hover:border-blue-100 hover:bg-slate-50/50 transition-all duration-300 flex items-center justify-between gap-4">
