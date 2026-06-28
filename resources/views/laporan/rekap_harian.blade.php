@@ -3,7 +3,7 @@
 @section('title', 'Rekap Kehadiran Harian')
 
 @section('content')
-<div class="h-full flex flex-col gap-6 overflow-hidden">
+<div class="w-full flex flex-col gap-6">
     {{-- Header & Filters --}}
     <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-6 flex-shrink-0">
         <form action="{{ route('laporan.rekap_harian') }}" method="GET" class="flex flex-col md:flex-row gap-4 items-end">
@@ -50,14 +50,14 @@
     </div>
 
     {{-- Table Section --}}
-    <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm flex-1 flex flex-col overflow-hidden">
+    <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col overflow-hidden">
         <div class="p-6 border-b border-gray-50 flex items-center justify-between flex-shrink-0">
             <h3 class="font-black text-gray-800 uppercase tracking-tight">Status Kehadiran Harian</h3>
             <span class="px-4 py-1.5 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full uppercase tracking-widest">
                 {{ $totalSchedules }} Jam Pelajaran Terdeteksi
             </span>
         </div>
-        <div class="flex-1 overflow-y-auto no-scrollbar">
+        <div class="w-full overflow-x-auto no-scrollbar">
             <table class="w-full text-left border-collapse">
                 <thead class="sticky top-0 bg-white/80 backdrop-blur-md z-10">
                     <tr>
@@ -114,7 +114,7 @@
         </div>
     </div>
     @else
-    <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm flex-1 flex flex-col items-center justify-center p-12">
+    <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm w-full flex flex-col items-center justify-center p-12">
         <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-6">
             <i class="fas fa-school text-3xl text-blue-200"></i>
         </div>
