@@ -8,7 +8,7 @@
     $fallbackUrl = 'https://ui-avatars.com/api/?name=' . urlencode($siswa->nama ?? 'Siswa') . '&background=10B981&color=fff&bold=true&size=200';
 @endphp
 
-<div class="h-full overflow-y-auto no-scrollbar pb-20 max-w-4xl mx-auto space-y-6">
+<div class="w-full max-w-4xl mx-auto space-y-6">
     {{-- Profile Header Card --}}
     <div class="bg-white rounded-3xl shadow-xl shadow-teal-900/5 overflow-hidden border border-gray-100">
         {{-- Student Gradient Banner --}}
