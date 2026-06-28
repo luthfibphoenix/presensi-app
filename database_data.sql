@@ -18,6 +18,7 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
+SET session_replication_role = 'replica';
 
 --
 -- Data for Name: cache; Type: TABLE DATA; Schema: public; Owner: postgres
