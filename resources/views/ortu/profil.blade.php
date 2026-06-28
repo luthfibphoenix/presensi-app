@@ -71,7 +71,7 @@
         <form action="{{ route('logout') }}" method="POST">
             @csrf
             <button type="submit" class="w-full py-4 bg-white text-rose-500 font-bold rounded-2xl border border-rose-50 flex items-center justify-center gap-3">
-                <i class="fas fa-sign-out-alt"></i> Keluar dari Aplikasi
+                <i class="fas fa-sign-out-alt"></i> Keluar Aplikasi
             </button>
         </form>
     </div>

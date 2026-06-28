@@ -234,7 +234,7 @@
         </div>
         <form action="{{ route('logout') }}" method="POST" class="shrink-0 flex">
             @csrf
-            <button type="submit" class="text-white/40 hover:text-rose-400 p-2 rounded-lg transition-colors" title="Logout">
+            <button type="submit" class="text-white/40 hover:text-rose-400 p-2 rounded-lg transition-colors" title="Keluar Aplikasi">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
         </form>

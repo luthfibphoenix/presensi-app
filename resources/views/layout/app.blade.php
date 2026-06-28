@@ -230,11 +230,11 @@
                             @endif
                             @endif
 
-                            <div class="border-t border-gray-50 py-1">
+                             <div class="border-t border-gray-50 py-1">
                                 <form action="{{ route('logout') }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-gray-400 hover:bg-gray-50 transition text-left font-semibold">
-                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    <button type="submit" class="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-red-600 hover:bg-red-50 transition text-left font-bold">
+                                        <i class="fas fa-sign-out-alt"></i> Keluar Aplikasi
                                     </button>
                                 </form>
                             </div>
