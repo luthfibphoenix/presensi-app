@@ -288,7 +288,7 @@
                 @foreach([
                     ['label' => 'Beranda', 'route' => 'dashboard', 'icon' => 'fas fa-th-large'],
                     ['label' => 'Izin', 'route' => 'izin.guru', 'icon' => 'fas fa-file-signature'],
-                    ['label' => 'Status', 'route' => 'guru.qr.status.index', 'icon' => 'fas fa-clipboard-check'],
+                    ['label' => 'Rekap', 'route' => 'laporan.rekap_harian', 'icon' => 'fas fa-calendar-check'],
                     ['label' => 'Laporan', 'route' => 'laporan.index', 'icon' => 'fas fa-chart-pie'],
                     ['label' => 'Profil', 'route' => 'profil', 'icon' => 'fas fa-user-circle'],
                 ] as $item)
