@@ -203,7 +203,14 @@
                         @elseif($izin->status == 'approve')
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Disetujui</span>
                         @else
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Ditolak</span>
+                            <div class="flex flex-col">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 w-max">Ditolak</span>
+                                @if($izin->alasan_ditolak)
+                                    <span class="text-[10px] text-red-500 italic mt-1 max-w-[120px] truncate" title="Alasan: {{ $izin->alasan_ditolak }}">
+                                        Alasan: "{{ $izin->alasan_ditolak }}"
+                                    </span>
+                                @endif
+                            </div>
                         @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -213,10 +220,7 @@
                                 @csrf
                                 <button type="submit" class="text-green-600 hover:text-green-900 bg-green-100 hover:bg-green-200 px-2 py-1 rounded">Setujui</button>
                             </form>
-                            <form action="{{ route('izin.reject', $izin->id) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-2 py-1 rounded">Tolak</button>
-                            </form>
+                            <button type="button" onclick="openRejectModal('{{ route('izin.reject', $izin->id) }}')" class="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-2 py-1 rounded">Tolak</button>
                         </div>
                         @elseif($izin->status == 'approve')
                         <div class="flex justify-end space-x-2">
@@ -251,13 +255,20 @@
                         <h4 class="text-sm font-black text-gray-900">{{ $izin->siswa->nama ?? 'Unknown' }}</h4>
                         <p class="text-xs font-bold text-gray-500">{{ $izin->siswa->kelas->nama_kelas ?? '' }}</p>
                     </div>
-                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase
-                        @if($izin->status == 'pending') bg-yellow-100 text-yellow-700
-                        @elseif($izin->status == 'approve') bg-emerald-100 text-emerald-700
-                        @else bg-rose-100 text-rose-700
-                        @endif">
-                        {{ $izin->status == 'pending' ? 'Menunggu' : ($izin->status == 'approve' ? 'Disetujui' : 'Ditolak') }}
-                    </span>
+                    <div class="flex flex-col items-end">
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase
+                            @if($izin->status == 'pending') bg-yellow-100 text-yellow-700
+                            @elseif($izin->status == 'approve') bg-emerald-100 text-emerald-700
+                            @else bg-rose-100 text-rose-700
+                            @endif">
+                            {{ $izin->status == 'pending' ? 'Menunggu' : ($izin->status == 'approve' ? 'Disetujui' : 'Ditolak') }}
+                        </span>
+                        @if(($izin->status == 'reject' || $izin->status == 'Ditolak') && $izin->alasan_ditolak)
+                            <span class="text-[9px] text-rose-500 italic mt-1 text-right max-w-[120px] truncate" title="Alasan: {{ $izin->alasan_ditolak }}">
+                                Alasan: "{{ $izin->alasan_ditolak }}"
+                            </span>
+                        @endif
+                    </div>
                 </div>
                 
                 <div class="flex items-center gap-3">
@@ -291,10 +302,7 @@
                             @csrf
                             <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100">Setujui</button>
                         </form>
-                        <form action="{{ route('izin.reject', $izin->id) }}" method="POST" class="flex-1">
-                            @csrf
-                            <button type="submit" class="w-full bg-white text-rose-600 border border-rose-100 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest">Tolak</button>
-                        </form>
+                        <button type="button" onclick="openRejectModal('{{ route('izin.reject', $izin->id) }}')" class="flex-1 bg-white text-rose-600 border border-rose-100 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest">Tolak</button>
                     @elseif($izin->status == 'approve')
                         <a href="{{ route('izin.print', $izin->id) }}" target="_blank" class="w-full bg-blue-50 text-blue-600 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-center border border-blue-100">
                             <i class="fas fa-print mr-2"></i> Cetak Surat
@@ -307,6 +315,52 @@
                 <p class="text-xs font-bold text-gray-400 uppercase tracking-widest italic">Belum ada pengajuan izin.</p>
             </div>
         @endforelse
+    </div>
+    
+        <!-- Modal Tolak Izin -->
+        <div id="modal-reject" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+            <div class="bg-white rounded-3xl p-6 w-full max-w-md mx-4 shadow-2xl border border-slate-100">
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider mb-2">Tolak Pengajuan Izin</h3>
+                <p class="text-xs text-slate-400 font-bold mb-4 uppercase">Apakah Anda yakin ingin menolak pengajuan ini? Masukkan alasan penolakan.</p>
+                
+                <form id="form-reject" action="" method="POST">
+                    @csrf
+                    <div class="mb-4">
+                        <textarea id="alasan_ditolak" name="alasan_ditolak" rows="3" required
+                            class="w-full px-4 py-3 text-xs border border-slate-200 rounded-2xl focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 placeholder-slate-300 font-bold"
+                            placeholder="Contoh: Lampiran foto surat izin/dokter tidak terbaca jelas atau salah tanggal."></textarea>
+                    </div>
+                    
+                    <div class="flex items-center justify-end gap-2">
+                        <button type="button" onclick="closeRejectModal()"
+                            class="px-4 py-2.5 text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all">
+                            Batal
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2.5 text-[9px] font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition-all shadow-md shadow-rose-100">
+                            Ya, Tolak
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            function openRejectModal(actionUrl) {
+                const modal = document.getElementById('modal-reject');
+                const form = document.getElementById('form-reject');
+                const textarea = document.getElementById('alasan_ditolak');
+                
+                form.action = actionUrl;
+                textarea.value = '';
+                modal.classList.remove('hidden');
+            }
+
+            function closeRejectModal() {
+                const modal = document.getElementById('modal-reject');
+                modal.classList.add('hidden');
+            }
+        </script>
     </div>
     
     @if($izins->hasPages())

@@ -299,6 +299,11 @@
                                     <span class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border {{ $badgeClass }}">
                                         {{ $statusLabel }}
                                     </span>
+                                    @if(($izin->status == 'reject' || $izin->status == 'Ditolak') && $izin->alasan_ditolak)
+                                        <div class="text-[9px] text-rose-500 mt-1 italic max-w-[150px] mx-auto truncate" title="Alasan: {{ $izin->alasan_ditolak }}">
+                                            Alasan: "{{ $izin->alasan_ditolak }}"
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
@@ -320,12 +325,9 @@
                                                     <i class="fas fa-check text-xs"></i>
                                                 </button>
                                             </form>
-                                            <form action="{{ route('izin.reject', $izin->id) }}" method="POST" class="inline">
-                                                @csrf
-                                                <button type="submit" class="p-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors flex items-center justify-center" title="Tolak">
-                                                    <i class="fas fa-xmark text-xs"></i>
-                                                </button>
-                                            </form>
+                                            <button type="button" onclick="openRejectModal('{{ route('izin.reject', $izin->id) }}')" class="p-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors flex items-center justify-center" title="Tolak">
+                                                <i class="fas fa-xmark text-xs"></i>
+                                            </button>
                                         @endif
                                     </div>
                                 </td>
@@ -368,6 +370,11 @@
                                 </span>
                             </div>
                         </div>
+                        @if(($izin->status == 'reject' || $izin->status == 'Ditolak') && $izin->alasan_ditolak)
+                            <div class="px-4 pb-2 text-[9px] text-rose-500 italic">
+                                Alasan: "{{ $izin->alasan_ditolak }}"
+                            </div>
+                        @endif
                         <div class="flex items-center gap-2">
                             <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border 
                                 @if($izin->tipe == 'Sakit') bg-rose-50 text-rose-600 border-rose-100
@@ -399,12 +406,9 @@
                                         <i class="fas fa-check"></i> Setujui
                                     </button>
                                 </form>
-                                <form action="{{ route('izin.reject', $izin->id) }}" method="POST" class="inline flex-1">
-                                    @csrf
-                                    <button type="submit" class="w-full py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1 shadow-sm">
-                                        <i class="fas fa-xmark"></i> Tolak
-                                    </button>
-                                </form>
+                                <button type="button" onclick="openRejectModal('{{ route('izin.reject', $izin->id) }}')" class="w-full py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1 shadow-sm">
+                                    <i class="fas fa-xmark"></i> Tolak
+                                </button>
                             @endif
                         </div>
                     </div>
@@ -445,6 +449,51 @@
             </div>
         </div>
         
+        <!-- Modal Tolak Izin -->
+        <div id="modal-reject" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+            <div class="bg-white rounded-3xl p-6 w-full max-w-md mx-4 shadow-2xl border border-slate-100">
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider mb-2">Tolak Pengajuan Izin</h3>
+                <p class="text-xs text-slate-400 font-bold mb-4 uppercase">Apakah Anda yakin ingin menolak pengajuan ini? Masukkan alasan penolakan.</p>
+                
+                <form id="form-reject" action="" method="POST">
+                    @csrf
+                    <div class="mb-4">
+                        <textarea id="alasan_ditolak" name="alasan_ditolak" rows="3" required
+                            class="w-full px-4 py-3 text-xs border border-slate-200 rounded-2xl focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 placeholder-slate-300 font-bold"
+                            placeholder="Contoh: Lampiran foto surat izin/dokter tidak terbaca jelas atau salah tanggal."></textarea>
+                    </div>
+                    
+                    <div class="flex items-center justify-end gap-2">
+                        <button type="button" onclick="closeRejectModal()"
+                            class="px-4 py-2.5 text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all">
+                            Batal
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2.5 text-[9px] font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition-all shadow-md shadow-rose-100">
+                            Ya, Tolak
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            function openRejectModal(actionUrl) {
+                const modal = document.getElementById('modal-reject');
+                const form = document.getElementById('form-reject');
+                const textarea = document.getElementById('alasan_ditolak');
+                
+                form.action = actionUrl;
+                textarea.value = '';
+                modal.classList.remove('hidden');
+            }
+
+            function closeRejectModal() {
+                const modal = document.getElementById('modal-reject');
+                modal.classList.add('hidden');
+            }
+        </script>
     </div>
 </div>
 @endsection
+

@@ -19,6 +19,7 @@ class Izin extends Model
         'approved_by',
         'latitude',
         'longitude',
+        'alasan_ditolak',
     ];
 
     public function siswa()

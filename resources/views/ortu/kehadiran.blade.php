@@ -158,6 +158,22 @@
                             Disetujui oleh: <span class="text-slate-800">{{ $izin->petugas_piket ?? $izin->approvedBy->fullname ?? 'Petugas Sekolah' }}</span>
                         </p>
                     </div>
+                    @elseif($izin->status == 'reject' || $izin->status == 'Ditolak')
+                    <div class="mt-3 pt-3 border-t border-slate-100 flex flex-col gap-1.5">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 rounded-full bg-rose-100 flex items-center justify-center text-[10px] text-rose-600">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <p class="text-[9px] font-bold text-slate-500">
+                                Ditolak oleh: <span class="text-slate-800">{{ $izin->petugas_piket ?? $izin->approvedBy->fullname ?? 'Petugas Sekolah' }}</span>
+                            </p>
+                        </div>
+                        @if($izin->alasan_ditolak)
+                            <p class="text-[10px] text-rose-600 font-medium ml-8">
+                                Alasan: <span class="italic font-bold">"{{ $izin->alasan_ditolak }}"</span>
+                            </p>
+                        @endif
+                    </div>
                     @endif
                 </div>
 

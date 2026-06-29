@@ -195,10 +195,21 @@ class IzinController extends Controller
 
     public function reject(Request $request, $id)
     {
-        $izin = Izin::findOrFail($id);
-        $izin->update(['status' => 'reject']);
+        $request->validate([
+            'alasan_ditolak' => 'required|string|max:500',
+        ], [
+            'alasan_ditolak.required' => 'Alasan penolakan wajib diisi.',
+        ]);
 
-        return redirect()->back()->with('success', 'Izin ditolak.');
+        $izin = Izin::findOrFail($id);
+        $izin->update([
+            'status' => 'reject',
+            'alasan_ditolak' => $request->alasan_ditolak,
+            'petugas_piket' => auth('web')->user()->fullname ?? 'Petugas Piket',
+            'approved_by' => auth('web')->id(),
+        ]);
+
+        return redirect()->back()->with('success', 'Izin telah ditolak.');
     }
     public function print($id)
     {
