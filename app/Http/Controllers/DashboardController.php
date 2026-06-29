@@ -72,7 +72,7 @@ class DashboardController extends Controller
                 ->take(5)
                 ->get()
                 ->map(function($i) {
-                    $time = $i->created_at ? $i->created_at->diffForHumans() : 'Baru saja';
+                    $time = $i->created_at ? $i->created_at->diffForHumans() : \Carbon\Carbon::parse($i->tanggal)->translatedFormat('d F Y');
                     $kelasName = $i->siswa && $i->siswa->kelas ? $i->siswa->kelas->nama_kelas : 'Kelas';
                     $siswaName = $i->siswa ? $i->siswa->nama : 'Siswa';
                     return [
@@ -82,7 +82,7 @@ class DashboardController extends Controller
                         'time' => $time,
                         'icon' => 'fa-file-lines',
                         'color' => 'bg-amber-100 text-amber-600 border-amber-200',
-                        'timestamp' => $i->created_at ? $i->created_at->timestamp : 0
+                        'timestamp' => $i->created_at ? $i->created_at->timestamp : strtotime($i->tanggal)
                     ];
                 });
 
@@ -167,7 +167,12 @@ class DashboardController extends Controller
                 $activities = $activities->concat($mockActivities)->take(5);
             }
 
-            return view('dashboard.gurupiket', compact('stats', 'absentStudents', 'activities'));
+            $recentIzinSubmissions = \App\Models\Izin::with('siswa.kelas')
+                ->latest('id')
+                ->take(5)
+                ->get();
+
+            return view('dashboard.gurupiket', compact('stats', 'absentStudents', 'activities', 'recentIzinSubmissions'));
         }
 
         if ($loginRole === 'bk') {
