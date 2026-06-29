@@ -152,7 +152,8 @@ class OrtuDashboardController extends Controller
             'tanggal' => 'required|date',
             'tipe' => 'required|in:Izin,Sakit',
             'alasan' => 'required|string|max:255',
-            'bukti' => 'required|image|mimes:jpeg,png,jpg|max:10240', // Maksimal 10MB
+            'bukti' => 'required_without:bukti_compressed|nullable|image|mimes:jpeg,png,jpg|max:10240', // Maksimal 10MB
+            'bukti_compressed' => 'nullable|string',
             'latitude' => 'nullable|string',
             'longitude' => 'nullable|string',
         ]);

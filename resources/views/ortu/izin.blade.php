@@ -266,6 +266,13 @@
                 };
             }
 
+            form.addEventListener('submit', function() {
+                if (buktiCompressed.value) {
+                    buktiInput.removeAttribute('required');
+                    buktiInput.value = "";
+                }
+            });
+
             getLocation();
         });
     </script>
